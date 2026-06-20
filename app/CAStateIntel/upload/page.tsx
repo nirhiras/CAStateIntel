@@ -117,7 +117,7 @@ export default function UploadPage() {
             <div>
               <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6B6861', marginBottom: 6, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Project Number</label>
               <input type="text" placeholder="e.g. 4265-081" value={projectNumber} onChange={e => setProjectNumber(e.target.value)}
-                style={{ width: '100%', padding: '10px 14px', border: '1px solid #E5E3DF', borderRadius: 8, fontSize: 14, outline: 'none', boxSizing: 'border-box', background: '#fff' }} />
+                style={{ width: '100%', padding: '10px 14px', border: '1px solid #E5E3DF', borderRadius: 8, fontSize: 14, outline: 'none', boxSizing: 'border-box', background: '#ffffff', color: '#1A1A1A' }} />
             </div>
 
             <div>
@@ -135,8 +135,8 @@ export default function UploadPage() {
 
             <div>
               <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6B6861', marginBottom: 6, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Document Label</label>
-              <input type="text" placeholder="e.g. Stage 1 Business Analysis" value={label} onChange={e => setLabel(e.target.value)}
-                style={{ width: '100%', padding: '10px 14px', border: '1px solid #E5E3DF', borderRadius: 8, fontSize: 14, outline: 'none', boxSizing: 'border-box', background: '#fff' }} />
+              <input type="text" placeholder="e.g. Stage 1 Business Analysis" value={label} onChange={e => setLabel(e.target.value)} readOnly={false}
+                style={{ width: '100%', padding: '10px 14px', border: '1px solid #E5E3DF', borderRadius: 8, fontSize: 14, outline: 'none', boxSizing: 'border-box', background: '#ffffff', color: '#1A1A1A' }} />
             </div>
 
             <button onClick={handleSubmit} disabled={!file || !projectNumber || !label || uploading}

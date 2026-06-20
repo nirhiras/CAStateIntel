@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
 export async function GET(
-  _req: NextRequest,
-  { params }: { params: { documentId: string } }
+  request: Request,
+  { params }: { params: Promise<{ documentId: string }> }
 ) {
   try {
-    const { documentId } = params;
+    const { documentId } = await params;
     const { rows } = await pool.query(
-      'SELECT pdf_data, filename FROM castateintel.pal_documents WHERE document_id = $1',
+      'SELECT pdf_data, filename FROM castateintel.pal_documents WHERE document_id::text = $1',
       [documentId]
     );
     if (!rows[0] || !rows[0].pdf_data)
@@ -19,6 +19,7 @@ export async function GET(
       : Buffer.from(rows[0].pdf_data);
 
     return new NextResponse(buffer, {
+      status: 200,
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `inline; filename="${rows[0].filename ?? 'document.pdf'}"`,
