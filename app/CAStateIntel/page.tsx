@@ -60,10 +60,44 @@ export default function CAStateIntelPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Header */}
       <div className="bg-blue-900 text-white px-8 py-6">
         <h1 className="text-2xl font-semibold">CA State IT Project Intelligence</h1>
         <p className="text-blue-200 text-sm mt-1">PAL project tracking — projecttracking.technology.ca.gov</p>
       </div>
+
+      {/* Stage Analysis Nav */}
+      <div className="bg-blue-800 px-8 py-2 flex gap-2">
+        <span className="text-blue-300 text-xs self-center mr-2 font-medium uppercase tracking-wide">Analysis:</span>
+        <a href="/CAStateIntel/stage1"
+          className="px-3 py-1.5 rounded text-xs font-medium bg-green-500/20 text-green-200 hover:bg-green-500/40 transition-colors border border-green-500/30">
+          Stage 1 — Business Analysis
+        </a>
+        <a href="/CAStateIntel/stage2"
+          className="px-3 py-1.5 rounded text-xs font-medium bg-indigo-500/20 text-indigo-200 hover:bg-indigo-500/40 transition-colors border border-indigo-500/30">
+          Stage 2 — Alternative Analysis
+        </a>
+        <a href="/CAStateIntel/stage3"
+          className="px-3 py-1.5 rounded text-xs font-medium bg-violet-500/20 text-violet-200 hover:bg-violet-500/40 transition-colors border border-violet-500/30">
+          Stage 3 — Solution Analysis
+        </a>
+        <div className="ml-auto flex gap-2">
+          <a href="/CAStateIntel/contacts"
+            className="px-3 py-1.5 rounded text-xs font-medium bg-yellow-500/20 text-yellow-200 hover:bg-yellow-500/40 transition-colors border border-yellow-500/30">
+            👥 All Contacts
+          </a>
+          <a href="/CAStateIntel/documents"
+            className="px-3 py-1.5 rounded text-xs font-medium bg-white/10 text-white/70 hover:bg-white/20 transition-colors">
+            Documents
+          </a>
+          <a href="/CAStateIntel/upload"
+            className="px-3 py-1.5 rounded text-xs font-medium bg-white/10 text-white/70 hover:bg-white/20 transition-colors">
+            Upload
+          </a>
+        </div>
+      </div>
+
+      {/* Stats */}
       {stats && (
         <div className="bg-white border-b px-8 py-4 flex gap-8">
           {[
@@ -81,6 +115,8 @@ export default function CAStateIntelPage() {
           ))}
         </div>
       )}
+
+      {/* Filters */}
       <div className="px-8 py-4 flex gap-4 bg-white border-b">
         <input
           type="text"
@@ -101,6 +137,8 @@ export default function CAStateIntelPage() {
         </select>
         <span className="text-sm text-gray-500 self-center">{projects.length} projects</span>
       </div>
+
+      {/* Table */}
       <div className="px-8 py-6">
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="w-full text-sm">
@@ -112,35 +150,61 @@ export default function CAStateIntelPage() {
                 <th className="px-4 py-3 text-left">Criticality</th>
                 <th className="px-4 py-3 text-left">Department</th>
                 <th className="px-4 py-3 text-left">Docs</th>
-                <th className="px-4 py-3 text-left">Link</th>
+                <th className="px-4 py-3 text-left">Analysis</th>
+                <th className="px-4 py-3 text-left">Source</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {loading ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
-              ) : projects.map(p => (
-                <tr key={p.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-mono text-xs text-gray-600">{p.project_number}</td>
-                  <td className="px-4 py-3 font-medium text-gray-900 max-w-xs">{p.name}</td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${STAGE_COLORS[p.pal_stage] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {p.pal_stage}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-1 rounded-full ${CRIT_COLORS[p.criticality_rating] ?? ''}`}>
-                      {p.criticality_rating}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600 text-xs">{p.department_name}</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full">{p.doc_count}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <a href={p.detail_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline text-xs">View ↗</a>
-                  </td>
-                </tr>
-              ))}
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
+              ) : projects.map(p => {
+                // Determine which stage analysis page to link to
+                const stageNum = p.pal_stage === 'Stage 3' ? 3 : p.pal_stage === 'Stage 2' ? 2 : 1;
+                const analysisUrl = `/CAStateIntel/stage${stageNum}?project=${p.project_number}`;
+                const stageBadgeColors: Record<number, string> = {
+                  1: 'bg-green-50 text-green-700 hover:bg-green-100',
+                  2: 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100',
+                  3: 'bg-violet-50 text-violet-700 hover:bg-violet-100',
+                };
+                return (
+                  <tr key={p.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 font-mono text-xs text-gray-600">{p.project_number}</td>
+                    <td className="px-4 py-3 font-medium text-gray-900 max-w-xs">{p.name}</td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${STAGE_COLORS[p.pal_stage] ?? 'bg-gray-100 text-gray-600'}`}>
+                        {p.pal_stage}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs px-2 py-1 rounded-full ${CRIT_COLORS[p.criticality_rating] ?? ''}`}>
+                        {p.criticality_rating}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 text-xs">{p.department_name}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full">{p.doc_count}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {p.doc_count > 0 ? (
+                        <a href={analysisUrl}
+                          className={`text-xs px-2 py-1 rounded font-medium transition-colors ${stageBadgeColors[stageNum]}`}>
+                          View Analysis →
+                        </a>
+                      ) : (
+                        <span className="text-xs text-gray-300">No docs</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {p.detail_url ? (
+                        <a href={p.detail_url} target="_blank" rel="noreferrer"
+                          className="text-blue-600 hover:underline text-xs">
+                          CDT ↗
+                        </a>
+                      ) : '—'}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
