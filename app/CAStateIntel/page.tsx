@@ -118,6 +118,9 @@ export default function CAStateIntelPage() {
           <a href="/CAStateIntel/contacts" className="px-3 py-1.5 rounded text-xs font-medium bg-yellow-500/20 text-yellow-200 hover:bg-yellow-500/40 transition-colors border border-yellow-500/30">
             👥 All Contacts
           </a>
+          <a href="/CAStateIntel/projects" className="px-3 py-1.5 rounded text-xs font-medium bg-blue-400/20 text-blue-200 hover:bg-blue-400/40 transition-colors border border-blue-400/30">
+            ⊞ Card View
+          </a>
           <a href="/CAStateIntel/documents" className="px-3 py-1.5 rounded text-xs font-medium bg-white/10 text-white/70 hover:bg-white/20 transition-colors">
             Documents
           </a>
