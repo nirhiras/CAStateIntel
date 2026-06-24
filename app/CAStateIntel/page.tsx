@@ -118,38 +118,54 @@ export default function CAStateIntelPage() {
       )}
 
       {/* Filters */}
-      <div className="px-8 py-3 flex flex-wrap gap-3 bg-white border-b items-center">
-        <input
-          type="text"
-          placeholder="Search projects..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="border rounded px-3 py-1.5 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <select
-          value={stageFilter}
-          onChange={e => setStageFilter(e.target.value)}
-          className="border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">All Stages</option>
-          <option value="Stage 3">Stage 3</option>
-          <option value="Stage 2">Stage 2</option>
-          <option value="Stage 1">Stage 1</option>
-        </select>
-        <select
-          value={tagFilter}
-          onChange={e => setTagFilter(e.target.value)}
-          className="border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 max-w-xs"
-        >
-          <option value="">All Solution Tags</option>
-          {allTags.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
-        {tagFilter && (
-          <button onClick={() => setTagFilter('')} className="text-xs text-red-500 hover:text-red-700 underline">
-            Clear tag
-          </button>
-        )}
-        <span className="text-sm text-gray-500 ml-1">{filtered.length} projects</span>
+      <div className="px-8 py-4 bg-white border-b">
+        <div className="flex flex-wrap gap-4 items-end">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Search</label>
+            <input
+              type="text"
+              placeholder="Project name or number..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-64 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Stage</label>
+            <select
+              value={stageFilter}
+              onChange={e => setStageFilter(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+            >
+              <option value="">All Stages</option>
+              <option value="Stage 3">Stage 3</option>
+              <option value="Stage 2">Stage 2</option>
+              <option value="Stage 1">Stage 1</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Solution Tag</label>
+            <select
+              value={tagFilter}
+              onChange={e => setTagFilter(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white min-w-[180px]"
+            >
+              <option value="">All Solution Tags</option>
+              {allTags.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <div className="flex items-end gap-2 pb-0.5">
+            {(search || stageFilter || tagFilter) && (
+              <button
+                onClick={() => { setSearch(''); setStageFilter(''); setTagFilter(''); }}
+                className="px-3 py-2 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+              >
+                ✕ Clear filters
+              </button>
+            )}
+            <span className="text-sm text-gray-500 font-medium">{filtered.length} projects</span>
+          </div>
+        </div>
       </div>
 
       {/* Table */}
@@ -226,7 +242,7 @@ export default function CAStateIntelPage() {
                     <td className="px-4 py-3">
                       {tags.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
-                          {tags.slice(0, 4).map((t, i) => (
+                          {tags.map((t, i) => (
                             <button
                               key={i}
                               onClick={() => setTagFilter(t.tag === tagFilter ? '' : t.tag)}
@@ -238,9 +254,6 @@ export default function CAStateIntelPage() {
                               {t.tag}
                             </button>
                           ))}
-                          {tags.length > 4 && (
-                            <span className="text-xs text-gray-400">+{tags.length - 4}</span>
-                          )}
                         </div>
                       ) : (
                         <span className="text-xs text-gray-300">
