@@ -208,14 +208,7 @@ export default function ContactsDashboardPage() {
           </div>
           <SmartMultiSelect label="Stage" placeholder="All Stages" options={stageOpts} selected={stageFilters} onChange={setStageFilters} />
           <SmartMultiSelect label="Role" placeholder="All Roles" options={roleOpts} selected={roleFilters} onChange={setRoleFilters} />
-          <SmartMultiSelect label="Organization" placeholder="All Orgs"
-            options={buildOptions(contacts, (c: any) => c.organization, [
-              (c: any) => !search || [c.name,c.email,c.title,c.organization].some((v: any)=>(v||"").toLowerCase().includes(search.toLowerCase())),
-              (c: any) => stageFilters.length===0||stageFilters.includes(String(c.stage)),
-              (c: any) => roleFilters.length===0||roleFilters.includes(c.role_type),
-              (c: any) => projectFilters.length===0||projectFilters.includes(c.project_number),
-            ], orgOptions)}
-            selected={orgFilters} onChange={setOrgFilters} />
+          <SmartMultiSelect label="Organization" placeholder="All Orgs" options={orgOpts} selected={orgFilters} onChange={setOrgFilters} />
           <SmartMultiSelect label="Project" placeholder="All Projects" options={projectOpts} selected={projectFilters} onChange={setProjectFilters} />
           <div className="flex items-end gap-3 pb-0.5">
             {(search||roleFilters.length>0||stageFilters.length>0||orgFilters.length>0||projectFilters.length>0) && (
