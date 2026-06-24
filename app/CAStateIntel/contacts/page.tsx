@@ -309,22 +309,23 @@ export default function ContactsDashboardPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        {c.doc_created_date ? (() => {
-                          const d = new Date(c.doc_created_date);
-                          const isValid = !isNaN(d.getTime());
-                          return isValid ? (
+                        {(() => {
+                          const raw = c.doc_created_date;
+                          if (!raw || raw === "null" || raw === "") return <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>—</span>;
+                          // Handle YYYY-MM-DD, MM/DD/YYYY, or ISO strings
+                          const d = new Date(raw.includes("/") ? raw : raw.split("T")[0] + "T12:00:00");
+                          if (isNaN(d.getTime())) return <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{raw}</span>;
+                          return (
                             <span style={{ display: "inline-flex", flexDirection: "column", gap: 1 }}>
-                              <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>
+                              <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>
                                 {d.toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                               </span>
-                              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>
+                              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
                                 {d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                               </span>
                             </span>
-                          ) : (
-                            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>—</span>
                           );
-                        })() : <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>—</span>}
+                        })()}
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-xs text-gray-500 font-mono bg-gray-50 px-1.5 py-0.5 rounded border border-gray-200 whitespace-nowrap">
