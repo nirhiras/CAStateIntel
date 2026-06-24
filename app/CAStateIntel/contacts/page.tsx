@@ -3,6 +3,7 @@
 // Cross-project contacts dashboard with source tracking
 
 import { useState, useEffect, useCallback } from "react";
+import RvtNav from "@/components/castateintel/RvtNav";
 import { SmartMultiSelect, buildOptions, FilterPills } from "@/components/castateintel/SmartMultiSelect";
 
 interface Contact {
@@ -147,7 +148,8 @@ export default function ContactsDashboardPage() {
   const projectOpts = buildOptions(contacts, (ct: Contact) => ct.project_number,       [matchSearch, matchStage, matchRole,  matchOrg],     projectOptions);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{ minHeight: "100vh", background: "#000000", color: "#ffffff" }}>
+      <RvtNav />
       {/* Header */}
       <div className="bg-blue-900 text-white px-8 py-5">
         <div className="flex items-center justify-between">
@@ -194,7 +196,7 @@ export default function ContactsDashboardPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white border-b px-8 py-4">
+      <div style={{ background: "#16181a", borderBottom: "1px solid rgba(255,255,255,0.08)", padding: "20px 40px" }}>
         <div className="flex flex-wrap gap-4 items-end">
           <div className="flex flex-col gap-1.5">
             <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">Search</label>
@@ -251,7 +253,7 @@ export default function ContactsDashboardPage() {
 
       {error && <div className="mx-8 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>}
 
-      <div className="px-8 py-6">
+      <div style={{ padding: "32px 40px 80px" }}>
         {loading ? (
           <div className="flex items-center justify-center h-48 text-gray-400">Loading contacts...</div>
         ) : sorted.length === 0 ? (
