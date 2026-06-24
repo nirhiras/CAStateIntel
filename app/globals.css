@@ -1,26 +1,178 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
+/* ── Revolut Design System Tokens ─────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Canvas */
+  --canvas-dark:       #000000;
+  --canvas-light:      #ffffff;
+  --surface-soft:      #f4f4f4;
+  --surface-card:      #ffffff;
+  --surface-deep:      #0a0a0a;
+  --surface-elevated:  #16181a;
+
+  /* Brand */
+  --primary:           #494fdf;
+  --primary-bright:    #4f55f1;
+  --primary-deep:      #3a40c4;
+  --on-primary:        #ffffff;
+
+  /* Text */
+  --ink:               #191c1f;
+  --body-color:        #1f2226;
+  --charcoal:          #3a3d40;
+  --mute:              #505a63;
+  --ash:               #5c5e60;
+  --stone:             #8d969e;
+  --faint:             #c9c9cd;
+  --on-dark:           #ffffff;
+  --on-dark-mute:      rgba(255,255,255,0.72);
+
+  /* Hairlines */
+  --hairline-light:    #e2e2e7;
+  --hairline-dark:     rgba(255,255,255,0.12);
+  --hairline-strong:   #191c1f;
+
+  /* Typography */
+  --font-display:      'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body:         'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* ── Base reset ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.24px;
+  background: var(--canvas-light);
+  color: var(--ink);
 }
+
+/* ── Typography scale ───────────────────────────────────────────── */
+.display-xl  { font-size: 80px;  font-weight: 500; line-height: 1.0;  letter-spacing: -0.8px; }
+.display-lg  { font-size: 48px;  font-weight: 500; line-height: 1.21; letter-spacing: -0.48px; }
+.display-md  { font-size: 40px;  font-weight: 500; line-height: 1.2;  letter-spacing: -0.4px; }
+.heading-lg  { font-size: 32px;  font-weight: 500; line-height: 1.19; letter-spacing: -0.32px; }
+.heading-md  { font-size: 24px;  font-weight: 500; line-height: 1.33; }
+.heading-sm  { font-size: 20px;  font-weight: 500; line-height: 1.4; }
+.body-lg     { font-size: 18px;  font-weight: 400; line-height: 1.56; letter-spacing: -0.09px; }
+.body-md     { font-size: 16px;  font-weight: 400; line-height: 1.5;  letter-spacing: 0.24px; }
+.body-sm     { font-size: 14px;  font-weight: 400; line-height: 1.43; }
+.caption     { font-size: 13px;  font-weight: 400; line-height: 1.4; }
+
+/* ── Button system ──────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 48px; padding: 0 28px; border-radius: 9999px;
+  font-size: 16px; font-weight: 600; letter-spacing: 0.24px;
+  cursor: pointer; border: none; transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+/* White pill on dark — primary CTA */
+.btn-primary { background: #ffffff; color: #000000; }
+.btn-primary:hover { background: var(--faint); }
+
+/* Dark pill on light — catalogue CTA */
+.btn-dark { background: #000000; color: #ffffff; }
+.btn-dark:hover { background: var(--ink); }
+
+/* Soft — tertiary */
+.btn-soft { background: var(--surface-soft); color: var(--ink); }
+.btn-soft:hover { background: var(--hairline-light); }
+
+/* Outline on dark */
+.btn-outline-dark {
+  background: transparent; color: #ffffff;
+  border: 1px solid rgba(255,255,255,0.72);
+}
+.btn-outline-dark:hover { background: rgba(255,255,255,0.08); }
+
+/* Small pill chip */
+.btn-sm {
+  height: 36px; padding: 0 16px; border-radius: 9999px;
+  font-size: 14px; font-weight: 600;
+  background: var(--surface-soft); color: var(--ink);
+  cursor: pointer; border: none;
+}
+
+/* ── Card system ────────────────────────────────────────────────── */
+.card-light {
+  background: var(--surface-card); border-radius: 20px;
+  border: 1px solid var(--hairline-light); padding: 32px;
+}
+.card-dark {
+  background: var(--surface-elevated); border-radius: 20px; padding: 32px;
+}
+.card-featured {
+  background: var(--primary); border-radius: 20px;
+  color: var(--on-primary); padding: 32px;
+}
+
+/* ── Bands ──────────────────────────────────────────────────────── */
+.band-dark  { background: var(--canvas-dark);  color: var(--on-dark); }
+.band-light { background: var(--canvas-light); color: var(--ink); }
+.band-soft  { background: var(--surface-soft); color: var(--ink); }
+
+/* ── Nav ────────────────────────────────────────────────────────── */
+.rvt-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--canvas-dark); height: 64px;
+  display: flex; align-items: center;
+  border-bottom: 1px solid var(--hairline-dark);
+}
+
+/* ── Tag / badge ────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 4px 12px; border-radius: 9999px;
+  font-size: 13px; font-weight: 400;
+  background: var(--surface-soft); color: var(--ink);
+}
+.badge-primary {
+  background: var(--primary); color: var(--on-primary);
+}
+
+/* ── Table ──────────────────────────────────────────────────────── */
+.rvt-table { width: 100%; border-collapse: collapse; }
+.rvt-table th {
+  padding: 12px 20px; text-align: left;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--stone); background: var(--surface-soft);
+  border-bottom: 1px solid var(--hairline-light);
+}
+.rvt-table td {
+  padding: 16px 20px; font-size: 14px;
+  border-bottom: 1px solid var(--hairline-light);
+  color: var(--body-color);
+}
+.rvt-table tr:hover td { background: var(--surface-soft); }
+.rvt-table tr:last-child td { border-bottom: none; }
+
+/* ── Input ──────────────────────────────────────────────────────── */
+.rvt-input {
+  height: 56px; padding: 0 16px; border-radius: 12px;
+  font-size: 16px; letter-spacing: 0.24px;
+  border: 1px solid var(--hairline-light); background: var(--canvas-light);
+  color: var(--ink); outline: none; width: 100%;
+}
+.rvt-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(73,79,223,0.15); }
+.rvt-input::placeholder { color: var(--stone); }
+
+/* ── Select ─────────────────────────────────────────────────────── */
+.rvt-select {
+  height: 48px; padding: 0 16px; border-radius: 9999px;
+  font-size: 14px; font-weight: 600; letter-spacing: 0.24px;
+  border: 1px solid var(--hairline-light); background: var(--canvas-light);
+  color: var(--ink); outline: none; cursor: pointer; appearance: none;
+}
+.rvt-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(73,79,223,0.15); }
+
+/* ── Scrollbar ──────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--hairline-light); border-radius: 3px; }
