@@ -76,7 +76,10 @@ export async function getProjectByNumber(projectNumber: string) {
 
 export async function getAllDocuments(filters?: { stage?: number; projectNumber?: string }): Promise<PalDocument[]> {
   let query = `
-    SELECT doc.*, p.project_number, p.name AS project_name
+    SELECT doc.*, p.project_number, p.name AS project_name,
+      COALESCE(doc.sub_label, '') AS sub_label,
+      COALESCE(doc.doc_type, '') AS doc_type,
+      doc.short_description
     FROM castateintel.pal_documents doc
     JOIN castateintel.pal_projects p ON p.id = doc.project_id
     WHERE 1=1
