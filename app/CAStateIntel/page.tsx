@@ -173,7 +173,7 @@ export default function CAStateIntelPage() {
     if (search && !p.name.toLowerCase().includes(search.toLowerCase()) && !p.project_number.includes(search)) return false;
     if (stageFilters.length > 0 && !stageFilters.includes(stage)) return false;
     if (deptFilters.length > 0 && !deptFilters.includes(p.department_name)) return false;
-    if (tagFilters.length > 0 && !tagFilters.every(tf => (p.solution_tags || []).some(t => t.tag === tf))) return false;
+    if (tagFilters.length > 0 && !tagFilters.some(tf => (p.solution_tags || []).some(t => t.tag === tf))) return false;
     return true;
   });
 
