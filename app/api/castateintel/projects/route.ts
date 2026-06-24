@@ -86,6 +86,10 @@ export async function GET(request: Request) {
       MAX(CASE WHEN s1.project_id IS NOT NULL THEN 1 ELSE 0 END)::boolean AS s1_extracted,
       MAX(CASE WHEN s2.project_id IS NOT NULL THEN 1 ELSE 0 END)::boolean AS s2_extracted,
       MAX(CASE WHEN s3.project_id IS NOT NULL THEN 1 ELSE 0 END)::boolean AS s3_extracted,
+      -- document_ids for direct PDF links (most recent per stage)
+      (SELECT d1.document_id::text FROM castateintel.pal_documents d1 WHERE d1.project_id = p.id AND d1.stage = 1 ORDER BY d1.id DESC LIMIT 1) AS s1_doc_id,
+      (SELECT d2.document_id::text FROM castateintel.pal_documents d2 WHERE d2.project_id = p.id AND d2.stage = 2 ORDER BY d2.id DESC LIMIT 1) AS s2_doc_id,
+      (SELECT d3.document_id::text FROM castateintel.pal_documents d3 WHERE d3.project_id = p.id AND d3.stage = 3 ORDER BY d3.id DESC LIMIT 1) AS s3_doc_id,
       -- Deduplicate solution_tags by tag value: keep first occurrence per unique tag name
       COALESCE(
         (
