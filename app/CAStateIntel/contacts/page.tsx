@@ -134,6 +134,18 @@ export default function ContactsDashboardPage() {
     uniqueProjects: new Set(contacts.map(c => c.project_number).filter(Boolean)).size,
   };
 
+  // Pre-compute filter options (extracted to avoid TSX generic ambiguity)
+  const matchSearch = (ct: Contact) => !search || [ct.name,ct.email,ct.title,ct.organization].some(v=>(v||"").toLowerCase().includes(search.toLowerCase()));
+  const matchStage   = (ct: Contact) => stageFilters.length===0||stageFilters.includes(String(ct.stage));
+  const matchRole    = (ct: Contact) => roleFilters.length===0||roleFilters.includes(ct.role_type);
+  const matchOrg     = (ct: Contact) => orgFilters.length===0||orgFilters.includes(ct.organization);
+  const matchProject = (ct: Contact) => projectFilters.length===0||projectFilters.includes(ct.project_number);
+
+  const stageOpts   = buildOptions(contacts, (ct: Contact) => String(ct.stage),       [matchSearch, matchRole,  matchOrg,   matchProject], ["1","2","3"], (v: string) => `Stage ${v}${v==="1"?" — BA":v==="2"?" — AA":v==="3"?" — SA":""}`);
+  const roleOpts    = buildOptions(contacts, (ct: Contact) => ct.role_type,            [matchSearch, matchStage, matchOrg,   matchProject], roleOptions,    (v: string) => v.charAt(0).toUpperCase()+v.slice(1));
+  const orgOpts     = buildOptions(contacts, (ct: Contact) => ct.organization,         [matchSearch, matchStage, matchRole,  matchProject], orgOptions);
+  const projectOpts = buildOptions(contacts, (ct: Contact) => ct.project_number,       [matchSearch, matchStage, matchRole,  matchOrg],     projectOptions);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -218,14 +230,7 @@ export default function ContactsDashboardPage() {
               (c: any) => projectFilters.length===0||projectFilters.includes(c.project_number),
             ], orgOptions)}
             selected={orgFilters} onChange={setOrgFilters} />
-          <SmartMultiSelect label="Project" placeholder="All Projects"
-            options={buildOptions(contacts, (c: any) => c.project_number, [
-              (c: any) => !search || [c.name,c.email,c.title,c.organization].some((v: any)=>(v||"").toLowerCase().includes(search.toLowerCase())),
-              (c: any) => stageFilters.length===0||stageFilters.includes(String(c.stage)),
-              (c: any) => roleFilters.length===0||roleFilters.includes(c.role_type),
-              (c: any) => orgFilters.length===0||orgFilters.includes(c.organization),
-            ], projectOptions)}
-            selected={projectFilters} onChange={setProjectFilters} />
+          <SmartMultiSelect label="Project" placeholder="All Projects" options={projectOpts} selected={projectFilters} onChange={setProjectFilters} />
           <div className="flex items-end gap-3 pb-0.5">
             {(search||roleFilters.length>0||stageFilters.length>0||orgFilters.length>0||projectFilters.length>0) && (
               <button onClick={() => { setSearch(""); setRoleFilters([]); setStageFilters([]); setOrgFilters([]); setProjectFilters([]); }}
