@@ -148,11 +148,12 @@ export default function ContactsDashboardPage() {
   const projectOpts = buildOptions(contacts, (ct: Contact) => ct.project_number,       [matchSearch, matchStage, matchRole,  matchOrg],     projectOptions);
 
   const exportCSV = () => {
+    const NEWLINE = String.fromCharCode(10);
+    const DQUOTE = String.fromCharCode(34);
     const headers = ["Name","Title","Organization","Email","Phone","Role","Stage","Source","Section","Doc Date","Project"];
-    const esc = (v: unknown) => { const s = String(v || ""); return s.includes(",") || s.includes('"') ? ('"' + s.replace(/"/g, '""') + '"') : s; };
+    const esc = (v: unknown) => { const s = String(v || ""); return (s.includes(",") || s.includes(DQUOTE)) ? (DQUOTE + s.replace(/"/g, DQUOTE+DQUOTE) + DQUOTE) : s; };
     const rows = sorted.map(ct => [ct.name, ct.title, ct.organization, ct.email, ct.phone, ct.role_type, "Stage " + String(ct.stage), buildSourceLabel(ct), ct.source, ct.doc_created_date, ct.project_number].map(esc).join(","));
-    const csv = [headers.join(","), ...rows].join("
-");
+    const csv = [headers.join(","), ...rows].join(NEWLINE);
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
