@@ -158,14 +158,14 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
       </div>
 
       {/* Tab bar */}
-      <div className="border-b" style={{background:"#16181a"}} border-gray-200 sticky top-[108px] z-10">
+      <div className="border-b border-white/10 sticky top-[108px] z-10" style={{background:"#16181a"}}>
         <div className="flex overflow-x-auto">
           {TABS.map(t=>{
             const count=t.id==="contacts"?contacts.length:t.id==="procurements"?ancillary.length:0;
             return(<button key={t.id} onClick={()=>setTab(t.id)}
               className={`px-4 py-3 text-xs font-medium whitespace-nowrap border-b-2 transition-colors
                 ${tab===t.id?"border-indigo-500 text-white":"border-transparent"}`} style={tab===t.id?{color:"#ffffff"}:{color:"rgba(255,255,255,0.45)"}}>
-              {t.label}{count>0&&<span className="ml-1 text-xs bg-blue-100 " style={{color:"#8b90f8"}} px-1.5 py-0.5 rounded-full">{count}</span>}
+              {t.label}{count>0&&<span className="ml-1 text-xs px-1.5 py-0.5 rounded-full" style={{background:"rgba(73,79,223,0.2)",color:"#9da2fb"}}>{count}</span>}
             </button>);
           })}
         </div>
