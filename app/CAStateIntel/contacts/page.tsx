@@ -269,7 +269,7 @@ export default function ContactsDashboardPage() {
                     {([
                       ["name", "Name"], ["title", "Title"], ["organization", "Organization"],
                       ["email", "Email"], ["phone", "Phone"], ["role_type", "Role"],
-                      ["stage", "Stage"],
+                      ["stage", "Stage"], ["doc_created_date", "Doc Date"],
                     ] as [keyof Contact, string][]).map(([field, label]) => (
                       <th key={field}
                         onClick={() => toggleSort(field)}
@@ -307,6 +307,24 @@ export default function ContactsDashboardPage() {
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STAGE_COLORS[c.stage] || "bg-gray-100 text-gray-600"}`}>
                           {STAGE_LABELS[c.stage] || `S${c.stage}`}
                         </span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {c.doc_created_date ? (() => {
+                          const d = new Date(c.doc_created_date);
+                          const isValid = !isNaN(d.getTime());
+                          return isValid ? (
+                            <span style={{ display: "inline-flex", flexDirection: "column", gap: 1 }}>
+                              <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>
+                                {d.toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                              </span>
+                              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>
+                                {d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                              </span>
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>—</span>
+                          );
+                        })() : <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>—</span>}
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-xs text-gray-500 font-mono bg-gray-50 px-1.5 py-0.5 rounded border border-gray-200 whitespace-nowrap">
