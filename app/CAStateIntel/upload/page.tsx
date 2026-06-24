@@ -175,13 +175,13 @@ export default function UploadPage() {
   const overwriteCount = files.filter(f => f.was_overwrite).length;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#000000", color: "#ffffff" }}>
+    <div style={{ minHeight: "100vh", background: "var(--vg-canvas)", color: "var(--vg-ink-strong)" }}>
       <RvtNav />
       {/* Header */}
-      <div style={{ background: "#16181a", padding: "16px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+      <div style={{ background: "var(--vg-canvas-soft)", padding: "16px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--vg-hairline)" }}>
         <div className="flex items-center gap-4">
-          <a href="/CAStateIntel/documents" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none", fontSize: 14 }}>← Documents</a>
-          <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.12)" }} />
+          <a href="/CAStateIntel/documents" style={{ color: "var(--vg-mute)", textDecoration: "none", fontSize: 14 }}>← Documents</a>
+          <div style={{ width: 1, height: 16, background: "var(--vg-hairline)" }} />
           <span className="text-sm font-semibold">Bulk PDF Upload</span>
         </div>
         {files.length > 0 && (
@@ -253,7 +253,7 @@ export default function UploadPage() {
             {analyzeStatus !== 'idle' && (
               <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
                 {analyzeStatus === 'running' && (
-                  <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 13, color: "var(--vg-mute)", display: "flex", alignItems: "center", gap: 6 }}>
                     <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#494fdf", display: "inline-block", animation: "pulse 1s infinite" }} />
                     Extracting {analyzeLog.length} / {files.filter(f => f.status === "done" && f.project_number).length}…
                   </span>
@@ -315,7 +315,7 @@ export default function UploadPage() {
                     {/* Filename row */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-gray-800 truncate max-w-xs">{uf.file.name}</span>
-                      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{(uf.file.size / 1024).toFixed(0)} KB</span>
+                      <span style={{ fontSize: 12, color: "var(--vg-mute)" }}>{(uf.file.size / 1024).toFixed(0)} KB</span>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium
                         ${uf.status === 'done' ? 'bg-green-100 text-green-700' :
                           uf.status === 'error' ? 'bg-red-100 text-red-700' :
@@ -355,7 +355,7 @@ export default function UploadPage() {
                         </div>
                         {/* Canonical filename */}
                         {uf.canonical_filename && (
-                          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          <div style={{ fontSize: 12, color: "var(--vg-mute)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             📄 {uf.canonical_filename}
                           </div>
                         )}
@@ -369,16 +369,16 @@ export default function UploadPage() {
 
                     {/* Manual override */}
           {uf.showOverride && (
-                    <div style={{ marginTop: 8, padding: '10px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div style={{ marginTop: 8, padding: '10px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 8, border: '1px solid var(--vg-hairline)' }}>
                       <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>Manual Override</div>
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                         <input type="text" placeholder="Project # (e.g. 4265-081)"
                           value={uf.manualProject || ''}
                           onChange={e => update(uf.id, { manualProject: e.target.value })}
-                          style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, padding: '4px 8px', fontSize: 12, width: 160 }} />
+                          style={{ border: '1px solid var(--vg-hairline)', borderRadius: 6, padding: '4px 8px', fontSize: 12, width: 160 }} />
                         <select value={uf.manualStage || ''}
                           onChange={e => update(uf.id, { manualStage: parseInt(e.target.value) || undefined })}
-                          style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, padding: '4px 8px', fontSize: 12 }}>
+                          style={{ border: '1px solid var(--vg-hairline)', borderRadius: 6, padding: '4px 8px', fontSize: 12 }}>
                           <option value="">Auto-detect stage</option>
                           <option value="1">Stage 1 — Business Analysis</option>
                           <option value="2">Stage 2 — Alternative Analysis</option>
@@ -388,7 +388,7 @@ export default function UploadPage() {
                         </select>
                         <select value={uf.manualSubLabel || ''}
                           onChange={e => update(uf.id, { manualSubLabel: e.target.value || undefined })}
-                          style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, padding: '4px 8px', fontSize: 12 }}
+                          style={{ border: '1px solid var(--vg-hairline)', borderRadius: 6, padding: '4px 8px', fontSize: 12 }}
                           title="Use A or B if this is one of multiple docs for the same stage">
                           <option value="">No sub-label (single doc)</option>
                           <option value="A">Part A</option>
