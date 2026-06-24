@@ -95,39 +95,7 @@ export default function CAStateIntelPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-blue-900 text-white px-8 py-6">
-        <h1 className="text-2xl font-semibold">CA State IT Project Intelligence</h1>
-        <p className="text-blue-200 text-sm mt-1">PAL project tracking — projecttracking.technology.ca.gov</p>
-      </div>
-
-      {/* Analysis Nav */}
-      <div className="bg-blue-800 px-8 py-2 flex gap-2 flex-wrap">
-        <span className="text-blue-300 text-xs self-center mr-2 font-medium uppercase tracking-wide">Analysis:</span>
-        <a href="/CAStateIntel/stage1" className="px-3 py-1.5 rounded text-xs font-medium bg-green-500/20 text-green-200 hover:bg-green-500/40 transition-colors border border-green-500/30">
-          Stage 1 — Business Analysis
-        </a>
-        <a href="/CAStateIntel/stage2" className="px-3 py-1.5 rounded text-xs font-medium bg-indigo-500/20 text-indigo-200 hover:bg-indigo-500/40 transition-colors border border-indigo-500/30">
-          Stage 2 — Alternative Analysis
-        </a>
-        <a href="/CAStateIntel/stage3" className="px-3 py-1.5 rounded text-xs font-medium bg-violet-500/20 text-violet-200 hover:bg-violet-500/40 transition-colors border border-violet-500/30">
-          Stage 3 — Solution Analysis
-        </a>
-        <a href="/CAStateIntel/stage4" className="px-3 py-1.5 rounded text-xs font-medium bg-amber-500/20 text-amber-200 hover:bg-amber-500/40 transition-colors border border-amber-500/30">
-          Stage 4 — Project Readiness
-        </a>
-        <div className="ml-auto flex gap-2">
-          <a href="/CAStateIntel/contacts" className="px-3 py-1.5 rounded text-xs font-medium bg-yellow-500/20 text-yellow-200 hover:bg-yellow-500/40 transition-colors border border-yellow-500/30">
-            👥 All Contacts
-          </a>
-          <a href="/CAStateIntel/projects" className="px-3 py-1.5 rounded text-xs font-medium bg-blue-400/20 text-blue-200 hover:bg-blue-400/40 transition-colors border border-blue-400/30">
-            ⊞ Card View
-          </a>
-          <a href="/CAStateIntel/documents" className="px-3 py-1.5 rounded text-xs font-medium bg-white/10 text-white/70 hover:bg-white/20 transition-colors">
-            Documents
-          </a>
-          <a href="/CAStateIntel/upload" className="px-3 py-1.5 rounded text-xs font-medium bg-white/10 text-white/70 hover:bg-white/20 transition-colors">
-            Upload
-          </a>
-        </div>
+        <h1 className="text-2xl font-semibold">PAL Project Tracking</h1>
       </div>
 
       {/* Stats */}
