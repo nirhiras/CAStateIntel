@@ -10,7 +10,6 @@ const NAV_ITEMS = [
   { label: 'Contacts',     href: '/CAStateIntel/contacts' },
   { label: 'Documents',    href: '/CAStateIntel/documents' },
   { label: 'Procurements', href: '/CAStateIntel/procurements' },
-  { label: 'Upload',       href: '/CAStateIntel/upload' },
 ];
 
 export default function RvtNav() {
