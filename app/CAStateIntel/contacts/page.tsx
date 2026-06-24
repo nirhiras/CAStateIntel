@@ -241,9 +241,6 @@ export default function ContactsDashboardPage() {
           { values: orgFilters,   onRemove: (v: string) => setOrgFilters(orgFilters.filter(x=>x!==v)), colorClass: "bg-emerald-100 text-emerald-700" },
           { values: projectFilters, onRemove: (v: string) => setProjectFilters(projectFilters.filter(x=>x!==v)), colorClass: "bg-amber-100 text-amber-700" },
         ]} />
-      </div>
-
-      {/* Export CSV */}
         <button
           onClick={exportCSV}
           style={{ marginLeft: "auto", padding: "6px 14px", borderRadius: 9999, fontSize: 13, fontWeight: 600, background: "rgba(0,168,126,0.15)", color: "#3dd6a8", border: "1px solid rgba(0,168,126,0.3)", cursor: "pointer" }}
@@ -252,7 +249,7 @@ export default function ContactsDashboardPage() {
         </button>
       </div>
 
-      {error && <div className="mx-8 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>}
+      {error && <div style={{ margin: "0 40px 0", padding: "12px 16px", background: "rgba(226,59,74,0.1)", border: "1px solid rgba(226,59,74,0.3)", borderRadius: 12, fontSize: 14, color: "#f87171" }}>{error}</div>}
 
       <div style={{ padding: "32px 40px 80px" }}>
         {loading ? (
