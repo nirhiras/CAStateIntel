@@ -204,7 +204,7 @@ export default function CAStateIntelPage() {
                     <td className="px-4 py-3 font-medium text-gray-900 max-w-xs">{p.name}</td>
                     <td className="px-4 py-3">
                       <span className={`text-xs px-2 py-1 rounded-full font-medium ${STAGE_COLORS[p.pal_stage] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {p.pal_stage}
+                        {p.pal_stage === 'Stage 1' ? 'S1BA' : p.pal_stage === 'Stage 2' ? 'S2AA' : p.pal_stage === 'Stage 3' ? 'S3SA' : p.pal_stage === 'Stage 4' ? 'S4PRA' : p.pal_stage}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -240,9 +240,12 @@ export default function CAStateIntelPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      {tags.length > 0 ? (
+                      {tags.length > 0 ? (() => {
+                        const seen = new Set<string>();
+                        const unique = tags.filter(t => { if (seen.has(t.tag)) return false; seen.add(t.tag); return true; });
+                        return (
                         <div className="flex flex-wrap gap-1">
-                          {tags.map((t, i) => (
+                          {unique.map((t, i) => (
                             <button
                               key={i}
                               onClick={() => setTagFilter(t.tag === tagFilter ? '' : t.tag)}
@@ -255,6 +258,8 @@ export default function CAStateIntelPage() {
                             </button>
                           ))}
                         </div>
+                        );
+                      })()
                       ) : (
                         <span className="text-xs text-gray-300">
                           {p.s2_extracted ? 'No tags' : '—'}
