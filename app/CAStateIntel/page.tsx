@@ -229,7 +229,7 @@ export default function CAStateIntelPage() {
                       onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'}
                       onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
                       <td style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'monospace', fontSize: 12, background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)', whiteSpace: 'nowrap' }}>{p.project_number}</td>
-                      <td style={{ fontWeight: 500, color: '#ffffff', maxWidth: 220, background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <td style={{ fontWeight: 500, color: '#ffffff', width: 300, background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                         <span style={{ fontSize: 14, lineHeight: 1.4 }}>{p.name}</span>
                       </td>
                       <td style={{ background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -244,9 +244,22 @@ export default function CAStateIntelPage() {
                           </span>
                         )}
                       </td>
-                      <td style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', maxWidth: 180, background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{p.department_name}</td>
-                      <td style={{ textAlign: 'center', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 8, background: 'rgba(73,79,223,0.2)', color: '#9da2fb', fontSize: 13, fontWeight: 700 }}>{p.doc_count}</span>
+                      <td style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', width: 180, background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{p.department_name}</td>
+                      {/* Source Docs — CDT website link */}
+                      <td style={{ background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)', width: 120 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          {p.detail_url ? (
+                            <a href={p.detail_url} target="_blank" rel="noreferrer"
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#9da2fb', textDecoration: 'none', fontWeight: 500 }}
+                              title="View on CDT website">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                              </svg>
+                              CDT
+                            </a>
+                          ) : null}
+                          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 8, background: 'rgba(73,79,223,0.2)', color: '#9da2fb', fontSize: 13, fontWeight: 700 }}>{p.doc_count}</span>
+                        </div>
                       </td>
                       <td style={{ background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
@@ -265,7 +278,7 @@ export default function CAStateIntelPage() {
                           {!p.has_s1&&!p.has_s2&&!p.has_s3&&<span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12 }}>—</span>}
                         </div>
                       </td>
-                      <td style={{ background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <td style={{ background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)', maxWidth: 340, width: 340 }}>
                         {tags.length > 0 ? (
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                             {tags.map((t, i) => (
