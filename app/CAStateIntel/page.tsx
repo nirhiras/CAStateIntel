@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import RvtNav from '@/components/castateintel/RvtNav';
 import { SmartMultiSelect, buildOptions, FilterPills } from '@/components/castateintel/SmartMultiSelect';
 
 type Project = {
   id: number; project_number: string; name: string;
-  pal_stage: string; effective_stage: string;
-  criticality_rating: string; status: string;
-  department_name: string; agency_name: string;
+  pal_stage: string; effective_stage: string; criticality_rating: string;
+  status: string; department_name: string; agency_name: string;
   doc_count: number; detail_url: string;
   has_s1: boolean; has_s2: boolean; has_s3: boolean;
   s1_extracted: boolean; s2_extracted: boolean; s3_extracted: boolean;
@@ -22,67 +22,55 @@ type Stats = {
 const STAGE_LABEL: Record<string, string> = {
   'Stage 1': 'S1BA', 'Stage 2': 'S2AA', 'Stage 3': 'S3SA', 'Stage 4': 'S4PRA',
 };
-const STAGE_PILL: Record<string, string> = {
-  'Stage 1': 'bg-sky-50 text-sky-700 ring-1 ring-sky-200',
-  'Stage 2': 'bg-violet-50 text-violet-700 ring-1 ring-violet-200',
-  'Stage 3': 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
-  'Stage 4': 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
+
+// Revolut-style stage pills — subtle on elevated dark surface
+const STAGE_PILL_STYLE: Record<string, { bg: string; color: string }> = {
+  'Stage 1': { bg: 'rgba(79,85,241,0.15)', color: '#8b90f8' },
+  'Stage 2': { bg: 'rgba(73,79,223,0.2)',  color: '#9da2fb' },
+  'Stage 3': { bg: 'rgba(0,168,126,0.15)', color: '#3dd6a8' },
+  'Stage 4': { bg: 'rgba(176,144,0,0.15)', color: '#e8c840' },
 };
-const CRIT_PILL: Record<string, string> = {
-  High: 'bg-red-50 text-red-600 ring-1 ring-red-200',
-  Medium: 'bg-amber-50 text-amber-600 ring-1 ring-amber-200',
-  Low: 'bg-gray-50 text-gray-500 ring-1 ring-gray-200',
-};
-const TAG_PILL: Record<string, string> = {
-  vendor: 'bg-blue-50 text-blue-600 ring-1 ring-blue-200',
-  technology: 'bg-violet-50 text-violet-600 ring-1 ring-violet-200',
-  approach: 'bg-teal-50 text-teal-600 ring-1 ring-teal-200',
-  deployment: 'bg-orange-50 text-orange-600 ring-1 ring-orange-200',
-  industry: 'bg-gray-50 text-gray-500 ring-1 ring-gray-200',
-};
-const ANALYSIS_LINK: Record<number, string> = {
-  1: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200 hover:bg-sky-100',
-  2: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200 hover:bg-violet-100',
-  3: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100',
-  4: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100',
+
+const CRIT_STYLE: Record<string, { bg: string; color: string }> = {
+  High:   { bg: 'rgba(226,59,74,0.15)',  color: '#f87171' },
+  Medium: { bg: 'rgba(236,126,0,0.15)',  color: '#fb923c' },
+  Low:    { bg: 'rgba(93,99,108,0.2)',   color: '#94a3b8' },
 };
 
 export default function CAStateIntelPage() {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [search, setSearch] = useState('');
+  const [stats, setStats]       = useState<Stats | null>(null);
+  const [departments, setDepartments] = useState<string[]>([]);
+  const [search, setSearch]           = useState('');
   const [stageFilters, setStageFilters] = useState<string[]>([]);
-  const [deptFilters, setDeptFilters] = useState<string[]>([]);
-  const [tagFilters, setTagFilters] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [deptFilters, setDeptFilters]   = useState<string[]>([]);
+  const [tagFilters, setTagFilters]     = useState<string[]>([]);
+  const [loading, setLoading]           = useState(true);
 
   useEffect(() => {
     fetch('/api/castateintel/projects?stats=true').then(r => r.json()).then(setStats);
+    fetch('/api/castateintel/projects?departments=true').then(r => r.json()).then(setDepartments);
     fetch('/api/castateintel/projects')
       .then(r => r.json())
       .then(data => { setProjects(Array.isArray(data) ? data : data.projects || []); setLoading(false); });
   }, []);
 
-  // ── Derived filter helpers ─────────────────────────────────────────────────
   const getStage = (p: Project) => p.effective_stage || p.pal_stage;
   const getDept  = (p: Project) => p.department_name;
   const getTags  = (p: Project) => (p.solution_tags || []).map(t => t.tag);
 
-  const matchSearch = (p: Project) =>
-    !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.project_number.includes(search);
+  const matchSearch = (p: Project) => !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.project_number.includes(search);
   const matchStage  = (p: Project) => stageFilters.length === 0 || stageFilters.includes(getStage(p));
   const matchDept   = (p: Project) => deptFilters.length === 0  || deptFilters.includes(getDept(p));
   const matchTag    = (p: Project) => tagFilters.length === 0   || tagFilters.some(tf => getTags(p).includes(tf));
 
   const filtered = projects.filter(p => matchSearch(p) && matchStage(p) && matchDept(p) && matchTag(p));
 
-  // ── Option lists with counts (each field excludes its own filter) ──────────
-  const allStages = ['Stage 1', 'Stage 2', 'Stage 3', 'Stage 4'];
+  const allStages = ['Stage 1','Stage 2','Stage 3','Stage 4'];
   const allDepts  = [...new Set(projects.map(getDept).filter(Boolean))].sort();
   const allTags   = [...new Set(projects.flatMap(getTags))].sort();
 
-  const stageOptions = buildOptions(projects, getStage, [matchSearch, matchDept, matchTag], allStages,
-    v => STAGE_LABEL[v] || v);
+  const stageOptions = buildOptions(projects, getStage, [matchSearch, matchDept, matchTag], allStages, v => STAGE_LABEL[v] || v);
   const deptOptions  = buildOptions(projects, getDept,  [matchSearch, matchStage, matchTag], allDepts);
   const tagOptions   = buildOptions(projects, getTags,  [matchSearch, matchStage, matchDept], allTags);
 
@@ -90,159 +78,213 @@ export default function CAStateIntelPage() {
   const clearAll = () => { setSearch(''); setStageFilters([]); setDeptFilters([]); setTagFilters([]); };
 
   return (
-    <div className="min-h-screen" style={{ background: '#F8FAFC', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#000000', color: '#ffffff' }}>
+      <RvtNav />
 
-      {/* Hero */}
-      <div style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #312E81 100%)' }} className="px-8 py-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-end justify-between">
+      {/* ── Hero band (canvas-dark) ── */}
+      <div style={{ padding: '88px 40px 80px', borderBottom: '1px solid rgba(255,255,255,0.08)', maxWidth: '100%' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 32 }}>
             <div>
-              <div className="inline-flex items-center gap-2 bg-white/10 text-indigo-200 text-xs font-semibold px-3 py-1.5 rounded-full mb-4 tracking-wide uppercase">
-                <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-pulse" />
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                background: 'rgba(73,79,223,0.15)', color: '#9da2fb',
+                fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase',
+                padding: '6px 14px', borderRadius: 9999, marginBottom: 24,
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#494fdf', display: 'inline-block' }} />
                 California Department of Technology
               </div>
-              <h1 className="text-3xl font-bold text-white tracking-tight">PAL Project Tracking</h1>
-              <p className="text-slate-400 text-sm mt-1.5">Project Approval Lifecycle — IT project proposals & analysis</p>
+              <h1 style={{
+                fontSize: 'clamp(40px,5vw,80px)', fontWeight: 500, lineHeight: 1.0,
+                letterSpacing: '-0.8px', color: '#ffffff', marginBottom: 16,
+              }}>
+                PAL Project<br />Tracking
+              </h1>
+              <p style={{ fontSize: 18, fontWeight: 400, lineHeight: 1.56, letterSpacing: '-0.09px', color: 'rgba(255,255,255,0.6)', maxWidth: 480 }}>
+                Project Approval Lifecycle — IT project proposals &amp; analysis across California state agencies.
+              </p>
             </div>
+
+            {/* Stat cards — surface-elevated on canvas-dark */}
             {stats && (
-              <div className="hidden md:flex items-center gap-6">
-                {[{ v: stats.total_projects, l: 'Projects' }, { v: stats.total_documents, l: 'Documents' }, { v: stats.extracted_docs, l: 'Extracted' }].map(s => (
-                  <div key={s.l} className="text-right">
-                    <div className="text-2xl font-bold text-white">{s.v}</div>
-                    <div className="text-xs text-slate-400 mt-0.5">{s.l}</div>
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                {[
+                  { v: stats.total_projects, l: 'Projects',  sub: '' },
+                  { v: stats.total_documents, l: 'Documents', sub: '' },
+                  { v: stats.stage3_count,    l: 'Stage 3',   sub: 'S3SA' },
+                  { v: stats.stage2_count,    l: 'Stage 2',   sub: 'S2AA' },
+                  { v: stats.stage1_count,    l: 'Stage 1',   sub: 'S1BA' },
+                ].map(s => (
+                  <div key={s.l} style={{
+                    background: '#16181a', borderRadius: 20,
+                    padding: '20px 24px', minWidth: 110, textAlign: 'center',
+                  }}>
+                    <div style={{ fontSize: 32, fontWeight: 500, lineHeight: 1.0, letterSpacing: '-0.32px', color: '#ffffff' }}>{s.v}</div>
+                    <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>{s.l}</div>
+                    {s.sub && <div style={{ fontSize: 11, fontWeight: 600, color: '#494fdf', marginTop: 2 }}>{s.sub}</div>}
                   </div>
                 ))}
               </div>
             )}
           </div>
-          {stats && (
-            <div className="flex gap-3 mt-6 flex-wrap">
-              {[
-                { label: 'Stage 1 — Business Analysis', count: stats.stage1_count, color: 'bg-sky-500/20 text-sky-200 ring-1 ring-sky-500/30' },
-                { label: 'Stage 2 — Alternative Analysis', count: stats.stage2_count, color: 'bg-violet-500/20 text-violet-200 ring-1 ring-violet-500/30' },
-                { label: 'Stage 3 — Solution Analysis', count: stats.stage3_count, color: 'bg-emerald-500/20 text-emerald-200 ring-1 ring-emerald-500/30' },
-              ].map(s => (
-                <div key={s.label} className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium ${s.color}`}>
-                  <span className="font-bold text-sm">{s.count}</span>{s.label}
-                </div>
+        </div>
+      </div>
+
+      {/* ── Filter band (surface-elevated) ── */}
+      <div style={{ background: '#16181a', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '20px 40px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end' }}>
+            {/* Search */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Search</label>
+              <div style={{ position: 'relative' }}>
+                <svg style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'rgba(255,255,255,0.3)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input type="text" placeholder="Project name or number…" value={search} onChange={e => setSearch(e.target.value)}
+                  style={{
+                    height: 48, padding: '0 16px 0 42px', borderRadius: 9999,
+                    fontSize: 14, letterSpacing: '0.24px', width: 240,
+                    border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)',
+                    color: '#ffffff', outline: 'none',
+                  }} />
+              </div>
+            </div>
+
+            {/* SmartMultiSelects — dark mode via inline override */}
+            <DarkMultiSelect label="Stage"       options={stageOptions} selected={stageFilters} onChange={setStageFilters} placeholder="All Stages" />
+            <DarkMultiSelect label="Department"  options={deptOptions}  selected={deptFilters}  onChange={setDeptFilters}  placeholder="All Depts" />
+            <DarkMultiSelect label="Solution Tag" options={tagOptions}   selected={tagFilters}   onChange={setTagFilters}   placeholder="All Tags" />
+
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, paddingBottom: 2 }}>
+              {hasFilters && (
+                <button onClick={clearAll} style={{
+                  height: 48, padding: '0 20px', borderRadius: 9999,
+                  background: 'transparent', color: '#f87171',
+                  border: '1px solid rgba(248,113,113,0.3)', fontSize: 14, fontWeight: 600,
+                  cursor: 'pointer', letterSpacing: '0.24px',
+                }}>
+                  ✕ Clear
+                </button>
+              )}
+              <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', fontWeight: 400 }}>
+                <span style={{ color: '#ffffff', fontWeight: 600 }}>{filtered.length}</span> projects
+              </span>
+            </div>
+          </div>
+
+          {/* Active pills */}
+          {hasFilters && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
+              {search && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 9999, background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.8)', fontSize: 13 }}>
+                  "{search}" <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 12 }}>✕</button>
+                </span>
+              )}
+              {stageFilters.map(s => (
+                <span key={s} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 9999, background: 'rgba(73,79,223,0.2)', color: '#9da2fb', fontSize: 13, fontWeight: 600 }}>
+                  {STAGE_LABEL[s] || s} <button onClick={() => setStageFilters(stageFilters.filter(x => x !== s))} style={{ background: 'none', border: 'none', color: '#9da2fb', cursor: 'pointer', opacity: 0.6 }}>✕</button>
+                </span>
+              ))}
+              {deptFilters.map(d => (
+                <span key={d} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 9999, background: 'rgba(0,168,126,0.15)', color: '#3dd6a8', fontSize: 13 }}>
+                  {d} <button onClick={() => setDeptFilters(deptFilters.filter(x => x !== d))} style={{ background: 'none', border: 'none', color: '#3dd6a8', cursor: 'pointer', opacity: 0.6 }}>✕</button>
+                </span>
+              ))}
+              {tagFilters.map(t => (
+                <span key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 9999, background: 'rgba(73,79,223,0.15)', color: '#9da2fb', fontSize: 13 }}>
+                  🏷 {t} <button onClick={() => setTagFilters(tagFilters.filter(x => x !== t))} style={{ background: 'none', border: 'none', color: '#9da2fb', cursor: 'pointer', opacity: 0.6 }}>✕</button>
+                </span>
               ))}
             </div>
           )}
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white border-b border-slate-200 px-8 py-5 shadow-sm">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-wrap gap-4 items-end">
-            {/* Search */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">Search</label>
-              <div className="relative">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input type="text" placeholder="Project name or number…" value={search} onChange={e => setSearch(e.target.value)}
-                  className="border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm w-60 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all" />
-              </div>
-            </div>
-
-            <SmartMultiSelect label="Stage" options={stageOptions} selected={stageFilters} onChange={setStageFilters} placeholder="All Stages" />
-            <SmartMultiSelect label="Department" options={deptOptions} selected={deptFilters} onChange={setDeptFilters} placeholder="All Departments" />
-            <SmartMultiSelect label="Solution Tag" options={tagOptions} selected={tagFilters} onChange={setTagFilters} placeholder="All Tags" />
-
-            <div className="flex items-end gap-3 pb-0.5">
-              {hasFilters && (
-                <button onClick={clearAll} className="flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold text-red-500 border border-red-200 rounded-xl hover:bg-red-50 transition-colors">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  Clear all
-                </button>
-              )}
-              <span className="text-sm font-semibold text-slate-500 pb-0.5">{filtered.length} <span className="font-normal text-slate-400">projects</span></span>
-            </div>
-          </div>
-
-          <FilterPills groups={[
-            { values: stageFilters, onRemove: v => setStageFilters(stageFilters.filter(x => x !== v)), getLabel: v => STAGE_LABEL[v] || v, colorClass: 'bg-sky-100 text-sky-700' },
-            { values: deptFilters,  onRemove: v => setDeptFilters(deptFilters.filter(x => x !== v)),   colorClass: 'bg-emerald-100 text-emerald-700' },
-            { values: tagFilters,   onRemove: v => setTagFilters(tagFilters.filter(x => x !== v)),     colorClass: 'bg-violet-100 text-violet-700', prefix: '🏷' },
-          ]} />
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="px-8 py-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-sm shadow-slate-200/80 border border-slate-200 overflow-hidden">
-            <table className="w-full text-sm">
+      {/* ── Table (canvas-dark) ── */}
+      <div style={{ padding: '32px 40px 80px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div style={{ background: '#16181a', borderRadius: 20, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <table className="rvt-table" style={{ background: 'transparent' }}>
               <thead>
-                <tr className="border-b border-slate-100" style={{ background: '#F8FAFC' }}>
+                <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
                   {['Project #','Name','Stage','Criticality','Department','Docs','Analysis','Solution Tags'].map(h => (
-                    <th key={h} className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{h}</th>
+                    <th key={h} style={{ color: 'rgba(255,255,255,0.35)', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'transparent' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody>
                 {loading ? (
-                  <tr><td colSpan={8} className="px-5 py-12 text-center text-slate-400 text-sm">Loading projects…</td></tr>
+                  <tr><td colSpan={8} style={{ color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: 48, background: 'transparent' }}>Loading projects…</td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={8} className="px-5 py-12 text-center text-slate-400 text-sm">No projects match the selected filters</td></tr>
+                  <tr><td colSpan={8} style={{ color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: 48, background: 'transparent' }}>No projects match the selected filters</td></tr>
                 ) : filtered.map(p => {
                   const tags = p.solution_tags || [];
                   const effStage = p.effective_stage || p.pal_stage;
+                  const stagePill = STAGE_PILL_STYLE[effStage] || { bg: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' };
+                  const critPill = CRIT_STYLE[p.criticality_rating] || null;
                   return (
-                    <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="px-5 py-4 font-mono text-xs text-slate-400 whitespace-nowrap">{p.project_number}</td>
-                      <td className="px-5 py-4 font-semibold text-slate-800 max-w-[220px]">
-                        <span className="line-clamp-2 leading-snug">{p.name}</span>
+                    <tr key={p.id} style={{ cursor: 'default' }}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
+                      <td style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'monospace', fontSize: 12, background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)', whiteSpace: 'nowrap' }}>{p.project_number}</td>
+                      <td style={{ fontWeight: 500, color: '#ffffff', maxWidth: 220, background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <span style={{ fontSize: 14, lineHeight: 1.4 }}>{p.name}</span>
                       </td>
-                      <td className="px-5 py-4">
-                        <span className={`text-xs px-2.5 py-1 rounded-lg font-semibold ${STAGE_PILL[effStage] ?? 'bg-gray-50 text-gray-500 ring-1 ring-gray-200'}`}>
+                      <td style={{ background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <span style={{ display: 'inline-flex', padding: '4px 10px', borderRadius: 9999, fontSize: 12, fontWeight: 600, background: stagePill.bg, color: stagePill.color }}>
                           {STAGE_LABEL[effStage] || effStage}
                         </span>
                       </td>
-                      <td className="px-5 py-4">
-                        {p.criticality_rating && (
-                          <span className={`text-xs px-2.5 py-1 rounded-lg font-medium ${CRIT_PILL[p.criticality_rating] ?? ''}`}>{p.criticality_rating}</span>
+                      <td style={{ background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        {critPill && p.criticality_rating && (
+                          <span style={{ display: 'inline-flex', padding: '4px 10px', borderRadius: 9999, fontSize: 12, fontWeight: 500, background: critPill.bg, color: critPill.color }}>
+                            {p.criticality_rating}
+                          </span>
                         )}
                       </td>
-                      <td className="px-5 py-4 text-slate-500 text-xs leading-snug max-w-[180px]">{p.department_name}</td>
-                      <td className="px-5 py-4 text-center">
-                        <span className="inline-flex items-center justify-center w-7 h-7 bg-indigo-50 text-indigo-600 text-xs font-bold rounded-lg ring-1 ring-indigo-100">{p.doc_count}</span>
+                      <td style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', maxWidth: 180, background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{p.department_name}</td>
+                      <td style={{ textAlign: 'center', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 8, background: 'rgba(73,79,223,0.2)', color: '#9da2fb', fontSize: 13, fontWeight: 700 }}>{p.doc_count}</span>
                       </td>
-                      <td className="px-5 py-4">
-                        <div className="flex gap-1 flex-wrap">
+                      <td style={{ background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                           {[1,2,3,4].map(n => {
                             const hasDoc = n===1?p.has_s1:n===2?p.has_s2:n===3?p.has_s3:false;
                             const extracted = n===1?p.s1_extracted:n===2?p.s2_extracted:n===3?p.s3_extracted:false;
                             if (!hasDoc && !extracted) return null;
+                            const c = STAGE_PILL_STYLE[`Stage ${n}`] || { bg: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' };
                             return (
                               <a key={n} href={`/CAStateIntel/stage${n}?project=${p.project_number}`}
-                                className={`text-xs px-2 py-0.5 rounded-lg font-semibold transition-colors ${ANALYSIS_LINK[n]} ${!extracted?'opacity-40':''}`}
-                                title={extracted?`View Stage ${n} analysis`:`Stage ${n} doc — not yet extracted`}>
+                                style={{ display: 'inline-flex', padding: '3px 8px', borderRadius: 6, fontSize: 12, fontWeight: 600, textDecoration: 'none', opacity: extracted ? 1 : 0.4, background: c.bg, color: c.color }}>
                                 S{n}
                               </a>
                             );
                           })}
-                          {!p.has_s1&&!p.has_s2&&!p.has_s3&&<span className="text-xs text-slate-300">—</span>}
+                          {!p.has_s1&&!p.has_s2&&!p.has_s3&&<span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12 }}>—</span>}
                         </div>
                       </td>
-                      <td className="px-5 py-4">
+                      <td style={{ background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                         {tags.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                             {tags.map((t, i) => (
                               <button key={i}
-                                onClick={() => setTagFilters(tagFilters.includes(t.tag)?tagFilters.filter(x=>x!==t.tag):[...tagFilters,t.tag])}
-                                className={`text-xs px-2 py-0.5 rounded-lg font-medium transition-all ${TAG_PILL[t.category]||'bg-gray-50 text-gray-500 ring-1 ring-gray-200'} ${tagFilters.includes(t.tag)?'ring-2 ring-indigo-400 ring-offset-1':'hover:opacity-75'}`}
+                                onClick={() => setTagFilters(tagFilters.includes(t.tag) ? tagFilters.filter(x => x !== t.tag) : [...tagFilters, t.tag])}
+                                style={{
+                                  padding: '3px 8px', borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: 'pointer', border: 'none',
+                                  background: tagFilters.includes(t.tag) ? 'rgba(73,79,223,0.35)' : 'rgba(255,255,255,0.06)',
+                                  color: tagFilters.includes(t.tag) ? '#9da2fb' : 'rgba(255,255,255,0.55)',
+                                  outline: tagFilters.includes(t.tag) ? '1px solid rgba(73,79,223,0.6)' : 'none',
+                                  transition: 'all 0.1s',
+                                }}
                                 title={`${tagFilters.includes(t.tag)?'Remove':'Add'} filter: ${t.tag}`}>
                                 {t.tag}
                               </button>
                             ))}
                           </div>
                         ) : (
-                          <span className="text-xs text-slate-300">{p.s2_extracted?'No tags':'—'}</span>
+                          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>{p.s2_extracted?'No tags':'—'}</span>
                         )}
                       </td>
                     </tr>
@@ -252,6 +294,93 @@ export default function CAStateIntelPage() {
             </table>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Dark-mode SmartMultiSelect wrapper ────────────────────────────────────────
+import { useRef } from 'react';
+import type { FilterOption } from '@/components/castateintel/SmartMultiSelect';
+
+function DarkMultiSelect({ label, options, selected, onChange, placeholder }: {
+  label: string; options: FilterOption[]; selected: string[];
+  onChange: (v: string[]) => void; placeholder: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', h); return () => document.removeEventListener('mousedown', h);
+  }, []);
+
+  const toggle = (v: string) => onChange(selected.includes(v) ? selected.filter(s => s !== v) : [...selected, v]);
+  const filtered = options.filter(o => (o.label||o.value).toLowerCase().includes(search.toLowerCase()));
+  const displayText = selected.length === 0 ? placeholder : selected.length === 1 ? (options.find(o => o.value === selected[0])?.label || selected[0]) : `${selected.length} selected`;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }} ref={ref}>
+      <label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</label>
+      <div style={{ position: 'relative' }}>
+        <button onClick={() => setOpen(o => !o)} style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+          height: 48, padding: '0 16px', borderRadius: 9999, minWidth: 148, cursor: 'pointer',
+          border: selected.length > 0 ? '1px solid rgba(73,79,223,0.6)' : '1px solid rgba(255,255,255,0.12)',
+          background: selected.length > 0 ? 'rgba(73,79,223,0.15)' : 'rgba(255,255,255,0.06)',
+          color: selected.length > 0 ? '#9da2fb' : 'rgba(255,255,255,0.6)',
+          fontSize: 14, fontWeight: selected.length > 0 ? 600 : 400, letterSpacing: '0.24px',
+        }}>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{displayText}</span>
+          <svg style={{ width: 12, height: 12, flexShrink: 0, transition: 'transform 0.15s', transform: open ? 'rotate(180deg)' : 'none' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {open && (
+          <div style={{
+            position: 'absolute', zIndex: 50, top: '100%', marginTop: 8, left: 0,
+            background: '#16181a', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 16,
+            boxShadow: '0 20px 40px rgba(0,0,0,0.6)', minWidth: 240, maxHeight: 280,
+            display: 'flex', flexDirection: 'column', overflow: 'hidden',
+          }}>
+            {options.length > 8 && (
+              <div style={{ padding: 8, borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+                <input autoFocus value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…"
+                  style={{ width: '100%', padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: 13, outline: 'none' }} />
+              </div>
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{filtered.filter(o => o.count > 0 || selected.includes(o.value)).length} available</span>
+              {selected.length > 0 && <button onClick={() => { onChange([]); setSearch(''); }} style={{ background: 'none', border: 'none', color: '#9da2fb', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Clear</button>}
+            </div>
+            <div style={{ overflowY: 'auto' }}>
+              {filtered.map(opt => {
+                const isSel = selected.includes(opt.value);
+                const isUnavail = opt.count === 0 && !isSel;
+                return (
+                  <button key={opt.value} onClick={() => !isUnavail && toggle(opt.value)} disabled={isUnavail}
+                    style={{
+                      width: '100%', textAlign: 'left', padding: '10px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, cursor: isUnavail ? 'not-allowed' : 'pointer', border: 'none',
+                      background: isSel ? 'rgba(73,79,223,0.2)' : 'transparent',
+                      color: isUnavail ? 'rgba(255,255,255,0.2)' : isSel ? '#9da2fb' : 'rgba(255,255,255,0.7)',
+                      fontSize: 14, opacity: isUnavail ? 0.4 : 1,
+                    }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                      <span style={{ width: 16, height: 16, borderRadius: 4, border: isSel ? 'none' : '1px solid rgba(255,255,255,0.2)', background: isSel ? '#494fdf' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 10, color: '#fff' }}>
+                        {isSel ? '✓' : ''}
+                      </span>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{opt.label || opt.value}</span>
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 600, padding: '2px 6px', borderRadius: 6, flexShrink: 0, background: isSel ? 'rgba(73,79,223,0.3)' : 'rgba(255,255,255,0.06)', color: isSel ? '#9da2fb' : 'rgba(255,255,255,0.35)' }}>
+                      {opt.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
