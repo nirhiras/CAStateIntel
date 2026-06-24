@@ -1,9 +1,7 @@
-
-      <RvtNav />"use client";
+"use client";
 // components/castateintel/ProjectSummaryInline.tsx
 // Full project summary — used by stage pages and project/[projectNumber] page
 
-import { useState, useEffect, useCallback } from "react";
 import { useState, useEffect, useCallback } from "react";
 import RvtNav from "@/components/castateintel/RvtNav";
 
