@@ -330,14 +330,14 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
                   </thead>
                   <tbody>
                     {contacts.map((c:Contact,i:number)=>(
-                      <tr key={i} className={`border-b border-gray-50 hover:bg-blue-50/40 transition-colors ${i%2===0?"" style={{background:"#16181a"}}:"bg-gray-50/30"}`}>
-                        <td className="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap">{c.name||"—"}</td>
-                        <td className="px-4 py-3 text-gray-600 text-xs max-w-[220px]">{c.title||"—"}</td>
-                        <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{c.organization||"—"}</td>
+                      <tr key={i} className="border-b transition-colors" style={{borderColor:"rgba(255,255,255,0.05)",background:i%2===0?"transparent":"rgba(255,255,255,0.02)"}}>
+                        <td className="px-4 py-3 font-semibold whitespace-nowrap" style={{color:"rgba(255,255,255,0.9)"}}>{c.name||"—"}</td>
+                        <td className="px-4 py-3 text-xs max-w-[220px]" style={{color:"rgba(255,255,255,0.6)"}}>{c.title||"—"}</td>
+                        <td className="px-4 py-3 text-xs whitespace-nowrap" style={{color:"rgba(255,255,255,0.5)"}}>{c.organization||"—"}</td>
                         <td className="px-4 py-3 text-xs">
-                          {c.email?<a href={`mailto:${c.email}`} className="text-blue-600 hover:underline">{c.email}</a>:<span className="text-gray-300">—</span>}
+                          {c.email?<a href={`mailto:${c.email}`} style={{color:"#9da2fb",textDecoration:"none"}} className="hover:underline">{c.email}</a>:<span style={{color:"rgba(255,255,255,0.2)"}}>—</span>}
                         </td>
-                        <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{c.phone||"—"}</td>
+                        <td className="px-4 py-3 text-xs whitespace-nowrap" style={{color:"rgba(255,255,255,0.5)"}}>{c.phone||"—"}</td>
                         <td className="px-4 py-3">
                           <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${STAGE_COLORS[c.stage]||"bg-gray-100 text-gray-600"}`}>S{c.stage}</span>
                         </td>
