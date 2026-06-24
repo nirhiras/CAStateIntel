@@ -29,7 +29,7 @@ function Tbl({headers,rows}:{headers:string[];rows:(string|React.ReactNode)[][]}
   if(!rows.length)return <p className="text-xs italic" style={{color:"rgba(255,255,255,0.3)"}}>No data</p>;
   return(<div className="overflow-x-auto"><table className="w-full text-xs border-collapse">
     <thead><tr>{headers.map(h=><th key={h} className="text-left px-3 py-2 font-semibold whitespace-nowrap" style={{background:"rgba(255,255,255,0.04)",borderBottom:"1px solid rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.45)"}}>{h}</th>)}</tr></thead>
-    <tbody>{rows.map((row,i)=><tr key={i} style={{background:i%2===0?"transparent":"rgba(255,255,255,0.02)"}}>{row.map((cell,j)=><td key={j} className="px-3 py-2" style={{borderBottom:"1px solid rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.75)"-100 align-top">{cell}</td>)}</tr>)}</tbody>
+    <tbody>{rows.map((row,i)=><tr key={i} style={{background:i%2===0?"transparent":"rgba(255,255,255,0.02)"}}>{row.map((cell,j)=><td key={j} className="px-3 py-2 align-top" style={{borderBottom:"1px solid rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.75)"}}>{cell}</td>)}</tr>)}</tbody>
   </table></div>);
 }
 function PdfBtn({doc,stage,onView}:{doc:StageDoc|null|undefined;stage:number;onView:(url:string,title:string)=>void}){
