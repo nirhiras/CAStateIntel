@@ -56,6 +56,7 @@ export async function POST(req: Request) {
     let autoProject: string | null = null;
     let autoStage = 1;
     let autoLabel = STAGE_LABELS[1];
+    let autoProjectName: string | null = null;
 
     try {
       const pyScript = [
@@ -92,6 +93,7 @@ export async function POST(req: Request) {
       autoProject = parsed.project;
       autoStage = parsed.stage || 1;
       autoLabel = parsed.label || STAGE_LABELS[1];
+      autoProjectName = parsed.project_name || null;
     } catch (e) {
       console.warn('Python extraction failed:', e);
     } finally {
@@ -101,6 +103,8 @@ export async function POST(req: Request) {
     if (!projectNumber && autoProject) projectNumber = autoProject;
     if (!stage) stage = autoStage;
     if (!label) label = STAGE_LABELS[stage] || autoLabel;
+    // Pass extracted name for project name update
+    if (autoProjectName) formData.set('extracted_project_name', autoProjectName);
 
     if (!projectNumber) {
       return NextResponse.json({
