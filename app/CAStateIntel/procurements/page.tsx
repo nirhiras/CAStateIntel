@@ -1,5 +1,6 @@
 'use client';
 
+import RvtNav from "@/components/castateintel/RvtNav";
 import { useState, useEffect } from 'react';
 
 interface Procurement {
@@ -119,6 +120,7 @@ export default function ProcurementsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <RvtNav />
       {/* Header — matches dashboard */}
       <div className="bg-blue-900 text-white px-8 py-6">
         <h1 className="text-2xl font-semibold">CA State IT Project Intelligence</h1>
