@@ -1,5 +1,6 @@
 'use client';
 
+import RvtNav from "@/components/castateintel/RvtNav";
 import { useState, useRef, useCallback } from 'react';
 
 type FileStatus = 'queued' | 'uploading' | 'done' | 'error';
@@ -166,6 +167,7 @@ export default function UploadPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <RvtNav />
       {/* Header */}
       <div className="bg-gray-900 text-white px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -331,16 +333,16 @@ export default function UploadPage() {
 
                     {/* Manual override */}
           showOverride && (
-                    <div style={{ marginTop: 8, padding: '10px 12px', background: '#F8F7F5', borderRadius: 8, border: '1px solid #E5E3DF' }}>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: '#6B6861', marginBottom: 6 }}>Manual Override</div>
+                    <div style={{ marginTop: 8, padding: '10px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>Manual Override</div>
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                         <input type="text" placeholder="Project # (e.g. 4265-081)"
                           value={uf.manualProject || ''}
                           onChange={e => update(uf.id, { manualProject: e.target.value })}
-                          style={{ border: '1px solid #E5E3DF', borderRadius: 6, padding: '4px 8px', fontSize: 12, width: 160 }} />
+                          style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, padding: '4px 8px', fontSize: 12, width: 160 }} />
                         <select value={uf.manualStage || ''}
                           onChange={e => update(uf.id, { manualStage: parseInt(e.target.value) || undefined })}
-                          style={{ border: '1px solid #E5E3DF', borderRadius: 6, padding: '4px 8px', fontSize: 12 }}>
+                          style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, padding: '4px 8px', fontSize: 12 }}>
                           <option value="">Auto-detect stage</option>
                           <option value="1">Stage 1 — Business Analysis</option>
                           <option value="2">Stage 2 — Alternative Analysis</option>
@@ -350,7 +352,7 @@ export default function UploadPage() {
                         </select>
                         <select value={uf.manualSubLabel || ''}
                           onChange={e => update(uf.id, { manualSubLabel: e.target.value || undefined })}
-                          style={{ border: '1px solid #E5E3DF', borderRadius: 6, padding: '4px 8px', fontSize: 12 }}
+                          style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, padding: '4px 8px', fontSize: 12 }}
                           title="Use A or B if this is one of multiple docs for the same stage">
                           <option value="">No sub-label (single doc)</option>
                           <option value="A">Part A</option>
