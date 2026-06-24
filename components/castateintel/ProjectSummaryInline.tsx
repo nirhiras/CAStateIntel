@@ -171,7 +171,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
         </div>
       </div>
 
-      <div className="max-w-screen-xl mx-auto px-6 py-6">
+      <div className="max-w-screen-xl mx-auto px-10 py-10">
         {loading&&<div className="flex items-center justify-center h-64 text-gray-400">Loading...</div>}
         {!loading&&!data&&projectNumber&&<Card><p className="text-gray-400">No analysis data found for this project.</p></Card>}
         {!loading&&!projectNumber&&<Card className="text-center py-12"><p className="text-gray-400 text-lg">Select a project from the dropdown above</p></Card>}
