@@ -32,14 +32,24 @@ export async function GET(request: Request) {
         c.role_type,
         -- Use AI-extracted date first, fall back to document downloaded_at
         COALESCE(
-          CASE WHEN c.doc_created_date IS NOT NULL AND c.doc_created_date::text NOT IN ('', 'null') 
+          -- 1st: AI-extracted date from contact record
+          CASE WHEN c.doc_created_date IS NOT NULL AND c.doc_created_date::text NOT IN ('', 'null')
                THEN c.doc_created_date::text ELSE NULL END,
+          -- 2nd: Form Received Date from stage analysis dot_dates JSONB
+          CASE WHEN c.stage = 1 THEN s1.dot_dates->>'form_received_date'
+               WHEN c.stage = 2 THEN s2.dot_dates->>'form_received_date'
+               WHEN c.stage = 3 THEN s3.dot_dates->>'form_received_date'
+               ELSE NULL END,
+          -- 3rd: document downloaded_at fallback
           TO_CHAR(d.downloaded_at, 'YYYY-MM-DD')
         ) AS doc_created_date
       FROM castateintel.pal_contacts c
       JOIN castateintel.pal_projects p ON c.project_id = p.id
       LEFT JOIN castateintel.pal_documents d
         ON d.project_id = p.id AND d.stage = c.stage AND d.document_id = c.document_id::uuid
+      LEFT JOIN castateintel.pal_stage1_analysis s1 ON s1.project_id = c.project_id AND c.stage = 1
+      LEFT JOIN castateintel.pal_stage2_analysis s2 ON s2.project_id = c.project_id AND c.stage = 2
+      LEFT JOIN castateintel.pal_stage3_analysis s3 ON s3.project_id = c.project_id AND c.stage = 3
       WHERE c.name IS NOT NULL AND c.name != ''
     `;
     const params: (string | number)[] = [];
