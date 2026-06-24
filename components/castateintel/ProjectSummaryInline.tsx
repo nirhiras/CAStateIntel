@@ -1,8 +1,10 @@
-"use client";
+
+      <RvtNav />"use client";
 // components/castateintel/ProjectSummaryInline.tsx
 // Full project summary — used by stage pages and project/[projectNumber] page
 
 import { useState, useEffect, useCallback } from "react";
+import RvtNav from "@/components/castateintel/RvtNav";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Contact { name:string;title:string;email:string;phone:string;organization:string;role_type:string;stage:number;source:string; }
@@ -15,20 +17,20 @@ interface DotDate { label:string;date:string; }
 const fmt = (d?:string|null) => { if(!d||d==="null")return null; try{return new Date(d).toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"});}catch{return d;} };
 const TAG_COLORS:Record<string,string> = { vendor:"bg-blue-100 text-blue-800",technology:"bg-purple-100 text-purple-800",approach:"bg-green-100 text-green-800",deployment:"bg-orange-100 text-orange-800" };
 const RISK_COLORS:Record<string,string> = { High:"bg-red-100 text-red-800",Medium:"bg-yellow-100 text-yellow-800",Low:"bg-green-100 text-green-800" };
-const STAGE_COLORS:Record<number,string> = { 1:"bg-green-100 text-green-700 border-green-300",2:"bg-indigo-100 text-indigo-700 border-indigo-300",3:"bg-violet-100 text-violet-700 border-violet-300",4:"bg-amber-100 text-amber-700 border-amber-300" };
+const STAGE_COLORS:Record<number,string> = { 1:"" style={{background:"rgba(0,168,126,0.15)",color:"#3dd6a8"}} border-green-300",2:"bg-indigo-100 text-indigo-700 border-indigo-300",3:"bg-violet-100 text-violet-700 border-violet-300",4:"bg-amber-100 text-amber-700 border-amber-300" };
 const STAGE_ABBREV:Record<number,string> = { 1:"S1BA",2:"S2AA",3:"S3SA",4:"S4PRA" };
-const CRIT_COLORS:Record<string,string> = { High:"bg-red-100 text-red-700",Medium:"bg-yellow-100 text-yellow-700",Low:"bg-gray-100 text-gray-600" };
+const CRIT_COLORS:Record<string,string> = { High:"" style={{background:"rgba(226,59,74,0.15)",color:"#f87171"}}",Medium:"" style={{background:"rgba(176,144,0,0.15)",color:"#e8c840"}}",Low:"bg-gray-100 text-gray-600" };
 
 function Badge({label,color="bg-gray-100 text-gray-600"}:{label:string;color?:string}){return <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${color}`}>{label}</span>;}
-function YN({v}:{v:string}){const lv=(v||"").toLowerCase();return <Badge label={v||"—"} color={lv==="yes"?"bg-green-100 text-green-800":lv==="no"?"bg-red-100 text-red-700":"bg-gray-100 text-gray-500"}/>;}
+function YN({v}:{v:string}){const lv=(v||"").toLowerCase();return <Badge label={v||"—"} color={lv==="yes"?"bg-green-100 text-green-800":lv==="no"?"" style={{background:"rgba(226,59,74,0.15)",color:"#f87171"}}":"bg-gray-100 text-gray-500"}/>;}
 function KV({label,value,accent=false}:{label:string;value?:string|null;accent?:boolean}){return(<div className="flex flex-col"><span className="text-xs text-gray-400 font-medium">{label}</span><span className={`text-sm mt-0.5 ${accent?"font-bold text-blue-900":"text-gray-800"} ${!value?"text-gray-300 font-normal text-xs":""}`}>{value||"—"}</span></div>);}
 function SHead({title}:{title:string}){return <div className="flex items-center gap-2 mb-4"><div className="w-1 h-5 rounded bg-blue-500"/><h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide">{title}</h3></div>;}
 function Card({children,className=""}:{children:React.ReactNode;className?:string}){return <div className={`bg-white rounded-xl border border-gray-200 p-5 ${className}`}>{children}</div>;}
 function Tbl({headers,rows}:{headers:string[];rows:(string|React.ReactNode)[][]}){
-  if(!rows.length)return <p className="text-xs text-gray-400 italic">No data</p>;
+  if(!rows.length)return <p className="text-xs italic" style={{color:"rgba(255,255,255,0.3)"}}>No data</p>;
   return(<div className="overflow-x-auto"><table className="w-full text-xs border-collapse">
-    <thead><tr>{headers.map(h=><th key={h} className="text-left px-3 py-2 bg-gray-50 border-b border-gray-200 font-semibold text-gray-600 whitespace-nowrap">{h}</th>)}</tr></thead>
-    <tbody>{rows.map((row,i)=><tr key={i} className={i%2===0?"bg-white":"bg-gray-50/40"}>{row.map((cell,j)=><td key={j} className="px-3 py-2 border-b border-gray-100 align-top">{cell}</td>)}</tr>)}</tbody>
+    <thead><tr>{headers.map(h=><th key={h} className="text-left px-3 py-2 font-semibold whitespace-nowrap" style={{background:"rgba(255,255,255,0.04)",borderBottom:"1px solid rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.45)"}}>{h}</th>)}</tr></thead>
+    <tbody>{rows.map((row,i)=><tr key={i} style={{background:i%2===0?"transparent":"rgba(255,255,255,0.02)"}}>{row.map((cell,j)=><td key={j} className="px-3 py-2" style={{borderBottom:"1px solid rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.75)"-100 align-top">{cell}</td>)}</tr>)}</tbody>
   </table></div>);
 }
 function PdfBtn({doc,stage,onView}:{doc:StageDoc|null|undefined;stage:number;onView:(url:string,title:string)=>void}){
@@ -115,7 +117,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
   return(
     <div className="min-h-screen bg-gray-50">
       {/* PDF Modal */}
-      {pdfModal&&(<div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"><div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col"><div className="flex items-center justify-between px-4 py-3 border-b"><span className="text-sm font-semibold">{pdfModal.title}</span><button onClick={()=>setPdfModal(null)} className="text-xl text-gray-400 hover:text-gray-700 px-2">✕</button></div><iframe src={pdfModal.url} className="flex-1 w-full"/></div></div>)}
+      {pdfModal&&(<div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"><div className="rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col"><div className="flex items-center justify-between px-4 py-3 border-b"><span className="text-sm font-semibold">{pdfModal.title}</span><button onClick={()=>setPdfModal(null)} className="text-xl text-gray-400 hover:text-gray-700 px-2">✕</button></div><iframe src={pdfModal.url} className="flex-1 w-full"/></div></div>)}
 
       {/* Header */}
       <div className="bg-blue-900 text-white px-6 py-4 sticky top-0 z-20">
@@ -156,14 +158,14 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
       </div>
 
       {/* Tab bar */}
-      <div className="bg-white border-b border-gray-200 sticky top-[108px] z-10">
+      <div className="border-b" style={{background:"#16181a"}} border-gray-200 sticky top-[108px] z-10">
         <div className="flex overflow-x-auto">
           {TABS.map(t=>{
             const count=t.id==="contacts"?contacts.length:t.id==="procurements"?ancillary.length:0;
             return(<button key={t.id} onClick={()=>setTab(t.id)}
               className={`px-4 py-3 text-xs font-medium whitespace-nowrap border-b-2 transition-colors
-                ${tab===t.id?"border-blue-600 text-blue-700":"border-transparent text-gray-500 hover:text-gray-700"}`}>
-              {t.label}{count>0&&<span className="ml-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">{count}</span>}
+                ${tab===t.id?"border-blue-600 " style={{color:"#8b90f8"}}":"border-transparent" style={{color:"rgba(255,255,255,0.45)"}}"}`}>
+              {t.label}{count>0&&<span className="ml-1 text-xs bg-blue-100 " style={{color:"#8b90f8"}} px-1.5 py-0.5 rounded-full">{count}</span>}
             </button>);
           })}
         </div>
@@ -289,7 +291,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
               {s4.risk_register?.length>0&&<Card><SHead title="Risk Register"/><Tbl headers={["Risk","Probability","Impact","Mitigation"]} rows={s4.risk_register.map((r:any)=>[r.risk,<Badge key={r.risk_id} label={r.probability||"—"} color={RISK_COLORS[r.probability]||"bg-gray-100 text-gray-600"}/>,<Badge key={r.risk_id+"i"} label={r.impact||"—"} color={RISK_COLORS[r.impact]||"bg-gray-100 text-gray-600"}/>,r.mitigation])}/></Card>}
               <div className="grid grid-cols-2 gap-5">
                 <Card><SHead title="Project Readiness"/><div className="space-y-2"><KV label="Methodology" value={s4.project_readiness?.methodology}/><KV label="OTech Engaged" value={s4.project_readiness?.otech_engaged}/>{s4.project_readiness?.methodology_description&&<p className="text-xs text-gray-600 mt-2">{s4.project_readiness.methodology_description}</p>}</div></Card>
-                <Card><SHead title="CDT Use Only"/>{s4.dot_dates?.length>0&&<div className="space-y-1 mb-3">{s4.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>}{s4.dot_raw&&<div className="space-y-1">{s4.dot_raw.form_status&&<div className="flex justify-between text-xs"><span className="text-gray-500">Form Status</span><Badge label={s4.dot_raw.form_status} color="bg-blue-50 text-blue-700"/></div>}{s4.dot_raw.form_disposition&&<div className="flex justify-between text-xs"><span className="text-gray-500">Disposition</span><Badge label={s4.dot_raw.form_disposition} color="bg-green-50 text-green-700"/></div>}</div>}</Card>
+                <Card><SHead title="CDT Use Only"/>{s4.dot_dates?.length>0&&<div className="space-y-1 mb-3">{s4.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>}{s4.dot_raw&&<div className="space-y-1">{s4.dot_raw.form_status&&<div className="flex justify-between text-xs"><span className="text-gray-500">Form Status</span><Badge label={s4.dot_raw.form_status} color="bg-blue-50 " style={{color:"#8b90f8"}}"/></div>}{s4.dot_raw.form_disposition&&<div className="flex justify-between text-xs"><span className="text-gray-500">Disposition</span><Badge label={s4.dot_raw.form_disposition} color="bg-green-50 text-green-700"/></div>}</div>}</Card>
               </div>
             </>)}
           </div>)}
@@ -328,7 +330,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
                   </thead>
                   <tbody>
                     {contacts.map((c:Contact,i:number)=>(
-                      <tr key={i} className={`border-b border-gray-50 hover:bg-blue-50/40 transition-colors ${i%2===0?"bg-white":"bg-gray-50/30"}`}>
+                      <tr key={i} className={`border-b border-gray-50 hover:bg-blue-50/40 transition-colors ${i%2===0?"" style={{background:"#16181a"}}:"bg-gray-50/30"}`}>
                         <td className="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap">{c.name||"—"}</td>
                         <td className="px-4 py-3 text-gray-600 text-xs max-w-[220px]">{c.title||"—"}</td>
                         <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{c.organization||"—"}</td>
