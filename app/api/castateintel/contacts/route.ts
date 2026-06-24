@@ -32,14 +32,21 @@ export async function GET(request: Request) {
         c.role_type,
         -- Use AI-extracted date first, fall back to document downloaded_at
         COALESCE(
-          -- 1st: AI-extracted date from contact record
+          -- 1st: Form Received Date from stage analysis dot_dates array
+          -- dot_dates is [{label, date}] — find element where label contains "received"
+          CASE WHEN c.stage = 1 THEN (
+            SELECT elem->>'date' FROM jsonb_array_elements(COALESCE(s1.dot_dates,'[]'::jsonb)) AS elem
+            WHERE lower(elem->>'label') LIKE '%received%' LIMIT 1)
+          WHEN c.stage = 2 THEN (
+            SELECT elem->>'date' FROM jsonb_array_elements(COALESCE(s2.dot_dates,'[]'::jsonb)) AS elem
+            WHERE lower(elem->>'label') LIKE '%received%' LIMIT 1)
+          WHEN c.stage = 3 THEN (
+            SELECT elem->>'date' FROM jsonb_array_elements(COALESCE(s3.dot_dates,'[]'::jsonb)) AS elem
+            WHERE lower(elem->>'label') LIKE '%received%' LIMIT 1)
+          ELSE NULL END,
+          -- 2nd: AI-extracted date from contact record
           CASE WHEN c.doc_created_date IS NOT NULL AND c.doc_created_date::text NOT IN ('', 'null')
                THEN c.doc_created_date::text ELSE NULL END,
-          -- 2nd: Form Received Date from stage analysis dot_dates JSONB
-          CASE WHEN c.stage = 1 THEN s1.dot_dates->>'form_received_date'
-               WHEN c.stage = 2 THEN s2.dot_dates->>'form_received_date'
-               WHEN c.stage = 3 THEN s3.dot_dates->>'form_received_date'
-               ELSE NULL END,
           -- 3rd: document downloaded_at fallback
           TO_CHAR(d.downloaded_at, 'YYYY-MM-DD')
         ) AS doc_created_date
