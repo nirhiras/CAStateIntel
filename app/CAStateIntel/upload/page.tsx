@@ -362,7 +362,6 @@ export default function UploadPage() {
                       </div>
                     </div>
                   )}
-                    )}
                   </div>
 
                   {/* Delete button */}
