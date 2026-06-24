@@ -2,36 +2,34 @@
 
 import { useEffect, useState, useCallback } from 'react';
 
-type Document = {
+type Doc = {
   id: number;
-  project_id: number;
+  document_id: string;
   project_number: string;
   project_name: string;
   stage: number;
   label: string;
-  document_id: string;
-  download_url: string;
   file_size_kb: number | null;
   downloaded_at: string | null;
   content_text: string | null;
 };
 
-type Project = {
+type ProjectGroup = {
   project_number: string;
-  name: string;
-  pal_stage: string;
-  department_name: string;
-  agency_name: string;
-  documents: Document[];
+  project_name: string;
+  docs: Doc[];
 };
 
-const STAGE_DOT: Record<number, string> = { 3: '#C2410C', 2: '#15803D', 1: '#1D4ED8' };
-const STAGE_BG: Record<number, string> = { 3: '#FFF7ED', 2: '#F0FDF4', 1: '#EFF6FF' };
+const STAGE_COLOR: Record<number, { dot: string; bg: string; text: string }> = {
+  1: { dot: '#1D4ED8', bg: '#EFF6FF', text: '#1D4ED8' },
+  2: { dot: '#15803D', bg: '#F0FDF4', text: '#15803D' },
+  3: { dot: '#C2410C', bg: '#FFF7ED', text: '#C2410C' },
+};
 
 export default function DocumentsPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
+  const [groups, setGroups] = useState<ProjectGroup[]>([]);
+  const [selectedProject, setSelectedProject] = useState<ProjectGroup | null>(null);
+  const [selectedDoc, setSelectedDoc] = useState<Doc | null>(null);
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState('');
   const [pdfOpen, setPdfOpen] = useState(false);
@@ -39,22 +37,30 @@ export default function DocumentsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/castateintel/projects')
+    // Fetch ALL documents in one call, group by project
+    fetch('/api/castateintel/documents')
       .then(r => r.json())
-      .then(async (list) => {
-        const full: Project[] = await Promise.all(
-          list.map((p: { project_number: string }) =>
-            fetch(`/api/castateintel/projects?project=${p.project_number}`).then(r => r.json())
-          )
-        );
-        setProjects(full);
+      .then((docs: Doc[]) => {
+        const map = new Map<string, ProjectGroup>();
+        docs.forEach(doc => {
+          if (!map.has(doc.project_number)) {
+            map.set(doc.project_number, {
+              project_number: doc.project_number,
+              project_name: doc.project_name,
+              docs: [],
+            });
+          }
+          map.get(doc.project_number)!.docs.push(doc);
+        });
+        setGroups(Array.from(map.values()));
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, []);
 
-  const filtered = projects.filter(p => {
-    const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.project_number.includes(search);
-    const matchStage = !stageFilter || p.pal_stage === stageFilter;
+  const filtered = groups.filter(g => {
+    const matchSearch = !search || g.project_name.toLowerCase().includes(search.toLowerCase()) || g.project_number.includes(search);
+    const matchStage = !stageFilter || g.docs.some(d => d.stage === parseInt(stageFilter.slice(-1)));
     return matchSearch && matchStage;
   });
 
@@ -84,6 +90,7 @@ export default function DocumentsPage() {
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: "'Inter', -apple-system, sans-serif", background: '#F8F7F5', color: '#1A1A1A' }}>
+      {/* LEFT PANEL — project list */}
       <div style={{ width: 300, flexShrink: 0, borderRight: '1px solid #E5E3DF', background: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '20px 16px 12px', borderBottom: '1px solid #E5E3DF' }}>
           <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: '#6B6861', textTransform: 'uppercase', marginBottom: 12 }}>PAL Documents</div>
@@ -99,22 +106,32 @@ export default function DocumentsPage() {
           </div>
         </div>
         <div style={{ overflowY: 'auto', flex: 1 }}>
-          {loading ? <div style={{ padding: 24, color: '#9B9589', fontSize: 13, textAlign: 'center' }}>Loading...</div>
-            : filtered.map(p => (
-            <div key={p.project_number} onClick={() => { setSelectedProject(p); setSelectedDoc(p.documents?.[0] ?? null); setPdfOpen(false); }}
-              style={{ padding: '12px 16px', cursor: 'pointer', borderBottom: '1px solid #F0EFED', background: selectedProject?.project_number === p.project_number ? '#F0EFED' : 'transparent' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', color: '#9B9589' }}>{p.project_number}</span>
-                <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 20, background: STAGE_BG[parseInt(p.pal_stage?.slice(-1))] ?? '#f5f5f5',
-                  color: STAGE_DOT[parseInt(p.pal_stage?.slice(-1))] ?? '#333', fontWeight: 600 }}>{p.pal_stage}</span>
+          {loading
+            ? <div style={{ padding: 24, color: '#9B9589', fontSize: 13, textAlign: 'center' }}>Loading...</div>
+            : filtered.length === 0
+              ? <div style={{ padding: 24, color: '#9B9589', fontSize: 13, textAlign: 'center' }}>No projects found</div>
+              : filtered.map(g => (
+            <div key={g.project_number}
+              onClick={() => { setSelectedProject(g); setSelectedDoc(g.docs[0] ?? null); setPdfOpen(false); }}
+              style={{ padding: '12px 16px', cursor: 'pointer', borderBottom: '1px solid #F0EFED',
+                background: selectedProject?.project_number === g.project_number ? '#F0EFED' : 'transparent' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', color: '#9B9589' }}>{g.project_number}</span>
+                {g.docs.map(d => (
+                  <span key={d.stage} style={{ fontSize: 9, padding: '1px 6px', borderRadius: 20,
+                    background: STAGE_COLOR[d.stage]?.bg ?? '#f5f5f5', color: STAGE_COLOR[d.stage]?.text ?? '#333', fontWeight: 600 }}>
+                    S{d.stage}
+                  </span>
+                ))}
               </div>
-              <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.35 }}>{p.name}</div>
-              <div style={{ fontSize: 11, color: '#9B9589', marginTop: 3 }}>{p.documents?.length ?? 0} doc{(p.documents?.length ?? 0) !== 1 ? 's' : ''}</div>
+              <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.35 }}>{g.project_name}</div>
+              <div style={{ fontSize: 11, color: '#9B9589', marginTop: 3 }}>{g.docs.length} doc{g.docs.length !== 1 ? 's' : ''}</div>
             </div>
           ))}
         </div>
       </div>
 
+      {/* RIGHT PANEL */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         {!selectedProject ? (
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#9B9589' }}>
@@ -126,26 +143,29 @@ export default function DocumentsPage() {
           <>
             <div style={{ padding: '16px 24px', borderBottom: '1px solid #E5E3DF', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontSize: 11, color: '#9B9589', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>
-                  {selectedProject.agency_name} · {selectedProject.department_name}
-                </div>
-                <div style={{ fontSize: 18, fontWeight: 600 }}>{selectedProject.name}</div>
+                <div style={{ fontSize: 18, fontWeight: 600 }}>{selectedProject.project_name}</div>
                 <div style={{ fontSize: 12, color: '#9B9589', marginTop: 2 }}>{selectedProject.project_number}</div>
               </div>
               <a href="/CAStateIntel/upload" style={{ fontSize: 13, padding: '8px 16px', background: '#F0EFED', borderRadius: 8, textDecoration: 'none', color: '#1A1A1A', fontWeight: 500 }}>+ Upload PDF</a>
             </div>
+
+            {/* Doc tabs */}
             <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid #E5E3DF', background: '#fff', padding: '0 24px' }}>
-              {selectedProject.documents?.map(doc => (
+              {selectedProject.docs.map(doc => (
                 <button key={doc.id} onClick={() => { setSelectedDoc(doc); setPdfOpen(false); }}
-                  style={{ padding: '10px 16px', fontSize: 13, border: 'none', borderBottom: selectedDoc?.id === doc.id ? '2px solid #1A1A1A' : '2px solid transparent',
-                    background: 'transparent', cursor: 'pointer', fontWeight: selectedDoc?.id === doc.id ? 600 : 400,
-                    color: selectedDoc?.id === doc.id ? '#1A1A1A' : '#6B6861', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: STAGE_DOT[doc.stage] ?? '#ccc', display: 'inline-block' }} />
+                  style={{ padding: '10px 16px', fontSize: 13, border: 'none',
+                    borderBottom: selectedDoc?.id === doc.id ? '2px solid #1A1A1A' : '2px solid transparent',
+                    background: 'transparent', cursor: 'pointer',
+                    fontWeight: selectedDoc?.id === doc.id ? 600 : 400,
+                    color: selectedDoc?.id === doc.id ? '#1A1A1A' : '#6B6861',
+                    display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: STAGE_COLOR[doc.stage]?.dot ?? '#ccc', display: 'inline-block' }} />
                   {doc.label}
                   {doc.file_size_kb && <span style={{ fontSize: 10, color: '#B0AC9F' }}>({doc.file_size_kb}KB)</span>}
                 </button>
               ))}
             </div>
+
             {selectedDoc && (
               <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
                 <div style={{ flex: 1, overflow: 'auto', padding: 24, minWidth: 0 }}>
@@ -164,6 +184,7 @@ export default function DocumentsPage() {
                       ↓ Download
                     </a>
                   </div>
+
                   {textSearch && selectedDoc.content_text && (() => {
                     const snippets = getSnippets(selectedDoc.content_text, textSearch);
                     return snippets && snippets.length > 0 ? (
@@ -184,6 +205,7 @@ export default function DocumentsPage() {
                       </div>
                     );
                   })()}
+
                   {selectedDoc.content_text ? (
                     <div style={{ background: '#fff', border: '1px solid #E5E3DF', borderRadius: 12, padding: 24 }}>
                       <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#9B9589', marginBottom: 16 }}>
@@ -200,6 +222,7 @@ export default function DocumentsPage() {
                     </div>
                   )}
                 </div>
+
                 {pdfOpen && (
                   <div style={{ width: 520, flexShrink: 0, borderLeft: '1px solid #E5E3DF', display: 'flex', flexDirection: 'column', background: '#2D2D2D' }}>
                     <div style={{ padding: '12px 16px', borderBottom: '1px solid #3D3D3D', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
