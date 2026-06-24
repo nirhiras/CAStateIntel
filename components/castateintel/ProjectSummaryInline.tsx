@@ -178,8 +178,8 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
 
         {!loading&&data&&(<>
           {/* ── OVERVIEW ── */}
-          {tab==="overview"&&(<div className="space-y-5">
-            <div className="grid grid-cols-4 gap-4">
+          {tab==="overview"&&(<div className="space-y-7">
+            <div className="grid grid-cols-4 gap-6">
               {[{label:"Total Project Value",value:totalVal,accent:true},{label:"One Time Cost",value:oneTime},{label:"Continuing Cost",value:ongoing},{label:"Project Duration",value:duration}].map(c=>(
                 <Card key={c.label} className="flex flex-col"><span className="text-xs text-gray-400 font-medium mb-1">{c.label}</span><span className={`text-lg font-bold ${c.accent?"text-blue-900":"text-gray-800"} ${c.value==="—"?"text-gray-300 font-normal text-sm":""}`}>{c.value}</span></Card>
               ))}
@@ -226,7 +226,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
           </div>)}
 
           {/* ── STAGE 1 ── */}
-          {tab==="s1"&&(<div className="space-y-5">
+          {tab==="s1"&&(<div className="space-y-7">
             <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 1 — Business Analysis" color="bg-green-100 text-green-800"/>{s1?.doc_created_date&&<span className="text-xs text-gray-400">Created {fmt(s1.doc_created_date)}</span>}</div><PdfBtn doc={s1?.document} stage={1} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
             {!s1?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
               <div className="grid grid-cols-2 gap-6"><Card><SHead title="General Summary"/><p className="text-sm text-gray-700 leading-relaxed">{s1.general_info_summary||"—"}</p></Card><Card><SHead title="Business Program"/><p className="text-sm text-gray-700 leading-relaxed">{s1.business_program_summary||"—"}</p></Card></div>
@@ -241,7 +241,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
           </div>)}
 
           {/* ── STAGE 2 ── */}
-          {tab==="s2"&&(<div className="space-y-5">
+          {tab==="s2"&&(<div className="space-y-7">
             <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 2 — Alternative Analysis" color="bg-indigo-100 text-indigo-800"/>{s2?.doc_created_date&&<span className="text-xs text-gray-400">Created {fmt(s2.doc_created_date)}</span>}</div><PdfBtn doc={s2?.document} stage={2} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
             {!s2?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
               <div className="grid grid-cols-2 gap-6"><Card><SHead title="Baseline / Current State"/><p className="text-sm text-gray-700 leading-relaxed">{s2.baseline_summary||"—"}</p></Card><Card><SHead title="Requirements"/><p className="text-sm text-gray-700 leading-relaxed">{s2.requirements_summary||"—"}</p></Card></div>
@@ -261,7 +261,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
           </div>)}
 
           {/* ── STAGE 3 ── */}
-          {tab==="s3"&&(<div className="space-y-5">
+          {tab==="s3"&&(<div className="space-y-7">
             <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 3 — Solution Analysis" color="bg-violet-100 text-violet-800"/>{s3?.doc_created_date&&<span className="text-xs text-gray-400">Created {fmt(s3.doc_created_date)}</span>}</div><PdfBtn doc={s3?.document} stage={3} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
             {!s3?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
               <Card><SHead title="Solution Requirements"/><p className="text-sm text-gray-700 leading-relaxed">{s3.solution_requirements_summary||"—"}</p></Card>
@@ -275,7 +275,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
           </div>)}
 
           {/* ── STAGE 4 ── */}
-          {tab==="s4"&&(<div className="space-y-5">
+          {tab==="s4"&&(<div className="space-y-7">
             <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 4 — Project Readiness" color="bg-amber-100 text-amber-800"/>{s4?.doc_created_date&&<span className="text-xs text-gray-400">Created {fmt(s4.doc_created_date)}</span>}</div><PdfBtn doc={s4?.document} stage={4} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
             {!s4?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
               <div className="grid grid-cols-3 gap-6"><Card><KV label="Selected Vendor" value={s4.solicitation_results?.selected_vendor} accent/></Card><Card><KV label="Total Contract Cost" value={s4.solicitation_results?.total_contract_cost} accent/></Card><Card><KV label="Contract Period" value={`${fmt(s4.solicitation_results?.contract_start_date)||"—"} → ${fmt(s4.solicitation_results?.contract_end_date)||"—"}`}/></Card></div>
@@ -297,7 +297,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
           </div>)}
 
           {/* ── PROCUREMENTS ── */}
-          {tab==="procurements"&&(<div className="space-y-5">
+          {tab==="procurements"&&(<div className="space-y-7">
             {!s3?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
               {s3.primary_solicitation_raw&&<Card><SHead title="Primary Solicitation"/><div className="grid grid-cols-3 gap-6">{Object.entries(s3.primary_solicitation_raw).filter(([,v])=>v&&v!=="null").map(([k,v])=><KV key={k} label={k.replace(/_/g," ").replace(/\b\w/g,(l:string)=>l.toUpperCase())} value={String(v)}/>)}</div></Card>}
               {ancillary.length===0?<Card><p className="text-gray-400">No ancillary procurements.</p></Card>
