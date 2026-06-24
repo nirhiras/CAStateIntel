@@ -102,7 +102,7 @@ export default function CAStateIntelPage() {
               }}>
                 PAL Project<br />Tracking
               </h1>
-              <p style={{ fontSize: 18, fontWeight: 400, lineHeight: 1.56, letterSpacing: '-0.09px', color: 'var(--vg-body)', maxWidth: 480 }}>
+              <p style={{ fontSize: 18, fontWeight: 400, lineHeight: 1.56, letterSpacing: '-0.09px', color: 'var(--vg-ink)', maxWidth: 480 }}>
                 Project Approval Lifecycle — IT project proposals &amp; analysis across California state agencies.
               </p>
             </div>
@@ -122,7 +122,7 @@ export default function CAStateIntelPage() {
                     padding: '20px 24px', minWidth: 110, textAlign: 'center',
                   }}>
                     <div style={{ fontSize: 32, fontWeight: 500, lineHeight: 1.0, letterSpacing: '-0.32px', color: 'var(--vg-ink-strong)' }}>{s.v}</div>
-                    <div style={{ fontSize: 13, color: 'var(--vg-mute)', marginTop: 4 }}>{s.l}</div>
+                    <div style={{ fontSize: 13, color: 'var(--vg-ink)', marginTop: 4 }}>{s.l}</div>
                     {s.sub && <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--vg-primary)', marginTop: 2 }}>{s.sub}</div>}
                   </div>
                 ))}
@@ -138,9 +138,9 @@ export default function CAStateIntelPage() {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end' }}>
             {/* Search */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--vg-mute)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Search</label>
+              <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--vg-ink)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Search</label>
               <div style={{ position: 'relative' }}>
-                <svg style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'rgba(255,255,255,0.3)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'var(--vg-mute)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input type="text" placeholder="Project name or number…" value={search} onChange={e => setSearch(e.target.value)}
@@ -169,7 +169,7 @@ export default function CAStateIntelPage() {
                   ✕ Clear
                 </button>
               )}
-              <span style={{ fontSize: 14, color: 'var(--vg-mute)', fontWeight: 400 }}>
+              <span style={{ fontSize: 14, color: 'var(--vg-ink)', fontWeight: 400 }}>
                 <span style={{ color: 'var(--vg-ink-strong)', fontWeight: 600 }}>{filtered.length}</span> projects
               </span>
             </div>
@@ -180,7 +180,7 @@ export default function CAStateIntelPage() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
               {search && (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 9999, background: 'var(--vg-hairline)', color: 'var(--vg-ink)', fontSize: 13 }}>
-                  "{search}" <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: 'var(--vg-mute)', cursor: 'pointer', fontSize: 12 }}>✕</button>
+                  "{search}" <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: 'var(--vg-ink)', cursor: 'pointer', fontSize: 12 }}>✕</button>
                 </span>
               )}
               {stageFilters.map(s => (
@@ -226,19 +226,19 @@ export default function CAStateIntelPage() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={8} style={{ color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: 48, background: 'transparent' }}>Loading projects…</td></tr>
+                  <tr><td colSpan={8} style={{ color: 'var(--vg-mute)', textAlign: 'center', padding: 48, background: 'transparent' }}>Loading projects…</td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={8} style={{ color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: 48, background: 'transparent' }}>No projects match the selected filters</td></tr>
+                  <tr><td colSpan={8} style={{ color: 'var(--vg-mute)', textAlign: 'center', padding: 48, background: 'transparent' }}>No projects match the selected filters</td></tr>
                 ) : filtered.map(p => {
                   const tags = p.solution_tags || [];
                   const effStage = p.effective_stage || p.pal_stage;
-                  const stagePill = STAGE_PILL_STYLE[effStage] || { bg: 'var(--vg-hairline)', color: 'var(--vg-mute)' };
+                  const stagePill = STAGE_PILL_STYLE[effStage] || { bg: 'var(--vg-hairline)', color: 'var(--vg-ink)' };
                   const critPill = CRIT_STYLE[p.criticality_rating] || null;
                   return (
                     <tr key={p.id} style={{ cursor: 'default' }}
                       onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'}
                       onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
-                      <td style={{ color: 'var(--vg-mute)', fontFamily: 'monospace', fontSize: 12, background: 'transparent', borderBottom: '1px solid rgba(61,58,57,0.4)', whiteSpace: 'nowrap' }}>{p.project_number}</td>
+                      <td style={{ color: 'var(--vg-ink)', fontFamily: 'monospace', fontSize: 12, background: 'transparent', borderBottom: '1px solid rgba(61,58,57,0.4)', whiteSpace: 'nowrap' }}>{p.project_number}</td>
                       <td style={{ fontWeight: 500, color: 'var(--vg-ink-strong)', width: 300, background: 'transparent', borderBottom: '1px solid rgba(61,58,57,0.4)' }}>
                         <span style={{ fontSize: 14, lineHeight: 1.4 }}>{p.name}</span>
                       </td>
@@ -254,7 +254,7 @@ export default function CAStateIntelPage() {
                           </span>
                         )}
                       </td>
-                      <td style={{ fontSize: 13, color: 'var(--vg-mute)', width: 180, background: 'transparent', borderBottom: '1px solid rgba(61,58,57,0.4)' }}>{p.department_name}</td>
+                      <td style={{ fontSize: 13, color: 'var(--vg-ink)', width: 180, background: 'transparent', borderBottom: '1px solid rgba(61,58,57,0.4)' }}>{p.department_name}</td>
                       {/* Source Docs — direct PDF links from DB */}
                       <td style={{ background: 'transparent', borderBottom: '1px solid rgba(61,58,57,0.4)', width: 110 }}>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
@@ -297,7 +297,7 @@ export default function CAStateIntelPage() {
                             const hasDoc = n===1?p.has_s1:n===2?p.has_s2:n===3?p.has_s3:false;
                             const extracted = n===1?p.s1_extracted:n===2?p.s2_extracted:n===3?p.s3_extracted:false;
                             if (!hasDoc && !extracted) return null;
-                            const c = STAGE_PILL_STYLE[`Stage ${n}`] || { bg: 'var(--vg-hairline)', color: 'var(--vg-mute)' };
+                            const c = STAGE_PILL_STYLE[`Stage ${n}`] || { bg: 'var(--vg-hairline)', color: 'var(--vg-ink)' };
                             return (
                               <a key={n} href={`/CAStateIntel/stage${n}?project=${p.project_number}`}
                                 style={{ display: 'inline-flex', padding: '3px 8px', borderRadius: 6, fontSize: 12, fontWeight: 600, textDecoration: 'none', opacity: extracted ? 1 : 0.4, background: c.bg, color: c.color }}>
@@ -331,6 +331,29 @@ export default function CAStateIntelPage() {
                         )}
                       </td>
                     </tr>
+                    {tags.length > 0 && (
+                      <tr key={`${p.id}-tags`}>
+                        <td colSpan={8} style={{ padding: '4px 20px 12px', background: 'transparent', borderBottom: '1px solid rgba(61,58,57,0.4)' }}>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                            {tags.map((t, i) => (
+                              <button key={i}
+                                onClick={() => setTagFilters(tagFilters.includes(t.tag) ? tagFilters.filter(x => x !== t.tag) : [...tagFilters, t.tag])}
+                                style={{
+                                  padding: '4px 10px', borderRadius: 9999, fontSize: 12, fontWeight: 500, cursor: 'pointer',
+                                  border: '1px solid',
+                                  borderColor: tagFilters.includes(t.tag) ? 'rgba(0,217,146,0.6)' : 'var(--vg-hairline)',
+                                  background: tagFilters.includes(t.tag) ? 'rgba(0,217,146,0.12)' : 'transparent',
+                                  color: tagFilters.includes(t.tag) ? 'var(--vg-primary)' : 'var(--vg-ink)',
+                                  transition: 'all 0.1s',
+                                }}
+                                title={`${tagFilters.includes(t.tag)?'Remove':'Add'} filter: ${t.tag}`}>
+                                {t.tag}
+                              </button>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
                   );
                 })}
               </tbody>
@@ -365,7 +388,7 @@ function DarkMultiSelect({ label, options, selected, onChange, placeholder }: {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }} ref={ref}>
-      <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--vg-mute)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</label>
+      <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--vg-ink)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</label>
       <div style={{ position: 'relative' }}>
         <button onClick={() => setOpen(o => !o)} style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
@@ -394,7 +417,7 @@ function DarkMultiSelect({ label, options, selected, onChange, placeholder }: {
               </div>
             )}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderBottom: '1px solid rgba(61,58,57,0.6)', flexShrink: 0 }}>
-              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{filtered.filter(o => o.count > 0 || selected.includes(o.value)).length} available</span>
+              <span style={{ fontSize: 12, color: 'var(--vg-mute)' }}>{filtered.filter(o => o.count > 0 || selected.includes(o.value)).length} available</span>
               {selected.length > 0 && <button onClick={() => { onChange([]); setSearch(''); }} style={{ background: 'none', border: 'none', color: 'var(--vg-primary-soft)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Clear</button>}
             </div>
             <div style={{ overflowY: 'auto' }}>
@@ -415,7 +438,7 @@ function DarkMultiSelect({ label, options, selected, onChange, placeholder }: {
                       </span>
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{opt.label || opt.value}</span>
                     </div>
-                    <span style={{ fontSize: 12, fontWeight: 600, padding: '2px 6px', borderRadius: 6, flexShrink: 0, background: isSel ? 'rgba(0,217,146,0.3)' : 'rgba(61,58,57,0.6)', color: isSel ? 'var(--vg-primary-soft)' : 'rgba(255,255,255,0.35)' }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, padding: '2px 6px', borderRadius: 6, flexShrink: 0, background: isSel ? 'rgba(0,217,146,0.3)' : 'rgba(61,58,57,0.6)', color: isSel ? 'var(--vg-primary-soft)' : 'var(--vg-mute)' }}>
                       {opt.count}
                     </span>
                   </button>
