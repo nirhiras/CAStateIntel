@@ -161,7 +161,7 @@ export default function ContactsDashboardPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#000000", color: "#ffffff" }}>
+    <div style={{ minHeight: "100vh", background: "var(--vg-canvas)", color: "var(--vg-ink-strong)" }}>
       <RvtNav />
       {/* Header */}
       <div className="bg-blue-900 text-white px-8 py-5">
@@ -209,7 +209,7 @@ export default function ContactsDashboardPage() {
       </div>
 
       {/* Filters */}
-      <div style={{ background: "#16181a", borderBottom: "1px solid rgba(255,255,255,0.08)", padding: "20px 40px" }}>
+      <div style={{ background: "var(--vg-canvas-soft)", borderBottom: "1px solid var(--vg-hairline)", padding: "20px 40px" }}>
         <div className="flex flex-wrap gap-4 items-end">
           <div className="flex flex-col gap-1.5">
             <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">Search</label>
@@ -320,13 +320,13 @@ export default function ContactsDashboardPage() {
                           if (!raw || raw === "null" || raw === "") return <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>—</span>;
                           // Handle YYYY-MM-DD, MM/DD/YYYY, or ISO strings
                           const d = new Date(raw.includes("/") ? raw : raw.split("T")[0] + "T12:00:00");
-                          if (isNaN(d.getTime())) return <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{raw}</span>;
+                          if (isNaN(d.getTime())) return <span style={{ fontSize: 12, color: "var(--vg-mute)" }}>{raw}</span>;
                           return (
                             <span style={{ display: "inline-flex", flexDirection: "column", gap: 1 }}>
                               <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>
                                 {d.toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                               </span>
-                              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
+                              <span style={{ fontSize: 11, color: "var(--vg-mute)" }}>
                                 {d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                               </span>
                             </span>
@@ -334,7 +334,7 @@ export default function ContactsDashboardPage() {
                         })()}
                       </td>
                       <td className="px-4 py-3" style={{ maxWidth: 220, width: 220 }}>
-                        <span className="text-xs font-mono px-1.5 py-0.5 rounded border block truncate" style={{ background: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}
+                        <span className="text-xs font-mono px-1.5 py-0.5 rounded border block truncate" style={{ background: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.1)", color: "var(--vg-mute)" }}
                           title={buildSourceLabel(c)}>
                           {buildSourceLabel(c)}
                         </span>
