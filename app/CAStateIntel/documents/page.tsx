@@ -92,13 +92,13 @@ export default function DocumentsPage() {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: "'Inter', -apple-system, sans-serif", background: '#F8F7F5', color: '#1A1A1A' }}>
+    <div style={{ display: 'flex', height: '100vh', fontFamily: "'Inter', -apple-system, sans-serif", background: 'rgba(255,255,255,0.04)', color: '#ffffff' }}>
       {/* LEFT PANEL — project list */}
-      <div style={{ width: 300, flexShrink: 0, borderRight: '1px solid #E5E3DF', background: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ padding: '20px 16px 12px', borderBottom: '1px solid #E5E3DF' }}>
-          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: '#6B6861', textTransform: 'uppercase', marginBottom: 12 }}>PAL Documents</div>
+      <div style={{ width: 300, flexShrink: 0, borderRight: '1px solid rgba(255,255,255,0.08)', background: '#16181a', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ padding: '20px 16px 12px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: 12 }}>PAL Documents</div>
           <input type="text" placeholder="Search projects..." value={search} onChange={e => setSearch(e.target.value)}
-            style={{ width: '100%', border: '1px solid #E5E3DF', borderRadius: 8, padding: '8px 12px', fontSize: 13, background: '#F8F7F5', outline: 'none', boxSizing: 'border-box' }} />
+            style={{ width: '100%', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '8px 12px', fontSize: 13, background: 'rgba(255,255,255,0.04)', outline: 'none', boxSizing: 'border-box' }} />
           <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
             {['', 'Stage 3', 'Stage 2', 'Stage 1'].map(s => (
               <button key={s} onClick={() => setStageFilter(s)}
@@ -110,16 +110,16 @@ export default function DocumentsPage() {
         </div>
         <div style={{ overflowY: 'auto', flex: 1 }}>
           {loading
-            ? <div style={{ padding: 24, color: '#9B9589', fontSize: 13, textAlign: 'center' }}>Loading...</div>
+            ? <div style={{ padding: 24, color: 'rgba(255,255,255,0.3)', fontSize: 13, textAlign: 'center' }}>Loading...</div>
             : filtered.length === 0
-              ? <div style={{ padding: 24, color: '#9B9589', fontSize: 13, textAlign: 'center' }}>No projects found</div>
+              ? <div style={{ padding: 24, color: 'rgba(255,255,255,0.3)', fontSize: 13, textAlign: 'center' }}>No projects found</div>
               : filtered.map(g => (
             <div key={g.project_number}
               onClick={() => { setSelectedProject(g); setSelectedDoc(g.docs[0] ?? null); setPdfOpen(false); }}
               style={{ padding: '12px 16px', cursor: 'pointer', borderBottom: '1px solid #F0EFED',
                 background: selectedProject?.project_number === g.project_number ? '#F0EFED' : 'transparent' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', color: '#9B9589' }}>{g.project_number}</span>
+                <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', color: 'rgba(255,255,255,0.3)' }}>{g.project_number}</span>
                 {g.docs.map(d => (
                   <span key={d.document_id} style={{ fontSize: 9, padding: '1px 6px', borderRadius: 20,
                     background: d.stage === 0 ? '#ECFDF5' : (STAGE_COLOR[d.stage]?.bg ?? '#f5f5f5'),
@@ -129,7 +129,7 @@ export default function DocumentsPage() {
                 ))}
               </div>
               <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.35 }}>{g.project_name}</div>
-              <div style={{ fontSize: 11, color: '#9B9589', marginTop: 3 }}>{g.docs.length} doc{g.docs.length !== 1 ? 's' : ''}</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 3 }}>{g.docs.length} doc{g.docs.length !== 1 ? 's' : ''}</div>
             </div>
           ))}
         </div>
@@ -138,23 +138,23 @@ export default function DocumentsPage() {
       {/* RIGHT PANEL */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         {!selectedProject ? (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#9B9589' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.3)' }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
             <div style={{ fontSize: 15, fontWeight: 500 }}>Select a project</div>
             <div style={{ fontSize: 13, marginTop: 4 }}>Choose from the list to view documents</div>
           </div>
         ) : (
           <>
-            <div style={{ padding: '16px 24px', borderBottom: '1px solid #E5E3DF', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', background: '#16181a', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <div style={{ fontSize: 18, fontWeight: 600 }}>{selectedProject.project_name}</div>
-                <div style={{ fontSize: 12, color: '#9B9589', marginTop: 2 }}>{selectedProject.project_number}</div>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>{selectedProject.project_number}</div>
               </div>
-              <a href="/CAStateIntel/upload" style={{ fontSize: 13, padding: '8px 16px', background: '#F0EFED', borderRadius: 8, textDecoration: 'none', color: '#1A1A1A', fontWeight: 500 }}>+ Upload PDF</a>
+              <a href="/CAStateIntel/upload" style={{ fontSize: 13, padding: '8px 16px', background: 'rgba(255,255,255,0.08)', borderRadius: 8, textDecoration: 'none', color: '#ffffff', fontWeight: 500 }}>+ Upload PDF</a>
             </div>
 
             {/* Doc tabs */}
-            <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid #E5E3DF', background: '#fff', padding: '0 24px' }}>
+            <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(255,255,255,0.08)', background: '#16181a', padding: '0 24px' }}>
               {selectedProject.docs.map(doc => (
                 <button key={doc.id} onClick={() => { setSelectedDoc(doc); setPdfOpen(false); }}
                   style={{ padding: '10px 16px', fontSize: 13, border: 'none',
@@ -176,16 +176,16 @@ export default function DocumentsPage() {
                 <div style={{ flex: 1, overflow: 'auto', padding: 24, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
                     <div style={{ position: 'relative', flex: 1, maxWidth: 360 }}>
-                      <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#9B9589', fontSize: 14 }}>🔍</span>
+                      <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>🔍</span>
                       <input type="text" placeholder="Search within document..." value={textSearch} onChange={e => setTextSearch(e.target.value)}
-                        style={{ width: '100%', padding: '8px 12px 8px 32px', border: '1px solid #E5E3DF', borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box', background: '#fff' }} />
+                        style={{ width: '100%', padding: '8px 12px 8px 32px', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box', background: '#16181a' }} />
                     </div>
                     <button onClick={() => setPdfOpen(v => !v)}
                       style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: '#1A1A1A', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, cursor: 'pointer', fontWeight: 500 }}>
                       {pdfOpen ? '📄 Hide PDF' : '📄 View Source PDF'}
                     </button>
                     <a href={`/api/castateintel/pdf/${selectedDoc.document_id}`} target="_blank" rel="noreferrer"
-                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: '#F0EFED', color: '#1A1A1A', borderRadius: 8, fontSize: 13, textDecoration: 'none', fontWeight: 500 }}>
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'rgba(255,255,255,0.08)', color: '#ffffff', borderRadius: 8, fontSize: 13, textDecoration: 'none', fontWeight: 500 }}>
                       ↓ Download
                     </a>
                   </div>
@@ -194,11 +194,11 @@ export default function DocumentsPage() {
                     const snippets = getSnippets(selectedDoc.content_text, textSearch);
                     return snippets && snippets.length > 0 ? (
                       <div style={{ marginBottom: 24 }}>
-                        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#9B9589', marginBottom: 10 }}>
+                        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 10 }}>
                           {snippets.length} match{snippets.length !== 1 ? 'es' : ''} found
                         </div>
                         {snippets.map((snippet, i) => (
-                          <div key={i} style={{ padding: '12px 16px', background: '#fff', border: '1px solid #E5E3DF', borderRadius: 8, marginBottom: 8, fontSize: 13, lineHeight: 1.6, color: '#3D3A35' }}>
+                          <div key={i} style={{ padding: '12px 16px', background: '#16181a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, marginBottom: 8, fontSize: 13, lineHeight: 1.6, color: 'rgba(255,255,255,0.8)' }}>
                             ...{renderHighlighted(snippet, textSearch)}...
                           </div>
                         ))}
@@ -212,16 +212,16 @@ export default function DocumentsPage() {
                   })()}
 
                   {selectedDoc.content_text ? (
-                    <div style={{ background: '#fff', border: '1px solid #E5E3DF', borderRadius: 12, padding: 24 }}>
-                      <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#9B9589', marginBottom: 16 }}>
+                    <div style={{ background: '#16181a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 24 }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 16 }}>
                         Extracted Text — {selectedDoc.content_text.length.toLocaleString()} characters
                       </div>
-                      <div style={{ fontSize: 13, lineHeight: 1.8, color: '#3D3A35', whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif' }}>
+                      <div style={{ fontSize: 13, lineHeight: 1.8, color: 'rgba(255,255,255,0.8)', whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif' }}>
                         {textSearch ? renderHighlighted(selectedDoc.content_text, textSearch) : selectedDoc.content_text}
                       </div>
                     </div>
                   ) : (
-                    <div style={{ padding: 40, textAlign: 'center', color: '#9B9589', background: '#fff', borderRadius: 12, border: '1px solid #E5E3DF' }}>
+                    <div style={{ padding: 40, textAlign: 'center', color: 'rgba(255,255,255,0.3)', background: '#16181a', borderRadius: 12, border: '1px solid rgba(255,255,255,0.08)' }}>
                       <div style={{ fontSize: 32, marginBottom: 8 }}>⏳</div>
                       <div style={{ fontSize: 14, fontWeight: 500 }}>Text not yet extracted</div>
                     </div>
