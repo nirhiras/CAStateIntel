@@ -166,13 +166,13 @@ export default function UploadPage() {
   const overwriteCount = files.filter(f => f.was_overwrite).length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{ minHeight: "100vh", background: "#000000", color: "#ffffff" }}>
       <RvtNav />
       {/* Header */}
-      <div className="bg-gray-900 text-white px-8 py-4 flex items-center justify-between">
+      <div style={{ background: "#16181a", padding: "16px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
         <div className="flex items-center gap-4">
-          <a href="/CAStateIntel/documents" className="text-gray-400 hover:text-white text-sm">← Documents</a>
-          <div className="w-px h-4 bg-gray-700" />
+          <a href="/CAStateIntel/documents" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none", fontSize: 14 }}>← Documents</a>
+          <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.12)" }} />
           <span className="text-sm font-semibold">Bulk PDF Upload</span>
         </div>
         {files.length > 0 && (
@@ -279,7 +279,7 @@ export default function UploadPage() {
                     {/* Filename row */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-gray-800 truncate max-w-xs">{uf.file.name}</span>
-                      <span className="text-xs text-gray-400">{(uf.file.size / 1024).toFixed(0)} KB</span>
+                      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{(uf.file.size / 1024).toFixed(0)} KB</span>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium
                         ${uf.status === 'done' ? 'bg-green-100 text-green-700' :
                           uf.status === 'error' ? 'bg-red-100 text-red-700' :
@@ -319,7 +319,7 @@ export default function UploadPage() {
                         </div>
                         {/* Canonical filename */}
                         {uf.canonical_filename && (
-                          <div className="text-xs text-gray-400 font-mono truncate">
+                          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             📄 {uf.canonical_filename}
                           </div>
                         )}
@@ -328,7 +328,7 @@ export default function UploadPage() {
 
                     {/* Error */}
                     {uf.status === 'error' && (
-                      <p className="text-xs text-red-600 mt-1">{uf.error}</p>
+                      <p style={{ fontSize: 12, color: "#f87171", marginTop: 4 }}>{uf.error}</p>
                     )}
 
                     {/* Manual override */}
@@ -367,7 +367,7 @@ export default function UploadPage() {
                   {/* Delete button */}
                   <button onClick={() => remove(uf)}
                     disabled={uf.status === 'uploading'}
-                    className="text-gray-300 hover:text-red-400 disabled:opacity-30 text-lg leading-none px-1 flex-shrink-0"
+                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "0 4px", flexShrink: 0 }}
                     title={uf.status === 'done' ? 'Delete from DB + analysis' : 'Remove'}>
                     ×
                   </button>
