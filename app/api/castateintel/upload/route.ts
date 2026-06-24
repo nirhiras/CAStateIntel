@@ -16,21 +16,21 @@ const STAGE_LABELS: Record<number, string> = {
   4: 'Stage 4 Project Readiness and Approval',
 };
 const STAGE_ABBREV: Record<number, string> = {
-  1: 'S1BA',
-  2: 'S2AA',
-  3: 'S3SA',
-  4: 'S4PRA',
+  1: 'S1BA', 2: 'S2AA', 3: 'S3SA', 4: 'S4PRA',
 };
+// Known stage numbers: 1–4. Anything else is stored as stage 0 with doc_type='other'
+const KNOWN_STAGES = new Set([1, 2, 3, 4]);
 
-// Canonical filename: ####-### - S#ABR - Project Title
-function canonicalFilename(projectNumber: string, stage: number, projectName: string): string {
-  const abbrev = STAGE_ABBREV[stage] || `S${stage}`;
+// Canonical filename: ####-### - S#ABR[sub] - Project Title
+function canonicalFilename(projectNumber: string, stage: number, projectName: string, subLabel?: string, docType?: string): string {
+  const abbrev = KNOWN_STAGES.has(stage) ? (STAGE_ABBREV[stage] || `S${stage}`) : (docType || 'OTHER');
+  const sub = subLabel ? subLabel.toUpperCase() : '';
   const safeName = (projectName || projectNumber)
     .replace(/[<>:"/\\|?*]/g, '')
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 60);
-  return `${projectNumber} - ${abbrev} - ${safeName}.pdf`;
+  return `${projectNumber} - ${abbrev}${sub} - ${safeName}.pdf`;
 }
 
 export async function POST(req: Request) {
@@ -57,6 +57,8 @@ export async function POST(req: Request) {
     let autoStage = 1;
     let autoLabel = STAGE_LABELS[1];
     let autoProjectName: string | null = null;
+    let autoDocType = 'other';
+    let autoSubLabel = '';
 
     try {
       const pyScript = [
@@ -71,17 +73,28 @@ export async function POST(req: Request) {
         '    proj=all[-1] if all else None',
         'top=text[:1200]',
         // Stage 4 detection first (most specific)
-        'if re.search(r"Stage\\s*4\\s*(Project Readiness|S4PRA)",top,re.I) or re.search(r"S4PRA",top): s=4;l="Stage 4 Project Readiness and Approval"',
-        'elif re.search(r"Stage\\s*3\\s*(Solution|Solutions)",top,re.I): s=3;l="Stage 3 Solutions Analysis"',
-        'elif re.search(r"Stage\\s*2\\s*(Alternative|Alternatives)",top,re.I): s=2;l="Stage 2 Alternative Analysis"',
-        'elif re.search(r"stage 4",top,re.I): s=4;l="Stage 4 Project Readiness and Approval"',
-        'elif re.search(r"stage 3",top,re.I): s=3;l="Stage 3 Solutions Analysis"',
-        'elif re.search(r"stage 2",top,re.I): s=2;l="Stage 2 Alternative Analysis"',
-        'else: s=1;l="Stage 1 Business Analysis"',
+        'if re.search(r"Stage\\s*4\\s*(Project Readiness|S4PRA)",top,re.I) or re.search(r"S4PRA",top): s=4;l="Stage 4 Project Readiness and Approval";dt="S4PRA"',
+        'elif re.search(r"Stage\\s*3\\s*(Solution|Solutions)",top,re.I): s=3;l="Stage 3 Solutions Analysis";dt="S3SA"',
+        'elif re.search(r"Stage\\s*2\\s*(Alternative|Alternatives)",top,re.I): s=2;l="Stage 2 Alternative Analysis";dt="S2AA"',
+        'elif re.search(r"Stage\\s*1\\s*(Business)",top,re.I): s=1;l="Stage 1 Business Analysis";dt="S1BA"',
+        'elif re.search(r"stage 4",top,re.I): s=4;l="Stage 4 Project Readiness and Approval";dt="S4PRA"',
+        'elif re.search(r"stage 3",top,re.I): s=3;l="Stage 3 Solutions Analysis";dt="S3SA"',
+        'elif re.search(r"stage 2",top,re.I): s=2;l="Stage 2 Alternative Analysis";dt="S2AA"',
+        'elif re.search(r"stage 1",top,re.I): s=1;l="Stage 1 Business Analysis";dt="S1BA"',
+        'else: s=0;l="Other Document";dt="other"',
+        // Detect sub-label (A/B) - e.g. "Stage 3A", "Stage 3B", "Part A", "Part B"
+        'sublm=re.search(r"Stage\\s*[1-4]\\s*([AB])\\b",top,re.I) or re.search(r"\\bPart\\s*([AB])\\b",top,re.I)',
+        'sub=sublm.group(1).upper() if sublm else ""',
         // Extract project name
         'nm=re.search(r"Proposal Name[^:]*:\\s*([^\\n]+)",text,re.I)',
         'pname=nm.group(1).strip() if nm else ""',
-        'print(json.dumps({"text":text,"project":proj,"stage":s,"label":l,"project_name":pname}))',
+        // For other docs, extract a short title from filename or first meaningful line
+        'title=pname',
+        'if not title:',
+        '    for line in text.split("\\n")[:20]:',
+        '        line=line.strip()',
+        '        if len(line)>10 and not re.match(r"^[\\d\\-\\.\\s]+$",line): title=line[:100]; break',
+        'print(json.dumps({"text":text,"project":proj,"stage":s,"label":l,"project_name":pname,"doc_type":dt,"sub_label":sub,"title":title}))',
       ].join('\n');
 
       const result = execSync(`python3 -c '${pyScript.replace(/'/g, "'\\''")}' "${tmpFile}"`, {
@@ -91,9 +104,11 @@ export async function POST(req: Request) {
       const parsed = JSON.parse(result.toString());
       extractedText = parsed.text || '';
       autoProject = parsed.project;
-      autoStage = parsed.stage || 1;
-      autoLabel = parsed.label || STAGE_LABELS[1];
-      autoProjectName = parsed.project_name || null;
+      autoStage = parsed.stage ?? 1;
+      autoLabel = parsed.label || STAGE_LABELS[1] || 'Other Document';
+      autoProjectName = parsed.project_name || parsed.title || null;
+      autoDocType = parsed.doc_type || 'other';
+      autoSubLabel = parsed.sub_label || '';
     } catch (e) {
       console.warn('Python extraction failed:', e);
     } finally {
@@ -101,8 +116,11 @@ export async function POST(req: Request) {
     }
 
     if (!projectNumber && autoProject) projectNumber = autoProject;
-    if (!stage) stage = autoStage;
-    if (!label) label = STAGE_LABELS[stage] || autoLabel;
+    const stageOverride = parseInt((formData.get('stage') as string) ?? '0') || 0;
+    if (!stageOverride) stage = autoStage;
+    const docType = (formData.get('doc_type') as string)?.trim() || autoDocType || 'other';
+    const subLabel = (formData.get('sub_label') as string)?.trim() || autoSubLabel || '';
+    if (!label) label = STAGE_LABELS[stage] || autoLabel || 'Other Document';
     // Pass extracted name for project name update
     if (autoProjectName) formData.set('extracted_project_name', autoProjectName);
 
@@ -155,42 +173,54 @@ export async function POST(req: Request) {
       projectName = rows[0].name || insertName;
     }
 
-    const canonicalName = canonicalFilename(projectNumber, stage, projectName);
+    const canonicalName = canonicalFilename(projectNumber, stage, projectName, subLabel, docType);
 
     // Check for existing document for this project+stage — overwrite it
+    // Ensure sub_label and doc_type columns exist (idempotent migration)
+    try {
+      await pool.query(`ALTER TABLE castateintel.pal_documents ADD COLUMN IF NOT EXISTS sub_label TEXT DEFAULT ''`);
+      await pool.query(`ALTER TABLE castateintel.pal_documents ADD COLUMN IF NOT EXISTS doc_type TEXT DEFAULT 'S1BA'`);
+      await pool.query(`ALTER TABLE castateintel.pal_documents ADD COLUMN IF NOT EXISTS short_description TEXT`);
+    } catch {}
+
+    // For known stages (1-4): match on project+stage+sub_label to allow A/B docs
+    // For other docs (stage=0): always insert new (no overwrite)
+    const isKnownStage = KNOWN_STAGES.has(stage);
     const { rows: existingDocs } = await pool.query(
-      'SELECT id, document_id FROM castateintel.pal_documents WHERE project_id=$1 AND stage=$2 ORDER BY id DESC LIMIT 1',
-      [projectId, stage]
+      `SELECT id, document_id FROM castateintel.pal_documents
+       WHERE project_id=$1 AND stage=$2 AND COALESCE(sub_label,'')=$3
+       ORDER BY id DESC LIMIT 1`,
+      [projectId, stage, subLabel]
     );
 
     let documentId: string;
     let wasOverwrite = false;
 
-    if (existingDocs.length > 0) {
-      // Overwrite: delete old analysis data first, then update document
+    if (isKnownStage && existingDocs.length > 0) {
+      // Overwrite existing doc for this project+stage+sub_label
       documentId = existingDocs[0].document_id;
       wasOverwrite = true;
-
-      // Delete stage-specific analysis (but NOT global contacts from other stages)
       await deleteStageAnalysis(pool, projectId, stage, documentId);
-
-      // Update existing document record
       await pool.query(`
         UPDATE castateintel.pal_documents SET
-          label=$1, filename=$2, file_size_kb=$3,
-          content_text=$4, downloaded_at=NOW(), pdf_data=$5, updated_at=NOW()
-        WHERE project_id=$6 AND stage=$7
-      `, [label, canonicalName, fileSizeKb, extractedText || null, buffer, projectId, stage]);
+          label=$1, filename=$2, file_size_kb=$3, content_text=$4,
+          downloaded_at=NOW(), pdf_data=$5, updated_at=NOW(),
+          doc_type=$6, sub_label=$7, short_description=$8
+        WHERE document_id=$9::uuid
+      `, [label, canonicalName, fileSizeKb, extractedText || null, buffer,
+          docType, subLabel, !isKnownStage ? (autoProjectName || label) : null, documentId]);
     } else {
-      // New document
+      // New document (always new for other docs, or new A/B variant for known stages)
       documentId = randomUUID();
       await pool.query(`
         INSERT INTO castateintel.pal_documents
-          (project_id,stage,label,document_id,download_url,filename,file_size_kb,content_text,downloaded_at,pdf_data)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NOW(),$9)
+          (project_id,stage,label,document_id,download_url,filename,file_size_kb,
+           content_text,downloaded_at,pdf_data,doc_type,sub_label,short_description)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NOW(),$9,$10,$11,$12)
       `, [projectId, stage, label, documentId,
           `/api/castateintel/pdf/${documentId}`,
-          canonicalName, fileSizeKb, extractedText || null, buffer]);
+          canonicalName, fileSizeKb, extractedText || null, buffer,
+          docType, subLabel, !isKnownStage ? (autoProjectName || label) : null]);
     }
 
     return NextResponse.json({
@@ -203,8 +233,11 @@ export async function POST(req: Request) {
       project_name: projectName,
       label,
       stage,
+      doc_type: docType,
+      sub_label: subLabel,
       was_overwrite: wasOverwrite,
-      auto_detected: { project_number: autoProject, stage: autoStage, label: autoLabel },
+      is_other_doc: !isKnownStage,
+      auto_detected: { project_number: autoProject, stage: autoStage, label: autoLabel, doc_type: autoDocType, sub_label: autoSubLabel },
     });
 
   } catch (err) {
