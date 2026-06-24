@@ -1,62 +1,45 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
+import { SmartMultiSelect, buildOptions, FilterPills } from '@/components/castateintel/SmartMultiSelect';
 
 type Project = {
-  id: number;
-  project_number: string;
-  name: string;
-  pal_stage: string;
-  effective_stage: string;
-  criticality_rating: string;
-  status: string;
-  department_name: string;
-  agency_name: string;
-  doc_count: number;
-  detail_url: string;
-  has_s1: boolean;
-  has_s2: boolean;
-  has_s3: boolean;
-  s1_extracted: boolean;
-  s2_extracted: boolean;
-  s3_extracted: boolean;
+  id: number; project_number: string; name: string;
+  pal_stage: string; effective_stage: string;
+  criticality_rating: string; status: string;
+  department_name: string; agency_name: string;
+  doc_count: number; detail_url: string;
+  has_s1: boolean; has_s2: boolean; has_s3: boolean;
+  s1_extracted: boolean; s2_extracted: boolean; s3_extracted: boolean;
   solution_tags: { tag: string; category: string; confidence: string }[];
 };
 
 type Stats = {
-  total_projects: number;
-  stage1_count: number;
-  stage2_count: number;
-  stage3_count: number;
-  total_documents: number;
-  extracted_docs: number;
+  total_projects: number; stage1_count: number; stage2_count: number;
+  stage3_count: number; total_documents: number; extracted_docs: number;
 };
 
 const STAGE_LABEL: Record<string, string> = {
   'Stage 1': 'S1BA', 'Stage 2': 'S2AA', 'Stage 3': 'S3SA', 'Stage 4': 'S4PRA',
 };
-
 const STAGE_PILL: Record<string, string> = {
   'Stage 1': 'bg-sky-50 text-sky-700 ring-1 ring-sky-200',
   'Stage 2': 'bg-violet-50 text-violet-700 ring-1 ring-violet-200',
   'Stage 3': 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
   'Stage 4': 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
 };
-
 const CRIT_PILL: Record<string, string> = {
-  High:   'bg-red-50 text-red-600 ring-1 ring-red-200',
+  High: 'bg-red-50 text-red-600 ring-1 ring-red-200',
   Medium: 'bg-amber-50 text-amber-600 ring-1 ring-amber-200',
-  Low:    'bg-gray-50 text-gray-500 ring-1 ring-gray-200',
+  Low: 'bg-gray-50 text-gray-500 ring-1 ring-gray-200',
 };
-
 const TAG_PILL: Record<string, string> = {
-  vendor:     'bg-blue-50 text-blue-600 ring-1 ring-blue-200',
+  vendor: 'bg-blue-50 text-blue-600 ring-1 ring-blue-200',
   technology: 'bg-violet-50 text-violet-600 ring-1 ring-violet-200',
-  approach:   'bg-teal-50 text-teal-600 ring-1 ring-teal-200',
+  approach: 'bg-teal-50 text-teal-600 ring-1 ring-teal-200',
   deployment: 'bg-orange-50 text-orange-600 ring-1 ring-orange-200',
-  industry:   'bg-gray-50 text-gray-500 ring-1 ring-gray-200',
+  industry: 'bg-gray-50 text-gray-500 ring-1 ring-gray-200',
 };
-
 const ANALYSIS_LINK: Record<number, string> = {
   1: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200 hover:bg-sky-100',
   2: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200 hover:bg-violet-100',
@@ -64,79 +47,9 @@ const ANALYSIS_LINK: Record<number, string> = {
   4: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100',
 };
 
-function MultiSelect({ label, options, selected, onChange, placeholder = 'All' }: {
-  label: string; options: string[]; selected: string[];
-  onChange: (v: string[]) => void; placeholder?: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
-    document.addEventListener('mousedown', h);
-    return () => document.removeEventListener('mousedown', h);
-  }, []);
-
-  const toggle = (v: string) => onChange(selected.includes(v) ? selected.filter(s => s !== v) : [...selected, v]);
-  const filtered = options.filter(o => o.toLowerCase().includes(search.toLowerCase()));
-  const displayText = selected.length === 0 ? placeholder : selected.length === 1 ? selected[0] : `${selected.length} selected`;
-
-  return (
-    <div className="flex flex-col gap-1.5" ref={ref}>
-      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">{label}</label>
-      <div className="relative">
-        <button onClick={() => setOpen(o => !o)}
-          className={`flex items-center justify-between gap-2 border rounded-xl px-3.5 py-2.5 text-sm bg-white min-w-[148px] text-left transition-all ${
-            selected.length > 0
-              ? 'border-indigo-400 text-indigo-700 font-semibold shadow-sm shadow-indigo-100'
-              : 'border-slate-200 text-slate-600 hover:border-slate-300'
-          }`}>
-          <span className="truncate max-w-[160px]">{displayText}</span>
-          <svg className={`w-3.5 h-3.5 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        {open && (
-          <div className="absolute z-50 top-full mt-2 left-0 bg-white border border-slate-200 rounded-2xl shadow-xl shadow-slate-100/80 min-w-[230px] max-h-72 flex flex-col overflow-hidden">
-            {options.length > 8 && (
-              <div className="p-2 border-b border-slate-100">
-                <input autoFocus value={search} onChange={e => setSearch(e.target.value)}
-                  placeholder="Search…"
-                  className="w-full text-xs px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300" />
-              </div>
-            )}
-            <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100">
-              <span className="text-xs text-slate-400">{filtered.length} options</span>
-              {selected.length > 0 && (
-                <button onClick={() => { onChange([]); setSearch(''); }} className="text-xs text-indigo-500 hover:text-indigo-700 font-medium">Clear</button>
-              )}
-            </div>
-            <div className="overflow-y-auto">
-              {filtered.map(opt => (
-                <button key={opt} onClick={() => toggle(opt)}
-                  className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-2.5 transition-colors ${
-                    selected.includes(opt) ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50'
-                  }`}>
-                  <span className={`w-4 h-4 rounded-md border flex-shrink-0 flex items-center justify-center text-[10px] font-bold transition-colors ${
-                    selected.includes(opt) ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300'
-                  }`}>{selected.includes(opt) ? '✓' : ''}</span>
-                  <span className="truncate">{opt}</span>
-                </button>
-              ))}
-              {filtered.length === 0 && <div className="px-3 py-4 text-xs text-slate-400 text-center">No results</div>}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function CAStateIntelPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
-  const [departments, setDepartments] = useState<string[]>([]);
   const [search, setSearch] = useState('');
   const [stageFilters, setStageFilters] = useState<string[]>([]);
   const [deptFilters, setDeptFilters] = useState<string[]>([]);
@@ -145,22 +58,33 @@ export default function CAStateIntelPage() {
 
   useEffect(() => {
     fetch('/api/castateintel/projects?stats=true').then(r => r.json()).then(setStats);
-    fetch('/api/castateintel/projects?departments=true').then(r => r.json()).then(setDepartments);
     fetch('/api/castateintel/projects')
       .then(r => r.json())
       .then(data => { setProjects(Array.isArray(data) ? data : data.projects || []); setLoading(false); });
   }, []);
 
-  const allTags = [...new Set(projects.flatMap(p => (p.solution_tags || []).map(t => t.tag)))].sort();
+  // ── Derived filter helpers ─────────────────────────────────────────────────
+  const getStage = (p: Project) => p.effective_stage || p.pal_stage;
+  const getDept  = (p: Project) => p.department_name;
+  const getTags  = (p: Project) => (p.solution_tags || []).map(t => t.tag);
 
-  const filtered = projects.filter(p => {
-    const stage = p.effective_stage || p.pal_stage;
-    if (search && !p.name.toLowerCase().includes(search.toLowerCase()) && !p.project_number.includes(search)) return false;
-    if (stageFilters.length > 0 && !stageFilters.includes(stage)) return false;
-    if (deptFilters.length > 0 && !deptFilters.includes(p.department_name)) return false;
-    if (tagFilters.length > 0 && !tagFilters.some(tf => (p.solution_tags || []).some(t => t.tag === tf))) return false;
-    return true;
-  });
+  const matchSearch = (p: Project) =>
+    !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.project_number.includes(search);
+  const matchStage  = (p: Project) => stageFilters.length === 0 || stageFilters.includes(getStage(p));
+  const matchDept   = (p: Project) => deptFilters.length === 0  || deptFilters.includes(getDept(p));
+  const matchTag    = (p: Project) => tagFilters.length === 0   || tagFilters.some(tf => getTags(p).includes(tf));
+
+  const filtered = projects.filter(p => matchSearch(p) && matchStage(p) && matchDept(p) && matchTag(p));
+
+  // ── Option lists with counts (each field excludes its own filter) ──────────
+  const allStages = ['Stage 1', 'Stage 2', 'Stage 3', 'Stage 4'];
+  const allDepts  = [...new Set(projects.map(getDept).filter(Boolean))].sort();
+  const allTags   = [...new Set(projects.flatMap(getTags))].sort();
+
+  const stageOptions = buildOptions(projects, getStage, [matchSearch, matchDept, matchTag], allStages,
+    v => STAGE_LABEL[v] || v);
+  const deptOptions  = buildOptions(projects, getDept,  [matchSearch, matchStage, matchTag], allDepts);
+  const tagOptions   = buildOptions(projects, getTags,  [matchSearch, matchStage, matchDept], allTags);
 
   const hasFilters = search || stageFilters.length > 0 || deptFilters.length > 0 || tagFilters.length > 0;
   const clearAll = () => { setSearch(''); setStageFilters([]); setDeptFilters([]); setTagFilters([]); };
@@ -168,7 +92,7 @@ export default function CAStateIntelPage() {
   return (
     <div className="min-h-screen" style={{ background: '#F8FAFC', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
 
-      {/* Hero header */}
+      {/* Hero */}
       <div style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #312E81 100%)' }} className="px-8 py-10">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-end justify-between">
@@ -182,11 +106,7 @@ export default function CAStateIntelPage() {
             </div>
             {stats && (
               <div className="hidden md:flex items-center gap-6">
-                {[
-                  { v: stats.total_projects, l: 'Projects' },
-                  { v: stats.total_documents, l: 'Documents' },
-                  { v: stats.extracted_docs, l: 'Extracted' },
-                ].map(s => (
+                {[{ v: stats.total_projects, l: 'Projects' }, { v: stats.total_documents, l: 'Documents' }, { v: stats.extracted_docs, l: 'Extracted' }].map(s => (
                   <div key={s.l} className="text-right">
                     <div className="text-2xl font-bold text-white">{s.v}</div>
                     <div className="text-xs text-slate-400 mt-0.5">{s.l}</div>
@@ -195,8 +115,6 @@ export default function CAStateIntelPage() {
               </div>
             )}
           </div>
-
-          {/* Stage stat pills */}
           {stats && (
             <div className="flex gap-3 mt-6 flex-wrap">
               {[
@@ -205,8 +123,7 @@ export default function CAStateIntelPage() {
                 { label: 'Stage 3 — Solution Analysis', count: stats.stage3_count, color: 'bg-emerald-500/20 text-emerald-200 ring-1 ring-emerald-500/30' },
               ].map(s => (
                 <div key={s.label} className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium ${s.color}`}>
-                  <span className="font-bold text-sm">{s.count}</span>
-                  {s.label}
+                  <span className="font-bold text-sm">{s.count}</span>{s.label}
                 </div>
               ))}
             </div>
@@ -230,14 +147,13 @@ export default function CAStateIntelPage() {
               </div>
             </div>
 
-            <MultiSelect label="Stage" options={['Stage 1','Stage 2','Stage 3','Stage 4']} selected={stageFilters} onChange={setStageFilters} placeholder="All Stages" />
-            <MultiSelect label="Department" options={departments} selected={deptFilters} onChange={setDeptFilters} placeholder="All Departments" />
-            <MultiSelect label="Solution Tag" options={allTags} selected={tagFilters} onChange={setTagFilters} placeholder="All Tags" />
+            <SmartMultiSelect label="Stage" options={stageOptions} selected={stageFilters} onChange={setStageFilters} placeholder="All Stages" />
+            <SmartMultiSelect label="Department" options={deptOptions} selected={deptFilters} onChange={setDeptFilters} placeholder="All Departments" />
+            <SmartMultiSelect label="Solution Tag" options={tagOptions} selected={tagFilters} onChange={setTagFilters} placeholder="All Tags" />
 
             <div className="flex items-end gap-3 pb-0.5">
               {hasFilters && (
-                <button onClick={clearAll}
-                  className="flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold text-red-500 border border-red-200 rounded-xl hover:bg-red-50 transition-colors">
+                <button onClick={clearAll} className="flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold text-red-500 border border-red-200 rounded-xl hover:bg-red-50 transition-colors">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -248,35 +164,11 @@ export default function CAStateIntelPage() {
             </div>
           </div>
 
-          {/* Active filter pills */}
-          {hasFilters && (
-            <div className="flex flex-wrap gap-2 mt-3">
-              {search && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
-                  "{search}"
-                  <button onClick={() => setSearch('')} className="text-slate-400 hover:text-slate-700 ml-0.5">✕</button>
-                </span>
-              )}
-              {stageFilters.map(s => (
-                <span key={s} className="inline-flex items-center gap-1.5 px-3 py-1 bg-sky-100 text-sky-700 rounded-full text-xs font-semibold">
-                  {STAGE_LABEL[s] || s}
-                  <button onClick={() => setStageFilters(stageFilters.filter(x => x !== s))} className="text-sky-400 hover:text-sky-700 ml-0.5">✕</button>
-                </span>
-              ))}
-              {deptFilters.map(d => (
-                <span key={d} className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
-                  {d}
-                  <button onClick={() => setDeptFilters(deptFilters.filter(x => x !== d))} className="text-emerald-400 hover:text-emerald-700 ml-0.5">✕</button>
-                </span>
-              ))}
-              {tagFilters.map(t => (
-                <span key={t} className="inline-flex items-center gap-1.5 px-3 py-1 bg-violet-100 text-violet-700 rounded-full text-xs font-medium">
-                  🏷 {t}
-                  <button onClick={() => setTagFilters(tagFilters.filter(x => x !== t))} className="text-violet-400 hover:text-violet-700 ml-0.5">✕</button>
-                </span>
-              ))}
-            </div>
-          )}
+          <FilterPills groups={[
+            { values: stageFilters, onRemove: v => setStageFilters(stageFilters.filter(x => x !== v)), getLabel: v => STAGE_LABEL[v] || v, colorClass: 'bg-sky-100 text-sky-700' },
+            { values: deptFilters,  onRemove: v => setDeptFilters(deptFilters.filter(x => x !== v)),   colorClass: 'bg-emerald-100 text-emerald-700' },
+            { values: tagFilters,   onRemove: v => setTagFilters(tagFilters.filter(x => x !== v)),     colorClass: 'bg-violet-100 text-violet-700', prefix: '🏷' },
+          ]} />
         </div>
       </div>
 
@@ -287,14 +179,9 @@ export default function CAStateIntelPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100" style={{ background: '#F8FAFC' }}>
-                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Project #</th>
-                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Name</th>
-                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Stage</th>
-                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Criticality</th>
-                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Department</th>
-                  <th className="px-5 py-3.5 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Docs</th>
-                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Analysis</th>
-                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Solution Tags</th>
+                  {['Project #','Name','Stage','Criticality','Department','Docs','Analysis','Solution Tags'].map(h => (
+                    <th key={h} className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -318,16 +205,12 @@ export default function CAStateIntelPage() {
                       </td>
                       <td className="px-5 py-4">
                         {p.criticality_rating && (
-                          <span className={`text-xs px-2.5 py-1 rounded-lg font-medium ${CRIT_PILL[p.criticality_rating] ?? ''}`}>
-                            {p.criticality_rating}
-                          </span>
+                          <span className={`text-xs px-2.5 py-1 rounded-lg font-medium ${CRIT_PILL[p.criticality_rating] ?? ''}`}>{p.criticality_rating}</span>
                         )}
                       </td>
                       <td className="px-5 py-4 text-slate-500 text-xs leading-snug max-w-[180px]">{p.department_name}</td>
                       <td className="px-5 py-4 text-center">
-                        <span className="inline-flex items-center justify-center w-7 h-7 bg-indigo-50 text-indigo-600 text-xs font-bold rounded-lg ring-1 ring-indigo-100">
-                          {p.doc_count}
-                        </span>
+                        <span className="inline-flex items-center justify-center w-7 h-7 bg-indigo-50 text-indigo-600 text-xs font-bold rounded-lg ring-1 ring-indigo-100">{p.doc_count}</span>
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex gap-1 flex-wrap">
@@ -338,7 +221,7 @@ export default function CAStateIntelPage() {
                             return (
                               <a key={n} href={`/CAStateIntel/stage${n}?project=${p.project_number}`}
                                 className={`text-xs px-2 py-0.5 rounded-lg font-semibold transition-colors ${ANALYSIS_LINK[n]} ${!extracted?'opacity-40':''}`}
-                                title={extracted?`View Stage ${n} analysis`:`Stage ${n} doc available — not yet extracted`}>
+                                title={extracted?`View Stage ${n} analysis`:`Stage ${n} doc — not yet extracted`}>
                                 S{n}
                               </a>
                             );
