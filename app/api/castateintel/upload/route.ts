@@ -8,6 +8,31 @@ import * as os from 'os';
 
 export const maxDuration = 60;
 
+// Stage metadata
+const STAGE_LABELS: Record<number, string> = {
+  1: 'Stage 1 Business Analysis',
+  2: 'Stage 2 Alternative Analysis',
+  3: 'Stage 3 Solutions Analysis',
+  4: 'Stage 4 Project Readiness and Approval',
+};
+const STAGE_ABBREV: Record<number, string> = {
+  1: 'S1BA',
+  2: 'S2AA',
+  3: 'S3SA',
+  4: 'S4PRA',
+};
+
+// Canonical filename: ####-### - S#ABR - Project Title
+function canonicalFilename(projectNumber: string, stage: number, projectName: string): string {
+  const abbrev = STAGE_ABBREV[stage] || `S${stage}`;
+  const safeName = (projectName || projectNumber)
+    .replace(/[<>:"/\\|?*]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 60);
+  return `${projectNumber} - ${abbrev} - ${safeName}.pdf`;
+}
+
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
@@ -23,7 +48,6 @@ export async function POST(req: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const fileSizeKb = Math.round(buffer.length / 1024);
-    const filename = file.name;
 
     const tmpFile = path.join(os.tmpdir(), `pal_upload_${Date.now()}_${Math.random().toString(36).slice(2)}.pdf`);
     fs.writeFileSync(tmpFile, buffer);
@@ -31,15 +55,12 @@ export async function POST(req: Request) {
     let extractedText = '';
     let autoProject: string | null = null;
     let autoStage = 1;
-    let autoLabel = 'Stage 1 Business Analysis';
+    let autoLabel = STAGE_LABELS[1];
 
     try {
       const pyScript = [
         'import sys,re,json',
         'import pdfplumber',
-        'text=""',
-        'with pdfplumber.open(sys.argv[1]) as pdf:',
-        '    [text.__add__(p.extract_text() or "") for p in pdf.pages]',
         'with pdfplumber.open(sys.argv[1]) as pdf:',
         '    text="\\n".join(p.extract_text() or "" for p in pdf.pages)',
         'pm=re.search(r"Project Number[^:]*:\\s*(\\d{4}-\\d{3,4})",text,re.I)',
@@ -47,13 +68,19 @@ export async function POST(req: Request) {
         'if not proj:',
         '    all=[m for m in re.findall(r"\\b(\\d{4}-\\d{3,4})\\b",text) if m!="0000-000"]',
         '    proj=all[-1] if all else None',
-        'top=text[:800]',
-        'if re.search(r"Stage\\s*3\\s*(Solution|Solutions)",top,re.I): s=3;l="Stage 3 Solutions Analysis"',
+        'top=text[:1200]',
+        // Stage 4 detection first (most specific)
+        'if re.search(r"Stage\\s*4\\s*(Project Readiness|S4PRA)",top,re.I) or re.search(r"S4PRA",top): s=4;l="Stage 4 Project Readiness and Approval"',
+        'elif re.search(r"Stage\\s*3\\s*(Solution|Solutions)",top,re.I): s=3;l="Stage 3 Solutions Analysis"',
         'elif re.search(r"Stage\\s*2\\s*(Alternative|Alternatives)",top,re.I): s=2;l="Stage 2 Alternative Analysis"',
+        'elif re.search(r"stage 4",top,re.I): s=4;l="Stage 4 Project Readiness and Approval"',
         'elif re.search(r"stage 3",top,re.I): s=3;l="Stage 3 Solutions Analysis"',
         'elif re.search(r"stage 2",top,re.I): s=2;l="Stage 2 Alternative Analysis"',
         'else: s=1;l="Stage 1 Business Analysis"',
-        'print(json.dumps({"text":text,"project":proj,"stage":s,"label":l}))',
+        // Extract project name
+        'nm=re.search(r"Proposal Name[^:]*:\\s*([^\\n]+)",text,re.I)',
+        'pname=nm.group(1).strip() if nm else ""',
+        'print(json.dumps({"text":text,"project":proj,"stage":s,"label":l,"project_name":pname}))',
       ].join('\n');
 
       const result = execSync(`python3 -c '${pyScript.replace(/'/g, "'\\''")}' "${tmpFile}"`, {
@@ -64,7 +91,7 @@ export async function POST(req: Request) {
       extractedText = parsed.text || '';
       autoProject = parsed.project;
       autoStage = parsed.stage || 1;
-      autoLabel = parsed.label || 'Stage 1 Business Analysis';
+      autoLabel = parsed.label || STAGE_LABELS[1];
     } catch (e) {
       console.warn('Python extraction failed:', e);
     } finally {
@@ -73,7 +100,7 @@ export async function POST(req: Request) {
 
     if (!projectNumber && autoProject) projectNumber = autoProject;
     if (!stage) stage = autoStage;
-    if (!label) label = autoLabel;
+    if (!label) label = STAGE_LABELS[stage] || autoLabel;
 
     if (!projectNumber) {
       return NextResponse.json({
@@ -83,48 +110,133 @@ export async function POST(req: Request) {
       }, { status: 422 });
     }
 
-    const documentId = randomUUID();
-
+    // Get or create project
     const { rows: existing } = await pool.query(
-      'SELECT id FROM castateintel.pal_projects WHERE project_number = $1', [projectNumber]
+      'SELECT id, name FROM castateintel.pal_projects WHERE project_number = $1', [projectNumber]
     );
     let projectId: number;
+    let projectName: string;
     if (existing.length > 0) {
       projectId = existing[0].id;
+      projectName = existing[0].name || projectNumber;
     } else {
       const { rows } = await pool.query(`
         INSERT INTO castateintel.pal_projects (project_number, name, pal_stage, status, description)
         VALUES ($1,$2,$3,'Active','Manually uploaded document')
-        ON CONFLICT (project_number) DO UPDATE SET updated_at=NOW() RETURNING id
+        ON CONFLICT (project_number) DO UPDATE SET updated_at=NOW() RETURNING id, name
       `, [projectNumber, `Project ${projectNumber}`, `Stage ${stage}`]);
       projectId = rows[0].id;
+      projectName = rows[0].name || projectNumber;
     }
 
-    await pool.query(`
-      INSERT INTO castateintel.pal_documents
-        (project_id,stage,label,document_id,download_url,filename,file_size_kb,content_text,downloaded_at,pdf_data)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NOW(),$9)
-      ON CONFLICT (project_id,stage,document_id) DO UPDATE SET
-        content_text=EXCLUDED.content_text, file_size_kb=EXCLUDED.file_size_kb,
-        downloaded_at=NOW(), pdf_data=EXCLUDED.pdf_data, updated_at=NOW()
-    `, [projectId, stage, label, documentId,
-        `/api/castateintel/pdf/${documentId}`,
-        filename, fileSizeKb, extractedText || null, buffer]);
+    const canonicalName = canonicalFilename(projectNumber, stage, projectName);
+
+    // Check for existing document for this project+stage — overwrite it
+    const { rows: existingDocs } = await pool.query(
+      'SELECT id, document_id FROM castateintel.pal_documents WHERE project_id=$1 AND stage=$2 ORDER BY id DESC LIMIT 1',
+      [projectId, stage]
+    );
+
+    let documentId: string;
+    let wasOverwrite = false;
+
+    if (existingDocs.length > 0) {
+      // Overwrite: delete old analysis data first, then update document
+      documentId = existingDocs[0].document_id;
+      wasOverwrite = true;
+
+      // Delete stage-specific analysis (but NOT global contacts from other stages)
+      await deleteStageAnalysis(pool, projectId, stage, documentId);
+
+      // Update existing document record
+      await pool.query(`
+        UPDATE castateintel.pal_documents SET
+          label=$1, filename=$2, file_size_kb=$3,
+          content_text=$4, downloaded_at=NOW(), pdf_data=$5, updated_at=NOW()
+        WHERE project_id=$6 AND stage=$7
+      `, [label, canonicalName, fileSizeKb, extractedText || null, buffer, projectId, stage]);
+    } else {
+      // New document
+      documentId = randomUUID();
+      await pool.query(`
+        INSERT INTO castateintel.pal_documents
+          (project_id,stage,label,document_id,download_url,filename,file_size_kb,content_text,downloaded_at,pdf_data)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NOW(),$9)
+      `, [projectId, stage, label, documentId,
+          `/api/castateintel/pdf/${documentId}`,
+          canonicalName, fileSizeKb, extractedText || null, buffer]);
+    }
 
     return NextResponse.json({
       success: true,
       document_id: documentId,
-      filename,
+      filename: canonicalName,
       file_size_kb: fileSizeKb,
       chars_extracted: extractedText.length,
       project_number: projectNumber,
+      project_name: projectName,
       label,
       stage,
+      was_overwrite: wasOverwrite,
       auto_detected: { project_number: autoProject, stage: autoStage, label: autoLabel },
     });
 
   } catch (err) {
     console.error('[upload] Error:', err);
     return NextResponse.json({ success: false, error: 'Server error during upload' }, { status: 500 });
+  }
+}
+
+// DELETE: remove a document and its analysis
+export async function DELETE(req: Request) {
+  try {
+    const { document_id } = await req.json();
+    if (!document_id) return NextResponse.json({ success: false, error: 'document_id required' }, { status: 400 });
+
+    // Find the document
+    const { rows } = await pool.query(
+      'SELECT id, project_id, stage, document_id FROM castateintel.pal_documents WHERE document_id=$1',
+      [document_id]
+    );
+    if (!rows.length) return NextResponse.json({ success: false, error: 'Document not found' }, { status: 404 });
+
+    const { project_id, stage, document_id: docId } = rows[0];
+
+    // Delete stage analysis + contacts for this document only
+    await deleteStageAnalysis(pool, project_id, stage, docId);
+
+    // Delete the document itself
+    await pool.query('DELETE FROM castateintel.pal_documents WHERE document_id=$1', [document_id]);
+
+    return NextResponse.json({ success: true, deleted: { project_id, stage, document_id } });
+  } catch (err) {
+    console.error('[upload DELETE] Error:', err);
+    return NextResponse.json({ success: false, error: 'Server error' }, { status: 500 });
+  }
+}
+
+async function deleteStageAnalysis(db: typeof pool, projectId: number, stage: number, documentId: string) {
+  // Delete contacts for this specific document only (not global contacts from other docs)
+  await db.query(
+    'DELETE FROM castateintel.pal_contacts WHERE project_id=$1 AND stage=$2 AND document_id=$3::uuid',
+    [projectId, stage, documentId]
+  );
+  // Delete URLs for this document
+  await db.query(
+    'DELETE FROM castateintel.pal_urls WHERE project_id=$1 AND stage=$2 AND document_id=$3::uuid',
+    [projectId, stage, documentId]
+  );
+  // Delete stage-specific analysis
+  const analysisTable: Record<number, string> = {
+    1: 'pal_stage1_analysis',
+    2: 'pal_stage2_analysis',
+    3: 'pal_stage3_analysis',
+    4: 'pal_stage4_analysis',
+  };
+  if (analysisTable[stage]) {
+    await db.query(
+      `DELETE FROM castateintel.${analysisTable[stage]} WHERE project_id=$1`,
+      [projectId]
+    );
   }
 }
