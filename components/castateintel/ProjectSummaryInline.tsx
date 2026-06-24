@@ -22,14 +22,14 @@ const CRIT_COLORS:Record<string,string> = { High:"bg-red-100 text-red-700",Mediu
 
 function Badge({label,color="bg-gray-100 text-gray-600"}:{label:string;color?:string}){return <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${color}`}>{label}</span>;}
 function YN({v}:{v:string}){const lv=(v||"").toLowerCase();return <Badge label={v||"—"} color={lv==="yes"?"bg-green-100 text-green-800":lv==="no"?"bg-red-100 text-red-700":"bg-gray-100 text-gray-500"}/>;}
-function KV({label,value,accent=false}:{label:string;value?:string|null;accent?:boolean}){return(<div className="flex flex-col"><span className="text-xs font-medium" style={{color:"rgba(255,255,255,0.45)"}}>{label}</span><span className={`text-sm mt-0.5 ${accent?"font-bold":"" } ${!value?"text-xs font-normal":""}`} style={{color:value?(accent?"#9da2fb":"rgba(255,255,255,0.85)"):"rgba(255,255,255,0.25)"}}>{value||"—"}</span></div>);}
-function SHead({title}:{title:string}){return <div className="flex items-center gap-2 mb-4"><div className="w-1 h-5 rounded" style={{background:"#494fdf"}}/><h3 className="text-sm font-bold uppercase tracking-wide" style={{color:"rgba(255,255,255,0.7)"}}>{title}</h3></div>;}
-function Card({children,className=""}:{children:React.ReactNode;className?:string}){return <div className={`rounded-xl border p-5 ${className}`} style={{background:"#16181a",borderColor:"rgba(255,255,255,0.08)"}}>{children}</div>;}
+function KV({label,value,accent=false}:{label:string;value?:string|null;accent?:boolean}){return(<div className="flex flex-col"><span className="text-xs font-medium mb-1 block" style={{color:"rgba(255,255,255,0.45)"}}>{label}</span><span className={`text-sm mt-0.5 ${accent?"font-bold":"" } ${!value?"text-xs font-normal":""}`} style={{color:value?(accent?"#9da2fb":"rgba(255,255,255,0.85)"):"rgba(255,255,255,0.25)"}}>{value||"—"}</span></div>);}
+function SHead({title}:{title:string}){return <div className="flex items-center gap-2 mb-5"><div className="w-1 h-5 rounded" style={{background:"#494fdf"}}/><h3 className="text-sm font-bold uppercase tracking-wide" style={{color:"rgba(255,255,255,0.7)"}}>{title}</h3></div>;}
+function Card({children,className=""}:{children:React.ReactNode;className?:string}){return <div className={`rounded-2xl border p-7 ${className}`} style={{background:"#16181a",borderColor:"rgba(255,255,255,0.08)"}}>{children}</div>;}
 function Tbl({headers,rows}:{headers:string[];rows:(string|React.ReactNode)[][]}){
   if(!rows.length)return <p className="text-xs italic" style={{color:"rgba(255,255,255,0.3)"}}>No data</p>;
   return(<div className="overflow-x-auto"><table className="w-full text-xs border-collapse">
-    <thead><tr>{headers.map(h=><th key={h} className="text-left px-3 py-2 font-semibold whitespace-nowrap" style={{background:"rgba(255,255,255,0.04)",borderBottom:"1px solid rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.45)"}}>{h}</th>)}</tr></thead>
-    <tbody>{rows.map((row,i)=><tr key={i} style={{background:i%2===0?"transparent":"rgba(255,255,255,0.02)"}}>{row.map((cell,j)=><td key={j} className="px-3 py-2 align-top" style={{borderBottom:"1px solid rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.75)"}}>{cell}</td>)}</tr>)}</tbody>
+    <thead><tr>{headers.map(h=><th key={h} className="text-left px-4 py-3 font-semibold whitespace-nowrap" style={{background:"rgba(255,255,255,0.04)",borderBottom:"1px solid rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.45)"}}>{h}</th>)}</tr></thead>
+    <tbody>{rows.map((row,i)=><tr key={i} style={{background:i%2===0?"transparent":"rgba(255,255,255,0.02)"}}>{row.map((cell,j)=><td key={j} className="px-4 py-3 align-top" style={{borderBottom:"1px solid rgba(255,255,255,0.05)",color:"rgba(255,255,255,0.75)"}}>{cell}</td>)}</tr>)}</tbody>
   </table></div>);
 }
 function PdfBtn({doc,stage,onView}:{doc:StageDoc|null|undefined;stage:number;onView:(url:string,title:string)=>void}){
@@ -184,9 +184,9 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
                 <Card key={c.label} className="flex flex-col"><span className="text-xs text-gray-400 font-medium mb-1">{c.label}</span><span className={`text-lg font-bold ${c.accent?"text-blue-900":"text-gray-800"} ${c.value==="—"?"text-gray-300 font-normal text-sm":""}`}>{c.value}</span></Card>
               ))}
             </div>
-            <div className="grid grid-cols-3 gap-5">
+            <div className="grid grid-cols-3 gap-6">
               <Card><SHead title="Analysis Status"/>
-                <div className="space-y-3">{stageInfo.map(s=>(
+                <div className="space-y-4">{stageInfo.map(s=>(
                   <div key={s.num} className="flex items-center justify-between">
                     <div className="flex items-center gap-2"><span className={`w-2 h-2 rounded-full ${s.has?"bg-green-500":"bg-gray-200"}`}/><span className="text-sm text-gray-700">Stage {s.num} — {["","Business Analysis","Alternative Analysis","Solution Analysis","Project Readiness"][s.num]}</span></div>
                     <div className="flex items-center gap-2">
@@ -201,7 +201,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
                 :<p className="text-sm text-gray-400">Extract Stage 2 to see solution tags</p>}
               </Card>
               <Card><SHead title="Key Dates"/>
-                <div className="space-y-2">{[
+                <div className="space-y-3">{[
                   ["S1 — Execution Start",s1?.proposed_execution_start],
                   ["S1 — Form Accepted",s1?.dot_dates?.find((d:DotDate)=>d.label?.toLowerCase().includes("accept"))?.date],
                   ["S3 — Form Accepted",s3?.dot_dates?.find((d:DotDate)=>d.label?.toLowerCase().includes("accept"))?.date],
@@ -213,13 +213,13 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
               </Card>
             </div>
             {(recommended||s4?.solicitation_results?.selected_vendor)&&(
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-2 gap-6">
                 {recommended&&<Card><SHead title="Recommended Solution (S2)"/>
                   <div className="flex items-start justify-between mb-2"><h4 className="font-bold text-indigo-900 text-sm">{recommended.name}</h4>{recommended.estimated_cost&&<Badge label={recommended.estimated_cost} color="bg-indigo-50 text-indigo-700"/>}</div>
                   <p className="text-xs text-gray-600 leading-relaxed line-clamp-4">{recommended.summary}</p>
                 </Card>}
                 {s4?.solicitation_results?.selected_vendor&&<Card><SHead title="Selected Vendor (S4)"/>
-                  <div className="space-y-2"><KV label="Vendor" value={s4.solicitation_results.selected_vendor} accent/><KV label="Contract #" value={s4.solicitation_results.contract_number}/><KV label="Total Contract Cost" value={s4.solicitation_results.total_contract_cost}/><KV label="Period" value={`${fmt(s4.solicitation_results.contract_start_date)} → ${fmt(s4.solicitation_results.contract_end_date)}`}/></div>
+                  <div className="space-y-3"><KV label="Vendor" value={s4.solicitation_results.selected_vendor} accent/><KV label="Contract #" value={s4.solicitation_results.contract_number}/><KV label="Total Contract Cost" value={s4.solicitation_results.total_contract_cost}/><KV label="Period" value={`${fmt(s4.solicitation_results.contract_start_date)} → ${fmt(s4.solicitation_results.contract_end_date)}`}/></div>
                 </Card>}
               </div>
             )}
@@ -229,12 +229,12 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
           {tab==="s1"&&(<div className="space-y-5">
             <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 1 — Business Analysis" color="bg-green-100 text-green-800"/>{s1?.doc_created_date&&<span className="text-xs text-gray-400">Created {fmt(s1.doc_created_date)}</span>}</div><PdfBtn doc={s1?.document} stage={1} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
             {!s1?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
-              <div className="grid grid-cols-2 gap-5"><Card><SHead title="General Summary"/><p className="text-sm text-gray-700 leading-relaxed">{s1.general_info_summary||"—"}</p></Card><Card><SHead title="Business Program"/><p className="text-sm text-gray-700 leading-relaxed">{s1.business_program_summary||"—"}</p></Card></div>
-              <div className="grid grid-cols-2 gap-5"><Card><SHead title="Project Justification"/><p className="text-sm text-gray-700 leading-relaxed">{s1.justification_summary||"—"}</p></Card><Card><SHead title="Business Outcomes"/>{s1.outcomes_raw?.length>0?<Tbl headers={["Outcome","Metric","Target"]} rows={s1.outcomes_raw.map((o:any)=>[o.outcome,o.metric,o.target])}/>:<p className="text-sm text-gray-700">{s1.outcomes_summary||"—"}</p>}</Card></div>
-              <div className="grid grid-cols-3 gap-5">
+              <div className="grid grid-cols-2 gap-6"><Card><SHead title="General Summary"/><p className="text-sm text-gray-700 leading-relaxed">{s1.general_info_summary||"—"}</p></Card><Card><SHead title="Business Program"/><p className="text-sm text-gray-700 leading-relaxed">{s1.business_program_summary||"—"}</p></Card></div>
+              <div className="grid grid-cols-2 gap-6"><Card><SHead title="Project Justification"/><p className="text-sm text-gray-700 leading-relaxed">{s1.justification_summary||"—"}</p></Card><Card><SHead title="Business Outcomes"/>{s1.outcomes_raw?.length>0?<Tbl headers={["Outcome","Metric","Target"]} rows={s1.outcomes_raw.map((o:any)=>[o.outcome,o.metric,o.target])}/>:<p className="text-sm text-gray-700">{s1.outcomes_summary||"—"}</p>}</Card></div>
+              <div className="grid grid-cols-3 gap-6">
                 <Card><SHead title="Complexity"/>{s1.complexity_raw?.length>0?<Tbl headers={["Dimension","Score"]} rows={s1.complexity_raw.map((c:any)=>[c.dimension,c.score])}/>:<p className="text-sm text-gray-700">{s1.complexity_summary||"—"}</p>}</Card>
                 <Card><SHead title="Funding (ROM)"/>{s1.rom_estimate?.length>0?<Tbl headers={["Category","Amount"]} rows={s1.rom_estimate.map((r:any)=>[r.category,r.amount])}/>:<p className="text-sm text-gray-700">{s1.funding_summary||"—"}</p>}</Card>
-                <Card><SHead title="CDT Dates"/>{s1.dot_dates?.length>0?<div className="space-y-1">{s1.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>:<p className="text-xs text-gray-400">—</p>}</Card>
+                <Card><SHead title="CDT Dates"/>{s1.dot_dates?.length>0?<div className="space-y-2">{s1.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>:<p className="text-xs text-gray-400">—</p>}</Card>
               </div>
               {s1.stakeholders?.length>0&&<Card><SHead title="Stakeholders"/><Tbl headers={["Name","Organization","Role","Interest"]} rows={s1.stakeholders.map((s:any)=>[s.name,s.organization,s.role,s.interest])}/></Card>}
             </>)}
@@ -244,7 +244,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
           {tab==="s2"&&(<div className="space-y-5">
             <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 2 — Alternative Analysis" color="bg-indigo-100 text-indigo-800"/>{s2?.doc_created_date&&<span className="text-xs text-gray-400">Created {fmt(s2.doc_created_date)}</span>}</div><PdfBtn doc={s2?.document} stage={2} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
             {!s2?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
-              <div className="grid grid-cols-2 gap-5"><Card><SHead title="Baseline / Current State"/><p className="text-sm text-gray-700 leading-relaxed">{s2.baseline_summary||"—"}</p></Card><Card><SHead title="Requirements"/><p className="text-sm text-gray-700 leading-relaxed">{s2.requirements_summary||"—"}</p></Card></div>
+              <div className="grid grid-cols-2 gap-6"><Card><SHead title="Baseline / Current State"/><p className="text-sm text-gray-700 leading-relaxed">{s2.baseline_summary||"—"}</p></Card><Card><SHead title="Requirements"/><p className="text-sm text-gray-700 leading-relaxed">{s2.requirements_summary||"—"}</p></Card></div>
               <Card><SHead title="Market Research"/><p className="text-sm text-gray-700 leading-relaxed">{s2.market_research_summary||"—"}</p></Card>
               <Card><SHead title="Viable Solutions"/><div className="space-y-4">{s2.viable_solutions?.map((sol:any,i:number)=>(
                 <div key={i} className={`rounded-lg p-4 border-2 ${sol.recommended?"border-indigo-400 bg-indigo-50":"border-gray-200"}`}>
@@ -253,9 +253,9 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
                   <div className="grid grid-cols-2 gap-3">{sol.pros?.length>0&&<div><p className="text-xs font-semibold text-green-700 mb-1">Pros</p>{sol.pros.map((p:string,j:number)=><p key={j} className="text-xs text-gray-600">✓ {p}</p>)}</div>}{sol.cons?.length>0&&<div><p className="text-xs font-semibold text-red-600 mb-1">Cons</p>{sol.cons.map((c:string,j:number)=><p key={j} className="text-xs text-gray-600">✗ {c}</p>)}</div>}</div>
                 </div>
               ))}</div></Card>
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-2 gap-6">
                 <Card><SHead title="Financial Analysis"/>{s2.financial_analysis?.cost_table?.length?<Tbl headers={["Category","Total"]} rows={s2.financial_analysis.cost_table.map((r:any)=>[r.category,r.total])}/>:<p className="text-xs text-gray-400">—</p>}{s2.financial_analysis?.npv&&<div className="mt-3 text-xs"><span className="text-gray-500">NPV:</span> <span className="font-semibold">{s2.financial_analysis.npv}</span></div>}</Card>
-                <Card><SHead title="CDT Dates"/>{s2.dot_dates?.length>0?<div className="space-y-1">{s2.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>:<p className="text-xs text-gray-400">—</p>}</Card>
+                <Card><SHead title="CDT Dates"/>{s2.dot_dates?.length>0?<div className="space-y-2">{s2.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>:<p className="text-xs text-gray-400">—</p>}</Card>
               </div>
             </>)}
           </div>)}
@@ -265,9 +265,9 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
             <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 3 — Solution Analysis" color="bg-violet-100 text-violet-800"/>{s3?.doc_created_date&&<span className="text-xs text-gray-400">Created {fmt(s3.doc_created_date)}</span>}</div><PdfBtn doc={s3?.document} stage={3} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
             {!s3?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
               <Card><SHead title="Solution Requirements"/><p className="text-sm text-gray-700 leading-relaxed">{s3.solution_requirements_summary||"—"}</p></Card>
-              <div className="grid grid-cols-2 gap-5">
-                <Card><SHead title="Primary Solicitation"/><div className="space-y-2">{Object.entries(s3.primary_solicitation_raw||{}).filter(([,v])=>v&&v!=="null").map(([k,v])=><div key={k} className="flex justify-between text-xs"><span className="text-gray-500 capitalize">{k.replace(/_/g," ")}</span><span className="font-medium">{String(v)}</span></div>)}</div></Card>
-                <Card><SHead title="CDT Dates"/>{s3.dot_dates?.length>0?<div className="space-y-1">{s3.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>:<p className="text-xs text-gray-400">—</p>}</Card>
+              <div className="grid grid-cols-2 gap-6">
+                <Card><SHead title="Primary Solicitation"/><div className="space-y-3">{Object.entries(s3.primary_solicitation_raw||{}).filter(([,v])=>v&&v!=="null").map(([k,v])=><div key={k} className="flex justify-between text-xs"><span className="text-gray-500 capitalize">{k.replace(/_/g," ")}</span><span className="font-medium">{String(v)}</span></div>)}</div></Card>
+                <Card><SHead title="CDT Dates"/>{s3.dot_dates?.length>0?<div className="space-y-2">{s3.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>:<p className="text-xs text-gray-400">—</p>}</Card>
               </div>
               {s3.procurements_roadmap?.phases?.length>0&&<Card><SHead title="Roadmap"/><Tbl headers={["Phase","Start","End","Description"]} rows={s3.procurements_roadmap.phases.map((p:any)=>[p.phase,fmt(p.start_date)||p.start_date,fmt(p.end_date)||p.end_date,p.description])}/></Card>}
               {s3.procurements_roadmap?.key_milestones?.length>0&&<Card><SHead title="Key Milestones"/><Tbl headers={["Milestone","Date","Type"]} rows={s3.procurements_roadmap.key_milestones.map((m:any)=>[m.milestone,fmt(m.date)||m.date,m.type])}/></Card>}
@@ -278,20 +278,20 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
           {tab==="s4"&&(<div className="space-y-5">
             <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 4 — Project Readiness" color="bg-amber-100 text-amber-800"/>{s4?.doc_created_date&&<span className="text-xs text-gray-400">Created {fmt(s4.doc_created_date)}</span>}</div><PdfBtn doc={s4?.document} stage={4} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
             {!s4?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
-              <div className="grid grid-cols-3 gap-4"><Card><KV label="Selected Vendor" value={s4.solicitation_results?.selected_vendor} accent/></Card><Card><KV label="Total Contract Cost" value={s4.solicitation_results?.total_contract_cost} accent/></Card><Card><KV label="Contract Period" value={`${fmt(s4.solicitation_results?.contract_start_date)||"—"} → ${fmt(s4.solicitation_results?.contract_end_date)||"—"}`}/></Card></div>
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-3 gap-6"><Card><KV label="Selected Vendor" value={s4.solicitation_results?.selected_vendor} accent/></Card><Card><KV label="Total Contract Cost" value={s4.solicitation_results?.total_contract_cost} accent/></Card><Card><KV label="Contract Period" value={`${fmt(s4.solicitation_results?.contract_start_date)||"—"} → ${fmt(s4.solicitation_results?.contract_end_date)||"—"}`}/></Card></div>
+              <div className="grid grid-cols-2 gap-6">
                 <Card><SHead title="Schedule Baseline"/><Tbl headers={["","Proposed","Baseline","Variance"]} rows={[["Start",fmt(s4.schedule_baseline?.proposed_project_start)||"—",fmt(s4.schedule_baseline?.baseline_project_start)||"—",s4.schedule_baseline?.start_variance||"—"],["End",fmt(s4.schedule_baseline?.proposed_project_end)||"—",fmt(s4.schedule_baseline?.baseline_project_end)||"—",s4.schedule_baseline?.end_variance||"—"]]}/>{s4.schedule_baseline?.variance_reasons&&<p className="text-xs text-amber-700 mt-2 bg-amber-50 p-2 rounded">{s4.schedule_baseline.variance_reasons}</p>}</Card>
                 <Card><SHead title="Cost Baseline"/>{s4.cost_baseline?.cost_rows?.length>0?<Tbl headers={["Category","Proposed","Baseline","Variance"]} rows={s4.cost_baseline.cost_rows.map((r:any)=>[r.category,r.proposed,r.baseline,r.variance])}/>:<p className="text-xs text-gray-400">—</p>}</Card>
               </div>
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-2 gap-6">
                 <Card><SHead title="Contract Management"/><Tbl headers={["Question","Answer"]} rows={(s4.contract_management||[]).map((r:any)=>[r.question,<YN key={r.question} v={r.answer}/>])}/></Card>
                 <Card><SHead title="Organizational Readiness"/><Tbl headers={["Question","Answer"]} rows={(s4.org_readiness||[]).map((r:any)=>[r.question,<YN key={r.question} v={r.answer}/>])}/></Card>
               </div>
               {s4.objectives?.length>0&&<Card><SHead title="Business Objectives"/><Tbl headers={["ID","Objective","Metric","Target","Valuation"]} rows={s4.objectives.map((o:any)=>[<strong key={o.id} className="text-amber-700">{o.id}</strong>,o.objective_summary,o.metric,o.target_result,o.valuation_pct])}/></Card>}
               {s4.risk_register?.length>0&&<Card><SHead title="Risk Register"/><Tbl headers={["Risk","Probability","Impact","Mitigation"]} rows={s4.risk_register.map((r:any)=>[r.risk,<Badge key={r.risk_id} label={r.probability||"—"} color={RISK_COLORS[r.probability]||"bg-gray-100 text-gray-600"}/>,<Badge key={r.risk_id+"i"} label={r.impact||"—"} color={RISK_COLORS[r.impact]||"bg-gray-100 text-gray-600"}/>,r.mitigation])}/></Card>}
-              <div className="grid grid-cols-2 gap-5">
-                <Card><SHead title="Project Readiness"/><div className="space-y-2"><KV label="Methodology" value={s4.project_readiness?.methodology}/><KV label="OTech Engaged" value={s4.project_readiness?.otech_engaged}/>{s4.project_readiness?.methodology_description&&<p className="text-xs text-gray-600 mt-2">{s4.project_readiness.methodology_description}</p>}</div></Card>
-                <Card><SHead title="CDT Use Only"/>{s4.dot_dates?.length>0&&<div className="space-y-1 mb-3">{s4.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>}{s4.dot_raw&&<div className="space-y-1">{s4.dot_raw.form_status&&<div className="flex justify-between text-xs"><span className="text-gray-500">Form Status</span><Badge label={s4.dot_raw.form_status} color="bg-indigo-100 text-indigo-700"/></div>}{s4.dot_raw.form_disposition&&<div className="flex justify-between text-xs"><span className="text-gray-500">Disposition</span><Badge label={s4.dot_raw.form_disposition} color="bg-green-50 text-green-700"/></div>}</div>}</Card>
+              <div className="grid grid-cols-2 gap-6">
+                <Card><SHead title="Project Readiness"/><div className="space-y-3"><KV label="Methodology" value={s4.project_readiness?.methodology}/><KV label="OTech Engaged" value={s4.project_readiness?.otech_engaged}/>{s4.project_readiness?.methodology_description&&<p className="text-xs mt-3 leading-relaxed" style={{color:"rgba(255,255,255,0.6)"}}>{s4.project_readiness.methodology_description}</p>}</div></Card>
+                <Card><SHead title="CDT Use Only"/>{s4.dot_dates?.length>0&&<div className="space-y-1 mb-3">{s4.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>}{s4.dot_raw&&<div className="space-y-2">{s4.dot_raw.form_status&&<div className="flex justify-between text-xs"><span className="text-gray-500">Form Status</span><Badge label={s4.dot_raw.form_status} color="bg-indigo-100 text-indigo-700"/></div>}{s4.dot_raw.form_disposition&&<div className="flex justify-between text-xs"><span className="text-gray-500">Disposition</span><Badge label={s4.dot_raw.form_disposition} color="bg-green-50 text-green-700"/></div>}</div>}</Card>
               </div>
             </>)}
           </div>)}
@@ -299,9 +299,9 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
           {/* ── PROCUREMENTS ── */}
           {tab==="procurements"&&(<div className="space-y-5">
             {!s3?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
-              {s3.primary_solicitation_raw&&<Card><SHead title="Primary Solicitation"/><div className="grid grid-cols-3 gap-4">{Object.entries(s3.primary_solicitation_raw).filter(([,v])=>v&&v!=="null").map(([k,v])=><KV key={k} label={k.replace(/_/g," ").replace(/\b\w/g,(l:string)=>l.toUpperCase())} value={String(v)}/>)}</div></Card>}
+              {s3.primary_solicitation_raw&&<Card><SHead title="Primary Solicitation"/><div className="grid grid-cols-3 gap-6">{Object.entries(s3.primary_solicitation_raw).filter(([,v])=>v&&v!=="null").map(([k,v])=><KV key={k} label={k.replace(/_/g," ").replace(/\b\w/g,(l:string)=>l.toUpperCase())} value={String(v)}/>)}</div></Card>}
               {ancillary.length===0?<Card><p className="text-gray-400">No ancillary procurements.</p></Card>
-              :<div className="grid grid-cols-2 gap-4">{ancillary.map((ap:AncillaryProc,i:number)=>(
+              :<div className="grid grid-cols-2 gap-6">{ancillary.map((ap:AncillaryProc,i:number)=>(
                 <Card key={i}><div className="flex items-start justify-between mb-2"><h4 className="font-semibold text-sm">{ap.name}</h4>{ap.estimated_value&&<Badge label={ap.estimated_value} color="bg-violet-50 text-violet-700"/>}</div>
                   {ap.procurement_type&&<Badge label={ap.procurement_type} color="bg-gray-100 text-gray-600"/>}
                   {ap.timeline&&<p className="text-xs text-violet-700 mt-2">📅 {ap.timeline}</p>}
