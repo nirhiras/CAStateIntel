@@ -9,6 +9,9 @@ type Doc = {
   project_name: string;
   stage: number;
   label: string;
+  sub_label: string | null;
+  doc_type: string | null;
+  short_description: string | null;
   file_size_kb: number | null;
   downloaded_at: string | null;
   content_text: string | null;
@@ -118,9 +121,10 @@ export default function DocumentsPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', color: '#9B9589' }}>{g.project_number}</span>
                 {g.docs.map(d => (
-                  <span key={d.stage} style={{ fontSize: 9, padding: '1px 6px', borderRadius: 20,
-                    background: STAGE_COLOR[d.stage]?.bg ?? '#f5f5f5', color: STAGE_COLOR[d.stage]?.text ?? '#333', fontWeight: 600 }}>
-                    S{d.stage}
+                  <span key={d.document_id} style={{ fontSize: 9, padding: '1px 6px', borderRadius: 20,
+                    background: d.stage === 0 ? '#ECFDF5' : (STAGE_COLOR[d.stage]?.bg ?? '#f5f5f5'),
+                    color: d.stage === 0 ? '#065F46' : (STAGE_COLOR[d.stage]?.text ?? '#333'), fontWeight: 600 }}>
+                    {d.stage === 0 ? '📎' : `S${d.stage}${d.sub_label || ''}`}
                   </span>
                 ))}
               </div>
@@ -159,8 +163,9 @@ export default function DocumentsPage() {
                     fontWeight: selectedDoc?.id === doc.id ? 600 : 400,
                     color: selectedDoc?.id === doc.id ? '#1A1A1A' : '#6B6861',
                     display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: STAGE_COLOR[doc.stage]?.dot ?? '#ccc', display: 'inline-block' }} />
-                  {doc.label}
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: doc.stage === 0 ? '#059669' : (STAGE_COLOR[doc.stage]?.dot ?? '#ccc'), display: 'inline-block' }} />
+                  {doc.stage === 0 ? (doc.short_description || doc.label) : doc.label}
+                  {doc.sub_label && <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 5px', background: '#EEF2FF', color: '#4F46E5', borderRadius: 4 }}>Part {doc.sub_label}</span>}
                   {doc.file_size_kb && <span style={{ fontSize: 10, color: '#B0AC9F' }}>({doc.file_size_kb}KB)</span>}
                 </button>
               ))}
