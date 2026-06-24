@@ -209,9 +209,18 @@ export default function CAStateIntelPage() {
             <table className="rvt-table" style={{ background: 'transparent' }}>
               <thead>
                 <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
-                  {['Project #','Name','Stage','Criticality','Department','Docs','Analysis','Solution Tags'].map(h => (
-                    <th key={h} style={{ color: 'rgba(255,255,255,0.35)', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'transparent' }}>{h}</th>
-                  ))}
+                  {[
+                  { label: 'Project #',    w: '80px'  },
+                  { label: 'Name',         w: '280px' },
+                  { label: 'Stage',        w: '80px'  },
+                  { label: 'Criticality',  w: '90px'  },
+                  { label: 'Department',   w: '160px' },
+                  { label: 'Source Docs',  w: '110px' },
+                  { label: 'Analysis',     w: '100px' },
+                  { label: 'Solution Tags',w: 'auto'  },
+                ].map(h => (
+                  <th key={h.label} style={{ width: h.w, minWidth: h.w, padding: "12px 20px", textAlign: "left", fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)", background: "rgba(255,255,255,0.03)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{h.label}</th>
+                ))}
                 </tr>
               </thead>
               <tbody>
