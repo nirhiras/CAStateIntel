@@ -1,52 +1,68 @@
 "use client";
 // app/CAStateIntel/project/[projectNumber]/page.tsx
-// Project summary layout matching the Excel template structure
+// Detailed analysis page — Excel-style layout
 
-import { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
+
+interface StageDoc {
+  document_id: string;
+  filename: string;
+  label: string;
+}
+
+interface Contact {
+  name: string; title: string; email: string; phone: string;
+  organization: string; role_type: string; stage: number; source: string;
+}
+
+interface AncillaryProc {
+  name: string; procurement_type: string; estimated_value: string;
+  timeline: string; vendor_or_source: string; description: string;
+}
 
 interface ProjectData {
   project: {
-    project_number: string;
-    name: string;
-    department_name: string;
-    agency_name: string;
-    pal_stage: string;
-    criticality_rating: string;
-    detail_url: string;
+    id: number; project_number: string; name: string;
+    department_name: string; agency_name: string;
+    pal_stage: string; criticality_rating: string; detail_url: string;
   };
   s1: {
     doc_created_date: string;
     project_planning_start: string;
     proposed_execution_start: string;
-    funding_raw: { total_estimate?: string };
-    rom_estimate: { category: string; amount: string }[];
     dot_dates: { label: string; date: string }[];
     general_info_summary: string;
-    stakeholders: { name: string; organization: string; role: string }[];
-    outcomes_raw: { outcome: string }[];
-    complexity_raw: { dimension: string; score: string }[];
-    document: { document_id: string; filename: string } | null;
-    solution_tags: never[];
+    funding_raw: Record<string, string>;
+    rom_estimate: { category: string; amount: string }[];
+    document: StageDoc | null;
   } | null;
   s2: {
     doc_created_date: string;
-    viable_solutions: { name: string; recommended: boolean; estimated_cost: string }[];
-    financial_analysis: { total?: string; npv?: string; cost_table?: { category: string; total: string }[] };
-    project_planning_raw: { milestones?: { milestone: string; date: string }[] };
     dot_dates: { label: string; date: string }[];
+    viable_solutions: { name: string; recommended: boolean; summary: string; estimated_cost: string }[];
+    market_research_summary: string;
     solution_tags: { tag: string; category: string; confidence: string }[];
-    document: { document_id: string; filename: string } | null;
+    financial_analysis: { total?: string; cost_table?: { category: string; total: string }[] };
+    document: StageDoc | null;
   } | null;
   s3: {
     doc_created_date: string;
-    ancillary_procurements: { name: string; estimated_value: string; timeline: string; procurement_type: string }[];
-    primary_solicitation_raw: { solicitation_type: string; estimated_contract_value: string; anticipated_release_date: string };
-    procurements_roadmap: { phases?: { phase: string; start_date: string; end_date: string }[]; total_duration?: string };
     dot_dates: { label: string; date: string }[];
-    document: { document_id: string; filename: string } | null;
+    ancillary_procurements: AncillaryProc[];
+    primary_solicitation_raw: Record<string, string>;
+    procurements_roadmap: { total_duration?: string; phases?: { phase: string; start_date: string; end_date: string }[] };
+    document: StageDoc | null;
   } | null;
-  contacts: { name: string; title: string; email: string; phone: string; organization: string; role_type: string; stage: number }[];
+  s4: {
+    doc_created_date: string;
+    selected_vendor: string;
+    total_contract_cost: string;
+    contract_start_date: string;
+    contract_end_date: string;
+    dot_dates: { label: string; date: string }[];
+    document: StageDoc | null;
+  } | null;
+  contacts: Contact[];
 }
 
 const TAG_COLORS: Record<string, string> = {
@@ -56,48 +72,50 @@ const TAG_COLORS: Record<string, string> = {
   deployment: "bg-orange-100 text-orange-800",
 };
 
-function InfoCell({ label, value, highlight }: { label: string; value?: string | null; highlight?: boolean }) {
+function Cell({ children, className = "", bold = false, header = false, span = 1, rowSpan = 1 }:
+  { children?: React.ReactNode; className?: string; bold?: boolean; header?: boolean; span?: number; rowSpan?: number }) {
   return (
-    <div className={`border border-gray-200 p-2 ${highlight ? "bg-blue-50" : "bg-white"}`}>
-      <div className="text-xs text-gray-500 font-medium">{label}</div>
-      <div className="text-sm font-semibold text-gray-900 mt-0.5">{value || "—"}</div>
-    </div>
+    <td
+      colSpan={span}
+      rowSpan={rowSpan}
+      className={`border border-gray-400 px-2 py-1.5 text-xs align-top
+        ${header ? "bg-gray-100 font-semibold" : "bg-white"}
+        ${bold ? "font-bold" : ""}
+        ${className}`}
+    >
+      {children}
+    </td>
   );
 }
 
-function SectionHeader({ title, color = "bg-gray-800" }: { title: string; color?: string }) {
+function PdfButton({ doc, stage }: { doc: StageDoc | null | undefined; stage: number }) {
+  const colors = ["", "text-green-700 border-green-300 bg-green-50", "text-indigo-700 border-indigo-300 bg-indigo-50",
+    "text-violet-700 border-violet-300 bg-violet-50", "text-amber-700 border-amber-300 bg-amber-50"];
+  if (!doc?.document_id) return <span className="text-gray-300 text-xs">No PDF</span>;
   return (
-    <div className={`${color} text-white px-3 py-1.5 text-xs font-bold uppercase tracking-widest`}>
-      {title}
-    </div>
+    <a href={`/api/castateintel/pdf/${doc.document_id}`} target="_blank" rel="noopener noreferrer"
+      className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded border font-medium ${colors[stage] || colors[1]}`}>
+      📄 Source PDF
+    </a>
   );
 }
 
-function StageBox({ num, label, color, doc, extracted, projectNumber }: {
-  num: number; label: string; color: string; doc: { document_id: string; filename: string } | null | undefined;
-  extracted: boolean; projectNumber: string;
+function StageLink({ num, projectNumber, extracted, doc }: {
+  num: number; projectNumber: string; extracted: boolean; doc: StageDoc | null | undefined;
 }) {
-  const borderColors = { 1: "border-green-400", 2: "border-indigo-400", 3: "border-violet-400" };
-  const bgColors = { 1: "bg-green-50", 2: "bg-indigo-50", 3: "bg-violet-50" };
-  const textColors = { 1: "text-green-700", 2: "text-indigo-700", 3: "text-violet-700" };
-
+  const colors = ["", "bg-green-50 text-green-700 border-green-300 hover:bg-green-100",
+    "bg-indigo-50 text-indigo-700 border-indigo-300 hover:bg-indigo-100",
+    "bg-violet-50 text-violet-700 border-violet-300 hover:bg-violet-100",
+    "bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100"];
+  const labels = ["", "S1BA", "S2AA", "S3SA", "S4PRA"];
   return (
-    <div className={`border-2 ${borderColors[num as 1|2|3]} ${bgColors[num as 1|2|3]} rounded-lg p-3 flex flex-col gap-2`}>
-      <div className={`text-xs font-bold uppercase tracking-wide ${textColors[num as 1|2|3]}`}>
-        Stage {num} — {label}
-      </div>
-      <div className="flex gap-2 flex-wrap">
-        <a href={`/CAStateIntel/stage${num}?project=${projectNumber}`}
-          className={`text-xs px-2 py-1 rounded font-medium ${color} transition-colors ${!extracted ? "opacity-50" : ""}`}>
-          {extracted ? "View Analysis" : "Not yet extracted"} →
-        </a>
-        {doc?.document_id && (
-          <a href={`/api/castateintel/pdf/${doc.document_id}`} target="_blank" rel="noopener noreferrer"
-            className="text-xs px-2 py-1 rounded font-medium bg-white border border-gray-300 text-gray-600 hover:border-gray-400">
-            📄 Source PDF
-          </a>
-        )}
-      </div>
+    <div className="space-y-1">
+      <a href={`/CAStateIntel/stage${num}?project=${projectNumber}`}
+        className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded border font-medium transition-colors
+          ${colors[num]} ${!extracted ? "opacity-40" : ""}`}>
+        {labels[num]} {extracted ? "→" : "(pending)"}
+      </a>
+      {doc && <div className="mt-1"><PdfButton doc={doc} stage={num} /></div>}
     </div>
   );
 }
@@ -106,238 +124,354 @@ export default function ProjectSummaryPage({ params }: { params: { projectNumber
   const projectNumber = params?.projectNumber;
   const [data, setData] = useState<ProjectData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [pdfModal, setPdfModal] = useState<{ url: string; title: string } | null>(null);
 
   useEffect(() => {
     if (!projectNumber) return;
-    setLoading(true);
     Promise.all([
       fetch(`/api/castateintel/analysis/${projectNumber}/1`).then(r => r.json()),
       fetch(`/api/castateintel/analysis/${projectNumber}/2`).then(r => r.json()),
       fetch(`/api/castateintel/analysis/${projectNumber}/3`).then(r => r.json()),
+      fetch(`/api/castateintel/analysis/${projectNumber}/4`).then(r => r.json()),
       fetch(`/api/castateintel/contacts?project=${projectNumber}`).then(r => r.json()),
-    ]).then(([r1, r2, r3, rc]) => {
+    ]).then(([r1, r2, r3, r4, rc]) => {
       setData({
-        project: r1.project || r2.project || r3.project,
+        project: r1.project || r2.project || r3.project || r4.project,
         s1: r1.extracted ? { ...r1.analysis, document: r1.document } : null,
-        s2: r2.extracted ? { ...r2.analysis, solution_tags: r2.analysis?.solution_tags || [], document: r2.document } : null,
+        s2: r2.extracted ? { ...r2.analysis, document: r2.document } : null,
         s3: r3.extracted ? { ...r3.analysis, document: r3.document } : null,
+        s4: r4.extracted ? {
+          doc_created_date: r4.analysis?.doc_created_date,
+          selected_vendor: r4.analysis?.selected_vendor,
+          total_contract_cost: r4.analysis?.total_contract_cost,
+          contract_start_date: r4.analysis?.solicitation_results?.contract_start_date,
+          contract_end_date: r4.analysis?.solicitation_results?.contract_end_date,
+          dot_dates: r4.analysis?.dot_dates || [],
+          document: r4.document,
+        } : null,
         contacts: rc.contacts || [],
       });
       setLoading(false);
-    }).catch(e => { setError(String(e)); setLoading(false); });
+    }).catch(() => setLoading(false));
   }, [projectNumber]);
 
-  if (loading) return <div className="flex items-center justify-center h-screen text-gray-400">Loading project summary...</div>;
-  if (error) return <div className="p-8 text-red-600">{error}</div>;
+  if (loading) return (
+    <div className="flex items-center justify-center h-screen text-gray-400 text-sm">Loading project...</div>
+  );
   if (!data) return null;
 
-  const { project, s1, s2, s3, contacts } = data;
+  const { project, s1, s2, s3, s4, contacts } = data;
   const tags = s2?.solution_tags || [];
 
-  // Get financial totals
-  const totalValue = s1?.funding_raw?.total_estimate || s2?.financial_analysis?.total || "—";
-  const oneTimeCost = s2?.financial_analysis?.cost_table?.find(r => r.category?.toLowerCase().includes("one"))?.total;
-  const continuingCost = s2?.financial_analysis?.cost_table?.find(r => r.category?.toLowerCase().includes("continu") || r.category?.toLowerCase().includes("ongoing"))?.total;
-
-  // Duration from roadmap
+  // Key financial values
+  const totalValue = s1?.funding_raw?.total_estimate
+    || s1?.rom_estimate?.find(r => r.category?.toLowerCase().includes("total"))?.amount
+    || s4?.total_contract_cost || "—";
+  const oneTimeCost = s2?.financial_analysis?.cost_table?.find(r =>
+    r.category?.toLowerCase().includes("one"))?.total || "—";
+  const continuingCost = s2?.financial_analysis?.cost_table?.find(r =>
+    r.category?.toLowerCase().includes("continu") || r.category?.toLowerCase().includes("ongoing"))?.total || "—";
   const duration = s3?.procurements_roadmap?.total_duration || "—";
 
-  // Get form accepted dates from CDT sections
-  const s1AcceptedDate = s1?.dot_dates?.find(d => d.label?.toLowerCase().includes("accept") || d.label?.toLowerCase().includes("approved"))?.date;
-  const s3AcceptedDate = s3?.dot_dates?.find(d => d.label?.toLowerCase().includes("accept") || d.label?.toLowerCase().includes("approved"))?.date;
+  // Key dates
+  const executionStart = s1?.proposed_execution_start;
+  const s1Accepted = s1?.dot_dates?.find(d => (d.label || "").toLowerCase().includes("accept"))?.date;
+  const s2EstStart = s2?.dot_dates?.find(d => (d.label || "").toLowerCase().includes("start"))?.date;
+  const s2EstEnd = s2?.dot_dates?.find(d => (d.label || "").toLowerCase().includes("end"))?.date;
+  const s3AcceptDate = s3?.dot_dates?.find(d => (d.label || "").toLowerCase().includes("accept"))?.date;
+  const s4AcceptDate = s4?.dot_dates?.find(d => (d.label || "").toLowerCase().includes("accept"))?.date;
+
+  // Recommended solution
+  const recommended = s2?.viable_solutions?.find(v => v.recommended) || s2?.viable_solutions?.[0];
+
+  // Ancillary procurements
+  const ancillary = s3?.ancillary_procurements || [];
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* PDF Modal */}
+      {pdfModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <span className="text-sm font-semibold text-gray-800">📄 {pdfModal.title}</span>
+              <button onClick={() => setPdfModal(null)} className="text-gray-400 hover:text-gray-700 text-xl font-bold px-2">✕</button>
+            </div>
+            <iframe src={pdfModal.url} className="flex-1 w-full" title="PDF Viewer" />
+          </div>
+        </div>
+      )}
+
       {/* Header */}
-      <div className="bg-blue-900 text-white px-8 py-5">
-        <div className="flex items-center gap-3 mb-1">
-          <a href="/CAStateIntel" className="text-blue-300 hover:text-white text-sm">← Dashboard</a>
+      <div className="bg-blue-900 text-white px-6 py-4">
+        <div className="flex items-center gap-3 mb-1 text-sm">
+          <a href="/CAStateIntel" className="text-blue-300 hover:text-white">← Dashboard</a>
           <span className="text-blue-600">|</span>
-          <span className="text-blue-300 text-sm">Project Summary</span>
+          <span className="text-blue-300">Project Analysis</span>
         </div>
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold">{project?.name}</h1>
-            <p className="text-blue-200 text-sm mt-1">{project?.department_name} • {project?.agency_name}</p>
+            <h1 className="text-xl font-bold">{project?.project_number} — {project?.name}</h1>
+            <p className="text-blue-200 text-sm mt-0.5">
+              {project?.department_name}
+              {project?.agency_name ? ` · ${project.agency_name}` : ""}
+            </p>
           </div>
           <div className="flex gap-2">
-            <a href={`/CAStateIntel/procurements?project=${projectNumber}`}
-              className="px-3 py-1.5 rounded text-xs font-medium bg-violet-500/30 text-violet-200 hover:bg-violet-500/50 border border-violet-400/30">
-              Procurements
-            </a>
+            {project?.detail_url && (
+              <a href={project.detail_url} target="_blank" rel="noopener noreferrer"
+                className="px-3 py-1.5 rounded text-xs font-medium bg-white/10 text-white hover:bg-white/20 border border-white/20">
+                CDT ↗
+              </a>
+            )}
             <a href={`/CAStateIntel/calendar?project=${projectNumber}`}
-              className="px-3 py-1.5 rounded text-xs font-medium bg-yellow-500/30 text-yellow-200 hover:bg-yellow-500/50 border border-yellow-400/30">
+              className="px-3 py-1.5 rounded text-xs font-medium bg-yellow-500/20 text-yellow-200 hover:bg-yellow-500/40 border border-yellow-400/30">
               📅 Calendar
+            </a>
+            <a href={`/CAStateIntel/procurements?project=${projectNumber}`}
+              className="px-3 py-1.5 rounded text-xs font-medium bg-violet-500/20 text-violet-200 hover:bg-violet-500/40 border border-violet-400/30">
+              Procurements
             </a>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
+      <div className="px-6 py-6">
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-300">
+          <table className="w-full border-collapse text-sm">
 
-        {/* TOP: Department + Project + Key Metrics (Excel-style grid) */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          {/* Title rows */}
-          <div className="grid grid-cols-2 border-b border-gray-200">
-            <div className="border-r border-gray-200 p-4">
-              <div className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">Department Name</div>
-              <div className="text-base font-bold text-gray-900">{project?.department_name || "—"}</div>
-              <div className="text-xs text-gray-400 mt-0.5">{project?.agency_name}</div>
-            </div>
-            <div className="p-4">
-              <div className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">Project Number and Title</div>
-              <div className="text-base font-bold text-gray-900">{project?.project_number} — {project?.name}</div>
-              <div className="mt-1 flex gap-2">
-                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-medium">{project?.pal_stage}</span>
-                {project?.criticality_rating && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 font-medium">{project?.criticality_rating} Criticality</span>
-                )}
-              </div>
-            </div>
-          </div>
+            {/* ROW 1: Department Name */}
+            <tbody>
+              <tr>
+                <Cell header bold className="w-48">Department Name</Cell>
+                <Cell span={7} bold className="text-gray-800">
+                  {project?.department_name || "—"}
+                  {project?.agency_name ? ` · ${project.agency_name}` : ""}
+                </Cell>
+              </tr>
 
-          {/* Financials + Tags */}
-          <div className="grid grid-cols-2 border-b border-gray-200">
-            <div className="border-r border-gray-200">
-              <SectionHeader title="Financial Summary" color="bg-slate-700" />
-              <div className="grid grid-cols-2 gap-px bg-gray-100">
-                <InfoCell label="Total Project Value" value={totalValue} highlight />
-                <InfoCell label="Solution Tags" value="" />
-                <InfoCell label="One Time Cost" value={oneTimeCost} />
-                <div className="bg-white p-2 row-span-3">
-                  <div className="flex flex-wrap gap-1 pt-1">
+              {/* ROW 2: Project Number and Title */}
+              <tr>
+                <Cell header bold>Project Number and Title</Cell>
+                <Cell span={7} bold className="text-blue-900 text-sm">
+                  {project?.project_number} — {project?.name}
+                </Cell>
+              </tr>
+
+              {/* Spacer */}
+              <tr><Cell span={8} className="h-2 bg-gray-50 border-0" /></tr>
+
+              {/* ROW 3: Financials + Tags */}
+              <tr>
+                <Cell header>Total Project Value</Cell>
+                <Cell className="font-semibold text-gray-900">{totalValue}</Cell>
+                <Cell header>Tags</Cell>
+                <Cell span={5} rowSpan={4}>
+                  <div className="flex flex-wrap gap-1 p-1">
                     {tags.length > 0 ? tags.map((t, i) => (
                       <span key={i} className={`text-xs px-2 py-0.5 rounded-full font-medium ${TAG_COLORS[t.category] || "bg-gray-100 text-gray-600"}`}>
                         {t.tag}
                       </span>
-                    )) : <span className="text-xs text-gray-400">No tags extracted</span>}
+                    )) : <span className="text-gray-400 text-xs">No tags extracted yet</span>}
                   </div>
-                </div>
-                <InfoCell label="Continuing Cost" value={continuingCost} />
-                <InfoCell label="Project Duration" value={duration} />
-              </div>
-            </div>
-            <div>
-              <SectionHeader title="Key Dates" color="bg-slate-700" />
-              <div className="grid grid-cols-2 gap-px bg-gray-100">
-                <InfoCell label="S1 — Planning Start" value={s1?.project_planning_start ? new Date(s1.project_planning_start).toLocaleDateString("en-US", {year:"numeric",month:"short",day:"numeric"}) : "—"} />
-                <InfoCell label="S1 — Execution Start" value={s1?.proposed_execution_start ? new Date(s1.proposed_execution_start).toLocaleDateString("en-US", {year:"numeric",month:"short",day:"numeric"}) : "—"} highlight />
-                <InfoCell label="S1 — Form Accepted" value={s1AcceptedDate || "—"} highlight />
-                <InfoCell label="S3 — Form Accepted" value={s3AcceptedDate || "—"} highlight />
-                <InfoCell label="S2 — Doc Created" value={s2?.doc_created_date ? new Date(s2.doc_created_date).toLocaleDateString("en-US", {year:"numeric",month:"short"}) : "—"} />
-                <InfoCell label="S3 — Doc Created" value={s3?.doc_created_date ? new Date(s3.doc_created_date).toLocaleDateString("en-US", {year:"numeric",month:"short"}) : "—"} />
-              </div>
-            </div>
-          </div>
+                </Cell>
+              </tr>
+              <tr>
+                <Cell header>One Time Cost</Cell>
+                <Cell>{oneTimeCost}</Cell>
+              </tr>
+              <tr>
+                <Cell header>Continuing Cost</Cell>
+                <Cell>{continuingCost}</Cell>
+              </tr>
+              <tr>
+                <Cell header>Project Duration</Cell>
+                <Cell>{duration}</Cell>
+              </tr>
 
-          {/* Stage links + Ancillary + Contacts */}
-          <div className="grid grid-cols-3 border-b border-gray-200">
-            {/* Stage 1/2/3 links */}
-            <div className="border-r border-gray-200">
-              <SectionHeader title="Analysis Documents" color="bg-blue-800" />
-              <div className="p-3 space-y-2">
-                <StageBox num={1} label="Business Analysis" color="bg-green-100 text-green-800 hover:bg-green-200"
-                  doc={s1?.document} extracted={!!s1} projectNumber={projectNumber} />
-                <StageBox num={2} label="Alternative Analysis" color="bg-indigo-100 text-indigo-800 hover:bg-indigo-200"
-                  doc={s2?.document} extracted={!!s2} projectNumber={projectNumber} />
-                <StageBox num={3} label="Solution Analysis" color="bg-violet-100 text-violet-800 hover:bg-violet-200"
-                  doc={s3?.document} extracted={!!s3} projectNumber={projectNumber} />
-              </div>
-            </div>
+              {/* Spacer */}
+              <tr><Cell span={8} className="h-3 bg-gray-50 border-0" /></tr>
 
-            {/* Ancillary Procurements */}
-            <div className="border-r border-gray-200">
-              <SectionHeader title="Ancillary Procurements" color="bg-violet-800" />
-              <div className="p-3">
-                {s3?.ancillary_procurements?.length ? (
-                  <div className="space-y-2">
-                    {s3.ancillary_procurements.slice(0, 5).map((ap, i) => (
-                      <div key={i} className="text-xs border border-gray-200 rounded p-2 bg-gray-50">
-                        <div className="font-semibold text-gray-800">{ap.name}</div>
-                        <div className="text-gray-500 mt-0.5 flex justify-between">
-                          <span>{ap.procurement_type}</span>
-                          <span className="font-medium text-violet-700">{ap.estimated_value}</span>
+              {/* ROW: Stage links header */}
+              <tr>
+                <Cell header className="text-center w-28">Stage 1</Cell>
+                <Cell header className="text-center w-28">Stage 2</Cell>
+                <Cell header className="text-center w-28">Stage 3</Cell>
+                <Cell header className="text-center w-28">Stage 4</Cell>
+                <Cell header className="w-56">Ancillary Procurements<br/><span className="font-normal text-gray-500">(incl start dates)</span></Cell>
+                <Cell header className="w-40">All Contacts for<br/>this project</Cell>
+                <Cell header className="w-48">Market Research</Cell>
+                <Cell header className="w-48">Recommended Solution</Cell>
+              </tr>
+
+              {/* ROW: Stage links */}
+              <tr>
+                <Cell className="align-top">
+                  <StageLink num={1} projectNumber={projectNumber} extracted={!!s1}
+                    doc={s1?.document ?? (data as any)?.s1_doc} />
+                </Cell>
+                <Cell className="align-top">
+                  <StageLink num={2} projectNumber={projectNumber} extracted={!!s2}
+                    doc={s2?.document ?? (data as any)?.s2_doc} />
+                </Cell>
+                <Cell className="align-top">
+                  <StageLink num={3} projectNumber={projectNumber} extracted={!!s3}
+                    doc={s3?.document ?? (data as any)?.s3_doc} />
+                </Cell>
+                <Cell className="align-top">
+                  <StageLink num={4} projectNumber={projectNumber} extracted={!!s4}
+                    doc={s4?.document ?? (data as any)?.s4_doc} />
+                </Cell>
+
+                {/* Ancillary Procurements */}
+                <Cell className="align-top">
+                  {ancillary.length > 0 ? (
+                    <div className="space-y-1.5">
+                      {ancillary.slice(0, 6).map((ap, i) => (
+                        <div key={i} className="text-xs border-b border-gray-100 pb-1 last:border-0">
+                          <div className="font-semibold text-gray-800">{ap.name}</div>
+                          {ap.timeline && <div className="text-violet-600">📅 {ap.timeline}</div>}
+                          {ap.estimated_value && <div className="text-gray-500">{ap.estimated_value}</div>}
                         </div>
-                        {ap.timeline && <div className="text-gray-400 mt-0.5">📅 {ap.timeline}</div>}
-                      </div>
-                    ))}
-                    {s3.ancillary_procurements.length > 5 && (
-                      <a href={`/CAStateIntel/procurements?project=${projectNumber}`}
-                        className="text-xs text-violet-600 hover:underline">
-                        +{s3.ancillary_procurements.length - 5} more →
-                      </a>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-400 p-2">
-                    {s3 ? "No ancillary procurements" : "Stage 3 not yet extracted"}
-                  </p>
-                )}
-              </div>
-            </div>
+                      ))}
+                      {ancillary.length > 6 && (
+                        <a href={`/CAStateIntel/procurements?project=${projectNumber}`}
+                          className="text-xs text-violet-600 hover:underline">+{ancillary.length - 6} more →</a>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-gray-300 text-xs">{s3 ? "None" : "—"}</span>
+                  )}
+                </Cell>
 
-            {/* All Contacts */}
-            <div>
-              <SectionHeader title="All Contacts for This Project" color="bg-teal-800" />
-              <div className="p-3 max-h-64 overflow-y-auto">
-                {contacts.length > 0 ? (
-                  <div className="space-y-1.5">
-                    {contacts.map((c, i) => (
-                      <div key={i} className="text-xs border border-gray-100 rounded p-2 hover:bg-gray-50">
-                        <div className="font-semibold text-gray-800">{c.name}</div>
-                        {c.title && <div className="text-gray-500">{c.title}</div>}
-                        {c.email && <a href={`mailto:${c.email}`} className="text-blue-600 hover:underline">{c.email}</a>}
-                        {c.phone && <div className="text-gray-400">{c.phone}</div>}
-                        <div className="flex gap-1 mt-1">
-                          <span className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 text-xs">
-                            S{c.stage}
-                          </span>
-                          {c.role_type && (
-                            <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 text-xs capitalize">{c.role_type}</span>
+                {/* All Contacts */}
+                <Cell className="align-top max-w-[160px]">
+                  {contacts.length > 0 ? (
+                    <div className="space-y-1.5">
+                      {contacts.slice(0, 8).map((c, i) => (
+                        <div key={i} className="text-xs border-b border-gray-100 pb-1 last:border-0">
+                          <div className="font-semibold text-gray-800 truncate">{c.name}</div>
+                          {c.title && <div className="text-gray-500 truncate">{c.title}</div>}
+                          {c.email && (
+                            <a href={`mailto:${c.email}`} className="text-blue-600 hover:underline text-xs truncate block">{c.email}</a>
                           )}
+                          {c.phone && <div className="text-gray-400">{c.phone}</div>}
+                          <span className="inline-block text-xs px-1 rounded bg-gray-100 text-gray-500 mt-0.5">S{c.stage}</span>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-400 p-2">No contacts extracted yet</p>
-                )}
-              </div>
-            </div>
-          </div>
+                      ))}
+                      {contacts.length > 8 && (
+                        <div className="text-xs text-gray-400">+{contacts.length - 8} more</div>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-gray-300 text-xs">—</span>
+                  )}
+                </Cell>
 
-          {/* Content rows — summaries */}
-          <div className="grid grid-cols-3">
-            <div className="border-r border-gray-200 p-3">
-              <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">S1 — Business Summary</div>
-              <p className="text-xs text-gray-600 leading-relaxed line-clamp-6">
-                {s1?.general_info_summary || "Not yet extracted"}
-              </p>
-            </div>
-            <div className="border-r border-gray-200 p-3">
-              <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">S2 — Recommended Solution</div>
-              {s2?.viable_solutions?.filter(v => v.recommended).map((sol, i) => (
-                <div key={i} className="text-xs">
-                  <div className="font-semibold text-indigo-800 mb-1">{sol.name}</div>
-                  {sol.estimated_cost && <div className="text-gray-500">Est. Cost: {sol.estimated_cost}</div>}
-                </div>
-              ))}
-              {!s2 && <p className="text-xs text-gray-400">Not yet extracted</p>}
-            </div>
-            <div className="p-3">
-              <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">S3 — Primary Solicitation</div>
-              {s3?.primary_solicitation_raw ? (
-                <div className="text-xs space-y-1">
-                  <div><span className="text-gray-500">Type:</span> <span className="font-medium">{s3.primary_solicitation_raw.solicitation_type}</span></div>
-                  <div><span className="text-gray-500">Value:</span> <span className="font-medium text-violet-700">{s3.primary_solicitation_raw.estimated_contract_value}</span></div>
-                  <div><span className="text-gray-500">Release:</span> <span className="font-medium">{s3.primary_solicitation_raw.anticipated_release_date}</span></div>
-                </div>
-              ) : (
-                <p className="text-xs text-gray-400">Not yet extracted</p>
-              )}
-            </div>
-          </div>
+                {/* Market Research */}
+                <Cell className="align-top">
+                  {s2?.market_research_summary ? (
+                    <p className="text-xs text-gray-600 leading-relaxed line-clamp-10">
+                      {s2.market_research_summary}
+                    </p>
+                  ) : (
+                    <span className="text-gray-300 text-xs">—</span>
+                  )}
+                </Cell>
+
+                {/* Recommended Solution + Source PDF */}
+                <Cell className="align-top">
+                  {recommended ? (
+                    <div className="space-y-2">
+                      <div className="font-semibold text-indigo-800 text-xs">{recommended.name}</div>
+                      {recommended.estimated_cost && (
+                        <div className="text-xs text-gray-500">Est. Cost: {recommended.estimated_cost}</div>
+                      )}
+                      {recommended.summary && (
+                        <p className="text-xs text-gray-600 leading-relaxed line-clamp-6">{recommended.summary}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-gray-300 text-xs">—</span>
+                  )}
+                </Cell>
+              </tr>
+
+              {/* ROW: Source PDF row */}
+              <tr>
+                <Cell className="text-center">
+                  {s1?.document?.document_id && (
+                    <button onClick={() => s1.document && setPdfModal({ url: `/api/castateintel/pdf/${s1.document.document_id}`, title: s1.document.filename })}
+                      className="text-xs text-green-700 hover:underline">📄 View PDF</button>
+                  )}
+                </Cell>
+                <Cell className="text-center">
+                  {s2?.document?.document_id && (
+                    <button onClick={() => s2.document && setPdfModal({ url: `/api/castateintel/pdf/${s2.document.document_id}`, title: s2.document.filename })}
+                      className="text-xs text-indigo-700 hover:underline">📄 View PDF</button>
+                  )}
+                </Cell>
+                <Cell className="text-center">
+                  {s3?.document?.document_id && (
+                    <button onClick={() => s3.document && setPdfModal({ url: `/api/castateintel/pdf/${s3.document.document_id}`, title: s3.document.filename })}
+                      className="text-xs text-violet-700 hover:underline">📄 View PDF</button>
+                  )}
+                </Cell>
+                <Cell className="text-center">
+                  {s4?.document?.document_id && (
+                    <button onClick={() => s4.document && setPdfModal({ url: `/api/castateintel/pdf/${s4.document.document_id}`, title: s4.document.filename })}
+                      className="text-xs text-amber-700 hover:underline">📄 View PDF</button>
+                  )}
+                </Cell>
+                <Cell />
+                <Cell />
+                <Cell />
+                <Cell className="text-right text-xs text-gray-400">Source PDF ↑</Cell>
+              </tr>
+
+              {/* Content row — S1 summary */}
+              <tr>
+                <Cell span={8} header className="pt-3">
+                  <span className="text-gray-600 font-semibold">S1 — Business Analysis Summary</span>
+                </Cell>
+              </tr>
+              <tr>
+                <Cell span={8} className="leading-relaxed text-gray-700">
+                  {s1?.general_info_summary || <span className="text-gray-300">Not yet extracted</span>}
+                </Cell>
+              </tr>
+
+              {/* Key Dates row */}
+              <tr>
+                <Cell span={8} header className="pt-3">
+                  <span className="text-gray-600 font-semibold">Key Dates</span>
+                </Cell>
+              </tr>
+              <tr>
+                {[
+                  ["S1 — Execution Start", executionStart],
+                  ["S1 — Form Accepted", s1Accepted],
+                  ["S2 — Est. Project Start", s2EstStart],
+                  ["S2 — Est. Project End", s2EstEnd],
+                  ["S3 — Form Accepted", s3AcceptDate],
+                  ["S4 — Form Accepted", s4AcceptDate],
+                  ["Vendor (S4)", s4?.selected_vendor],
+                  ["Contract Cost (S4)", s4?.total_contract_cost],
+                ].map(([label, val]) => (
+                  <Cell key={String(label)} className="align-top">
+                    <div className="text-gray-400 text-xs mb-0.5">{label}</div>
+                    <div className={`text-xs font-medium ${val ? "text-gray-800" : "text-gray-300"}`}>
+                      {val ? (val.match(/^\d{4}-\d{2}-\d{2}/)
+                        ? new Date(val).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
+                        : val)
+                        : "—"}
+                    </div>
+                  </Cell>
+                ))}
+              </tr>
+
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
