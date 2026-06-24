@@ -38,7 +38,7 @@ function StartDateBadge({ date, timeline }: { date?: string; timeline?: string }
   const formatted = fmt(date);
   if (formatted) {
     return (
-      <div className="flex items-center gap-1.5 text-xs font-medium text-violet-700 bg-violet-50 border border-violet-200 rounded-lg px-2.5 py-1.5">
+      <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-400" style={{background:"rgba(0,217,146,0.1)",borderColor:"rgba(0,217,146,0.3)"}} rounded-lg px-2.5 py-1.5">
         <span>📅</span>
         <span>Starts {formatted}</span>
       </div>
@@ -119,10 +119,10 @@ export default function ProcurementsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{minHeight:"100vh",background:"var(--vg-canvas)",color:"var(--vg-body)"}}>
       <RvtNav />
       {/* Header — matches dashboard */}
-      <div className="bg-blue-900 text-white px-8 py-6">
+      <div style={{background:"var(--vg-canvas-soft)"}} className="text-white px-8 py-6">
         <h1 className="text-2xl font-semibold">CA State IT Project Intelligence</h1>
         <p className="text-blue-200 text-sm mt-1">PAL project tracking — projecttracking.technology.ca.gov</p>
       </div>
@@ -145,16 +145,16 @@ export default function ProcurementsPage() {
 
       {/* Stats bar */}
       {stats && (
-        <div className="bg-white border-b px-8 py-4 flex gap-8">
-          <div><div className="text-2xl font-medium text-gray-900">{filtered.length}</div><div className="text-xs text-gray-500">Procurements</div></div>
-          <div><div className="text-2xl font-medium text-gray-900">{new Set(filtered.map(p => p.project_number)).size}</div><div className="text-xs text-gray-500">Projects</div></div>
-          <div><div className="text-2xl font-medium text-gray-900">{allTypes.length}</div><div className="text-xs text-gray-500">Types</div></div>
+        <div className="border-b px-8 py-4 flex gap-8">
+          <div><div className="text-2xl font-medium text-white">{filtered.length}</div><div className="text-xs text-gray-500">Procurements</div></div>
+          <div><div className="text-2xl font-medium text-white">{new Set(filtered.map(p => p.project_number)).size}</div><div className="text-xs text-gray-500">Projects</div></div>
+          <div><div className="text-2xl font-medium text-white">{allTypes.length}</div><div className="text-xs text-gray-500">Types</div></div>
           <div><div className="text-2xl font-medium text-violet-700">{withDates}</div><div className="text-xs text-gray-500">With Start Dates</div></div>
         </div>
       )}
 
       {/* Filters */}
-      <div className="bg-white border-b px-8 py-3 flex flex-wrap gap-3 items-center">
+      <div className="border-b px-8 py-3 flex flex-wrap gap-3 items-center">
         <input type="text" placeholder="Search procurements..." value={search} onChange={e => setSearch(e.target.value)}
           className="border rounded px-3 py-1.5 text-sm w-56 focus:outline-none focus:ring-2 focus:ring-violet-500" />
         <select value={projectFilter} onChange={e => setProjectFilter(e.target.value)}
@@ -171,8 +171,8 @@ export default function ProcurementsPage() {
           <button onClick={() => { setSearch(''); setProjectFilter(''); setTypeFilter(''); }} className="text-xs text-red-500 hover:text-red-700 underline">Clear</button>
         )}
         <div className="ml-auto flex gap-2">
-          <button onClick={() => setView('cards')} className={`px-3 py-1.5 rounded text-xs font-medium ${view === 'cards' ? 'bg-violet-100 text-violet-700' : 'bg-gray-100 text-gray-600'}`}>⊞ Cards</button>
-          <button onClick={() => setView('table')} className={`px-3 py-1.5 rounded text-xs font-medium ${view === 'table' ? 'bg-violet-100 text-violet-700' : 'bg-gray-100 text-gray-600'}`}>☰ Table</button>
+          <button onClick={() => setView('cards')} className={`px-3 py-1.5 rounded text-xs font-medium ${view === 'cards' ? 'bg-violet-100 text-violet-700' : 'bg-zinc-800 text-gray-400'}`}>⊞ Cards</button>
+          <button onClick={() => setView('table')} className={`px-3 py-1.5 rounded text-xs font-medium ${view === 'table' ? 'bg-violet-100 text-violet-700' : 'bg-zinc-800 text-gray-400'}`}>☰ Table</button>
           <button onClick={exportCSV} className="px-3 py-1.5 rounded text-xs font-medium bg-green-50 text-green-700 border border-green-200 hover:bg-green-100">↓ CSV</button>
         </div>
       </div>
@@ -188,11 +188,11 @@ export default function ProcurementsPage() {
         ) : view === 'cards' ? (
           <div className="grid grid-cols-2 gap-4">
             {filtered.map((p, i) => (
-              <div key={i} className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow flex flex-col gap-3">
+              <div key={i} className="rounded-xl border border-zinc-700 p-5 hover:shadow-md transition-shadow flex flex-col gap-3">
                 {/* Card header */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-gray-900 text-sm leading-snug">{p.name}</h3>
+                    <h3 className="font-bold text-white text-sm leading-snug">{p.name}</h3>
                     <a href={`/CAStateIntel/project/${p.project_number}?tab=procurements`}
                       className="text-xs text-violet-600 hover:underline mt-0.5 block">
                       {p.project_number} — {p.project_name}
@@ -200,7 +200,7 @@ export default function ProcurementsPage() {
                   </div>
                   <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                     {p.procurement_type && (
-                      <span className={`text-xs px-2 py-0.5 rounded font-medium ${TYPE_COLORS[p.procurement_type] || 'bg-gray-100 text-gray-600'}`}>
+                      <span className={`text-xs px-2 py-0.5 rounded font-medium ${TYPE_COLORS[p.procurement_type] || 'bg-zinc-800 text-gray-400'}`}>
                         {p.procurement_type}
                       </span>
                     )}
@@ -216,30 +216,30 @@ export default function ProcurementsPage() {
                 {/* Duration + end date */}
                 {(p.duration || p.proposed_end_date) && (
                   <div className="flex gap-4 text-xs">
-                    {p.duration && <div><span className="text-gray-400">Duration: </span><span className="font-medium text-gray-700">{p.duration}</span></div>}
-                    {p.proposed_end_date && <div><span className="text-gray-400">End: </span><span className="font-medium text-gray-700">{fmt(p.proposed_end_date) || p.proposed_end_date}</span></div>}
+                    {p.duration && <div><span className="text-gray-400">Duration: </span><span className="font-medium text-gray-300">{p.duration}</span></div>}
+                    {p.proposed_end_date && <div><span className="text-gray-400">End: </span><span className="font-medium text-gray-300">{fmt(p.proposed_end_date) || p.proposed_end_date}</span></div>}
                   </div>
                 )}
 
                 {/* Description */}
-                {p.description && <p className="text-xs text-gray-600 leading-relaxed line-clamp-3">{p.description}</p>}
+                {p.description && <p className="text-xs text-gray-400 leading-relaxed line-clamp-3">{p.description}</p>}
 
                 {/* Bottom row */}
-                <div className="flex flex-wrap gap-3 text-xs mt-auto pt-2 border-t border-gray-100">
-                  {p.vendor_or_source && <div><span className="text-gray-400">Vendor: </span><span className="text-gray-700">{p.vendor_or_source}</span></div>}
-                  {p.solicitation_number && <div><span className="text-gray-400">Solicitation: </span><span className="text-gray-700 font-mono">{p.solicitation_number}</span></div>}
+                <div className="flex flex-wrap gap-3 text-xs mt-auto pt-2 border-t border-zinc-800">
+                  {p.vendor_or_source && <div><span className="text-gray-400">Vendor: </span><span className="text-gray-300">{p.vendor_or_source}</span></div>}
+                  {p.solicitation_number && <div><span className="text-gray-400">Solicitation: </span><span className="text-gray-300 font-mono">{p.solicitation_number}</span></div>}
                 </div>
 
                 {/* Justification */}
                 {p.justification && (
-                  <p className="text-xs text-gray-500 italic border-t border-gray-100 pt-2">{p.justification}</p>
+                  <p className="text-xs text-gray-500 italic border-t border-zinc-800 pt-2">{p.justification}</p>
                 )}
               </div>
             ))}
           </div>
         ) : (
           /* Table view */
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="rounded-xl border border-zinc-700 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-violet-50">
                 <tr>
@@ -248,19 +248,19 @@ export default function ProcurementsPage() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-zinc-800">
                 {filtered.map((p, i) => {
                   const startFmt = fmt(p.proposed_start_date);
                   const timelineDate = !startFmt && p.timeline ? (p.timeline.match(/(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}/i)?.[0] || p.timeline.match(/\b(20\d{2})\b/)?.[0]) : null;
                   return (
-                    <tr key={i} className="hover:bg-gray-50">
+                    <tr key={i} className="hover:bg-zinc-900">
                       <td className="px-4 py-3">
                         <div className="font-mono text-xs text-gray-500">{p.project_number}</div>
-                        <div className="text-xs text-gray-700 truncate max-w-[130px]">{p.project_name}</div>
+                        <div className="text-xs text-gray-300 truncate max-w-[130px]">{p.project_name}</div>
                       </td>
-                      <td className="px-4 py-3 font-medium text-gray-900 text-xs max-w-[200px]">{p.name}</td>
+                      <td className="px-4 py-3 font-medium text-white text-xs max-w-[200px]">{p.name}</td>
                       <td className="px-4 py-3">
-                        <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${TYPE_COLORS[p.procurement_type] || 'bg-gray-100 text-gray-600'}`}>
+                        <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${TYPE_COLORS[p.procurement_type] || 'bg-zinc-800 text-gray-400'}`}>
                           {p.procurement_type || '—'}
                         </span>
                       </td>
@@ -271,9 +271,9 @@ export default function ProcurementsPage() {
                           ? <span className="text-xs text-violet-500">~{timelineDate}</span>
                           : <span className="text-xs text-gray-300">—</span>}
                       </td>
-                      <td className="px-4 py-3 text-xs text-gray-600">{p.duration || '—'}</td>
+                      <td className="px-4 py-3 text-xs text-gray-400">{p.duration || '—'}</td>
                       <td className="px-4 py-3 text-xs font-semibold text-violet-700">{p.estimated_value || '—'}</td>
-                      <td className="px-4 py-3 text-xs text-gray-600">{p.vendor_or_source || '—'}</td>
+                      <td className="px-4 py-3 text-xs text-gray-400">{p.vendor_or_source || '—'}</td>
                     </tr>
                   );
                 })}
