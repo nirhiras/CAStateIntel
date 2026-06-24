@@ -32,107 +32,100 @@ type Stats = {
   extracted_docs: number;
 };
 
-const STAGE_COLORS: Record<string, string> = {
-  'Stage 3': 'bg-orange-100 text-orange-800',
-  'Stage 2': 'bg-green-100 text-green-800',
-  'Stage 1': 'bg-blue-100 text-blue-800',
-};
-
-const CRIT_COLORS: Record<string, string> = {
-  High: 'bg-red-100 text-red-700',
-  Medium: 'bg-yellow-100 text-yellow-700',
-  Low: 'bg-gray-100 text-gray-600',
-};
-
-const TAG_COLORS: Record<string, string> = {
-  vendor:     'bg-blue-50 text-blue-700 border-blue-200',
-  technology: 'bg-purple-50 text-purple-700 border-purple-200',
-  approach:   'bg-green-50 text-green-700 border-green-200',
-  deployment: 'bg-orange-50 text-orange-700 border-orange-200',
-  industry:   'bg-gray-50 text-gray-600 border-gray-200',
-};
-
-const STAGE_LINK_COLORS: Record<number, string> = {
-  1: 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200',
-  2: 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200',
-  3: 'bg-violet-50 text-violet-700 hover:bg-violet-100 border border-violet-200',
-  4: 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200',
-};
-
 const STAGE_LABEL: Record<string, string> = {
   'Stage 1': 'S1BA', 'Stage 2': 'S2AA', 'Stage 3': 'S3SA', 'Stage 4': 'S4PRA',
 };
 
-// ── Multi-select dropdown component ──────────────────────────────────────────
-function MultiSelect({
-  label, options, selected, onChange, placeholder = 'All',
-}: {
-  label: string;
-  options: string[];
-  selected: string[];
-  onChange: (v: string[]) => void;
-  placeholder?: string;
+const STAGE_PILL: Record<string, string> = {
+  'Stage 1': 'bg-sky-50 text-sky-700 ring-1 ring-sky-200',
+  'Stage 2': 'bg-violet-50 text-violet-700 ring-1 ring-violet-200',
+  'Stage 3': 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
+  'Stage 4': 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
+};
+
+const CRIT_PILL: Record<string, string> = {
+  High:   'bg-red-50 text-red-600 ring-1 ring-red-200',
+  Medium: 'bg-amber-50 text-amber-600 ring-1 ring-amber-200',
+  Low:    'bg-gray-50 text-gray-500 ring-1 ring-gray-200',
+};
+
+const TAG_PILL: Record<string, string> = {
+  vendor:     'bg-blue-50 text-blue-600 ring-1 ring-blue-200',
+  technology: 'bg-violet-50 text-violet-600 ring-1 ring-violet-200',
+  approach:   'bg-teal-50 text-teal-600 ring-1 ring-teal-200',
+  deployment: 'bg-orange-50 text-orange-600 ring-1 ring-orange-200',
+  industry:   'bg-gray-50 text-gray-500 ring-1 ring-gray-200',
+};
+
+const ANALYSIS_LINK: Record<number, string> = {
+  1: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200 hover:bg-sky-100',
+  2: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200 hover:bg-violet-100',
+  3: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100',
+  4: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100',
+};
+
+function MultiSelect({ label, options, selected, onChange, placeholder = 'All' }: {
+  label: string; options: string[]; selected: string[];
+  onChange: (v: string[]) => void; placeholder?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
   }, []);
 
-  const toggle = (v: string) => {
-    onChange(selected.includes(v) ? selected.filter(s => s !== v) : [...selected, v]);
-  };
-
-  const displayText = selected.length === 0
-    ? placeholder
-    : selected.length === 1
-    ? selected[0]
-    : `${selected.length} selected`;
+  const toggle = (v: string) => onChange(selected.includes(v) ? selected.filter(s => s !== v) : [...selected, v]);
+  const filtered = options.filter(o => o.toLowerCase().includes(search.toLowerCase()));
+  const displayText = selected.length === 0 ? placeholder : selected.length === 1 ? selected[0] : `${selected.length} selected`;
 
   return (
-    <div className="flex flex-col gap-1" ref={ref}>
-      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</label>
+    <div className="flex flex-col gap-1.5" ref={ref}>
+      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">{label}</label>
       <div className="relative">
-        <button
-          onClick={() => setOpen(o => !o)}
-          className={`flex items-center justify-between gap-2 border rounded-lg px-3 py-2 text-sm bg-white min-w-[160px] text-left focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            selected.length > 0 ? 'border-blue-400 text-blue-700 font-medium' : 'border-gray-300 text-gray-700'
-          }`}
-        >
-          <span className="truncate max-w-[180px]">{displayText}</span>
-          <span className="text-gray-400 text-xs">{open ? '▲' : '▼'}</span>
+        <button onClick={() => setOpen(o => !o)}
+          className={`flex items-center justify-between gap-2 border rounded-xl px-3.5 py-2.5 text-sm bg-white min-w-[148px] text-left transition-all ${
+            selected.length > 0
+              ? 'border-indigo-400 text-indigo-700 font-semibold shadow-sm shadow-indigo-100'
+              : 'border-slate-200 text-slate-600 hover:border-slate-300'
+          }`}>
+          <span className="truncate max-w-[160px]">{displayText}</span>
+          <svg className={`w-3.5 h-3.5 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
         </button>
         {open && (
-          <div className="absolute z-50 top-full mt-1 left-0 bg-white border border-gray-200 rounded-xl shadow-xl min-w-[220px] max-h-72 overflow-y-auto">
-            <div className="p-2 border-b border-gray-100 flex items-center justify-between">
-              <span className="text-xs text-gray-400 font-medium">{options.length} options</span>
+          <div className="absolute z-50 top-full mt-2 left-0 bg-white border border-slate-200 rounded-2xl shadow-xl shadow-slate-100/80 min-w-[230px] max-h-72 flex flex-col overflow-hidden">
+            {options.length > 8 && (
+              <div className="p-2 border-b border-slate-100">
+                <input autoFocus value={search} onChange={e => setSearch(e.target.value)}
+                  placeholder="Search…"
+                  className="w-full text-xs px-2.5 py-1.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300" />
+              </div>
+            )}
+            <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100">
+              <span className="text-xs text-slate-400">{filtered.length} options</span>
               {selected.length > 0 && (
-                <button onClick={() => onChange([])} className="text-xs text-red-500 hover:text-red-700 font-medium">
-                  Clear
-                </button>
+                <button onClick={() => { onChange([]); setSearch(''); }} className="text-xs text-indigo-500 hover:text-indigo-700 font-medium">Clear</button>
               )}
             </div>
-            {options.map(opt => (
-              <button
-                key={opt}
-                onClick={() => toggle(opt)}
-                className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 hover:bg-blue-50 transition-colors ${
-                  selected.includes(opt) ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
-                }`}
-              >
-                <span className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center text-xs ${
-                  selected.includes(opt) ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300'
-                }`}>
-                  {selected.includes(opt) ? '✓' : ''}
-                </span>
-                <span className="truncate">{opt}</span>
-              </button>
-            ))}
+            <div className="overflow-y-auto">
+              {filtered.map(opt => (
+                <button key={opt} onClick={() => toggle(opt)}
+                  className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-2.5 transition-colors ${
+                    selected.includes(opt) ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50'
+                  }`}>
+                  <span className={`w-4 h-4 rounded-md border flex-shrink-0 flex items-center justify-center text-[10px] font-bold transition-colors ${
+                    selected.includes(opt) ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300'
+                  }`}>{selected.includes(opt) ? '✓' : ''}</span>
+                  <span className="truncate">{opt}</span>
+                </button>
+              ))}
+              {filtered.length === 0 && <div className="px-3 py-4 text-xs text-slate-400 text-center">No results</div>}
+            </div>
           </div>
         )}
       </div>
@@ -153,21 +146,13 @@ export default function CAStateIntelPage() {
   useEffect(() => {
     fetch('/api/castateintel/projects?stats=true').then(r => r.json()).then(setStats);
     fetch('/api/castateintel/projects?departments=true').then(r => r.json()).then(setDepartments);
-  }, []);
-
-  useEffect(() => {
-    setLoading(true);
     fetch('/api/castateintel/projects')
       .then(r => r.json())
       .then(data => { setProjects(Array.isArray(data) ? data : data.projects || []); setLoading(false); });
   }, []);
 
-  // All unique tags from loaded projects
-  const allTags = [...new Set(
-    projects.flatMap(p => (p.solution_tags || []).map(t => t.tag))
-  )].sort();
+  const allTags = [...new Set(projects.flatMap(p => (p.solution_tags || []).map(t => t.tag)))].sort();
 
-  // Client-side multi-filter
   const filtered = projects.filter(p => {
     const stage = p.effective_stage || p.pal_stage;
     if (search && !p.name.toLowerCase().includes(search.toLowerCase()) && !p.project_number.includes(search)) return false;
@@ -181,204 +166,208 @@ export default function CAStateIntelPage() {
   const clearAll = () => { setSearch(''); setStageFilters([]); setDeptFilters([]); setTagFilters([]); };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-blue-900 text-white px-8 py-6">
-        <h1 className="text-2xl font-semibold">PAL Project Tracking</h1>
+    <div className="min-h-screen" style={{ background: '#F8FAFC', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+
+      {/* Hero header */}
+      <div style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #312E81 100%)' }} className="px-8 py-10">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-end justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-white/10 text-indigo-200 text-xs font-semibold px-3 py-1.5 rounded-full mb-4 tracking-wide uppercase">
+                <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-pulse" />
+                California Department of Technology
+              </div>
+              <h1 className="text-3xl font-bold text-white tracking-tight">PAL Project Tracking</h1>
+              <p className="text-slate-400 text-sm mt-1.5">Project Approval Lifecycle — IT project proposals & analysis</p>
+            </div>
+            {stats && (
+              <div className="hidden md:flex items-center gap-6">
+                {[
+                  { v: stats.total_projects, l: 'Projects' },
+                  { v: stats.total_documents, l: 'Documents' },
+                  { v: stats.extracted_docs, l: 'Extracted' },
+                ].map(s => (
+                  <div key={s.l} className="text-right">
+                    <div className="text-2xl font-bold text-white">{s.v}</div>
+                    <div className="text-xs text-slate-400 mt-0.5">{s.l}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Stage stat pills */}
+          {stats && (
+            <div className="flex gap-3 mt-6 flex-wrap">
+              {[
+                { label: 'Stage 1 — Business Analysis', count: stats.stage1_count, color: 'bg-sky-500/20 text-sky-200 ring-1 ring-sky-500/30' },
+                { label: 'Stage 2 — Alternative Analysis', count: stats.stage2_count, color: 'bg-violet-500/20 text-violet-200 ring-1 ring-violet-500/30' },
+                { label: 'Stage 3 — Solution Analysis', count: stats.stage3_count, color: 'bg-emerald-500/20 text-emerald-200 ring-1 ring-emerald-500/30' },
+              ].map(s => (
+                <div key={s.label} className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium ${s.color}`}>
+                  <span className="font-bold text-sm">{s.count}</span>
+                  {s.label}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Stats */}
-      {stats && (
-        <div className="bg-white border-b px-8 py-4 flex gap-8">
-          {[
-            { label: 'Total Projects', value: stats.total_projects },
-            { label: 'Stage 3', value: stats.stage3_count },
-            { label: 'Stage 2', value: stats.stage2_count },
-            { label: 'Stage 1', value: stats.stage1_count },
-            { label: 'PDF Documents', value: stats.total_documents },
-            { label: 'Text Extracted', value: stats.extracted_docs },
-          ].map(s => (
-            <div key={s.label}>
-              <div className="text-2xl font-medium text-gray-900">{s.value}</div>
-              <div className="text-xs text-gray-500">{s.label}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Filters */}
-      <div className="px-8 py-4 bg-white border-b">
-        <div className="flex flex-wrap gap-4 items-end">
-          {/* Search */}
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Search</label>
-            <input
-              type="text"
-              placeholder="Project name or number..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-56 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+      <div className="bg-white border-b border-slate-200 px-8 py-5 shadow-sm">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-wrap gap-4 items-end">
+            {/* Search */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">Search</label>
+              <div className="relative">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input type="text" placeholder="Project name or number…" value={search} onChange={e => setSearch(e.target.value)}
+                  className="border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm w-60 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all" />
+              </div>
+            </div>
+
+            <MultiSelect label="Stage" options={['Stage 1','Stage 2','Stage 3','Stage 4']} selected={stageFilters} onChange={setStageFilters} placeholder="All Stages" />
+            <MultiSelect label="Department" options={departments} selected={deptFilters} onChange={setDeptFilters} placeholder="All Departments" />
+            <MultiSelect label="Solution Tag" options={allTags} selected={tagFilters} onChange={setTagFilters} placeholder="All Tags" />
+
+            <div className="flex items-end gap-3 pb-0.5">
+              {hasFilters && (
+                <button onClick={clearAll}
+                  className="flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold text-red-500 border border-red-200 rounded-xl hover:bg-red-50 transition-colors">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Clear all
+                </button>
+              )}
+              <span className="text-sm font-semibold text-slate-500 pb-0.5">{filtered.length} <span className="font-normal text-slate-400">projects</span></span>
+            </div>
           </div>
 
-          <MultiSelect
-            label="Stage"
-            options={['Stage 1', 'Stage 2', 'Stage 3', 'Stage 4']}
-            selected={stageFilters}
-            onChange={setStageFilters}
-            placeholder="All Stages"
-          />
-
-          <MultiSelect
-            label="Department"
-            options={departments}
-            selected={deptFilters}
-            onChange={setDeptFilters}
-            placeholder="All Departments"
-          />
-
-          <MultiSelect
-            label="Solution Tag"
-            options={allTags}
-            selected={tagFilters}
-            onChange={setTagFilters}
-            placeholder="All Tags"
-          />
-
-          <div className="flex items-end gap-3 pb-0.5">
-            {hasFilters && (
-              <button
-                onClick={clearAll}
-                className="px-3 py-2 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-              >
-                ✕ Clear all
-              </button>
-            )}
-            <span className="text-sm text-gray-500 font-medium">{filtered.length} projects</span>
-          </div>
+          {/* Active filter pills */}
+          {hasFilters && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {search && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
+                  "{search}"
+                  <button onClick={() => setSearch('')} className="text-slate-400 hover:text-slate-700 ml-0.5">✕</button>
+                </span>
+              )}
+              {stageFilters.map(s => (
+                <span key={s} className="inline-flex items-center gap-1.5 px-3 py-1 bg-sky-100 text-sky-700 rounded-full text-xs font-semibold">
+                  {STAGE_LABEL[s] || s}
+                  <button onClick={() => setStageFilters(stageFilters.filter(x => x !== s))} className="text-sky-400 hover:text-sky-700 ml-0.5">✕</button>
+                </span>
+              ))}
+              {deptFilters.map(d => (
+                <span key={d} className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
+                  {d}
+                  <button onClick={() => setDeptFilters(deptFilters.filter(x => x !== d))} className="text-emerald-400 hover:text-emerald-700 ml-0.5">✕</button>
+                </span>
+              ))}
+              {tagFilters.map(t => (
+                <span key={t} className="inline-flex items-center gap-1.5 px-3 py-1 bg-violet-100 text-violet-700 rounded-full text-xs font-medium">
+                  🏷 {t}
+                  <button onClick={() => setTagFilters(tagFilters.filter(x => x !== t))} className="text-violet-400 hover:text-violet-700 ml-0.5">✕</button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
-
-        {/* Active filter pills */}
-        {hasFilters && (
-          <div className="flex flex-wrap gap-2 mt-3">
-            {search && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
-                Search: "{search}"
-                <button onClick={() => setSearch('')} className="ml-1 text-gray-400 hover:text-gray-700">✕</button>
-              </span>
-            )}
-            {stageFilters.map(s => (
-              <span key={s} className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                {STAGE_LABEL[s] || s}
-                <button onClick={() => setStageFilters(stageFilters.filter(x => x !== s))} className="ml-1 text-blue-400 hover:text-blue-700">✕</button>
-              </span>
-            ))}
-            {deptFilters.map(d => (
-              <span key={d} className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
-                {d}
-                <button onClick={() => setDeptFilters(deptFilters.filter(x => x !== d))} className="ml-1 text-emerald-400 hover:text-emerald-700">✕</button>
-              </span>
-            ))}
-            {tagFilters.map(t => (
-              <span key={t} className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-                🏷 {t}
-                <button onClick={() => setTagFilters(tagFilters.filter(x => x !== t))} className="ml-1 text-purple-400 hover:text-purple-700">✕</button>
-              </span>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Table */}
       <div className="px-8 py-6">
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
-              <tr>
-                <th className="px-4 py-3 text-left">Project #</th>
-                <th className="px-4 py-3 text-left">Name</th>
-                <th className="px-4 py-3 text-left">Stage</th>
-                <th className="px-4 py-3 text-left">Criticality</th>
-                <th className="px-4 py-3 text-left">Department</th>
-                <th className="px-4 py-3 text-left">Docs</th>
-                <th className="px-4 py-3 text-left">Analysis</th>
-                <th className="px-4 py-3 text-left">Solution Tags</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {loading ? (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">No projects match the selected filters</td></tr>
-              ) : filtered.map(p => {
-                const tags = p.solution_tags || [];
-                const effStage = p.effective_stage || p.pal_stage;
-                return (
-                  <tr key={p.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 font-mono text-xs text-gray-600">{p.project_number}</td>
-                    <td className="px-4 py-3 font-medium text-gray-900 max-w-xs">{p.name}</td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${STAGE_COLORS[effStage] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {STAGE_LABEL[effStage] || effStage}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-1 rounded-full ${CRIT_COLORS[p.criticality_rating] ?? ''}`}>
-                        {p.criticality_rating}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 text-xs">{p.department_name}</td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full">{p.doc_count}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1 flex-wrap">
-                        {[1, 2, 3, 4].map(n => {
-                          const hasDoc = n === 1 ? p.has_s1 : n === 2 ? p.has_s2 : n === 3 ? p.has_s3 : false;
-                          const extracted = n === 1 ? p.s1_extracted : n === 2 ? p.s2_extracted : n === 3 ? p.s3_extracted : false;
-                          if (!hasDoc && !extracted) return null;
-                          return (
-                            <a key={n} href={`/CAStateIntel/stage${n}?project=${p.project_number}`}
-                              className={`text-xs px-2 py-0.5 rounded font-medium transition-colors ${STAGE_LINK_COLORS[n]} ${!extracted ? 'opacity-40' : ''}`}
-                              title={extracted ? `View Stage ${n} analysis` : `Stage ${n} doc available — not yet extracted`}>
-                              S{n}{extracted ? '' : ' ·'}
-                            </a>
-                          );
-                        })}
-                        {!p.has_s1 && !p.has_s2 && !p.has_s3 && (
-                          <span className="text-xs text-gray-300">No docs</span>
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-sm shadow-slate-200/80 border border-slate-200 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-100" style={{ background: '#F8FAFC' }}>
+                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Project #</th>
+                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Name</th>
+                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Stage</th>
+                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Criticality</th>
+                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Department</th>
+                  <th className="px-5 py-3.5 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Docs</th>
+                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Analysis</th>
+                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Solution Tags</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {loading ? (
+                  <tr><td colSpan={8} className="px-5 py-12 text-center text-slate-400 text-sm">Loading projects…</td></tr>
+                ) : filtered.length === 0 ? (
+                  <tr><td colSpan={8} className="px-5 py-12 text-center text-slate-400 text-sm">No projects match the selected filters</td></tr>
+                ) : filtered.map(p => {
+                  const tags = p.solution_tags || [];
+                  const effStage = p.effective_stage || p.pal_stage;
+                  return (
+                    <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="px-5 py-4 font-mono text-xs text-slate-400 whitespace-nowrap">{p.project_number}</td>
+                      <td className="px-5 py-4 font-semibold text-slate-800 max-w-[220px]">
+                        <span className="line-clamp-2 leading-snug">{p.name}</span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className={`text-xs px-2.5 py-1 rounded-lg font-semibold ${STAGE_PILL[effStage] ?? 'bg-gray-50 text-gray-500 ring-1 ring-gray-200'}`}>
+                          {STAGE_LABEL[effStage] || effStage}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        {p.criticality_rating && (
+                          <span className={`text-xs px-2.5 py-1 rounded-lg font-medium ${CRIT_PILL[p.criticality_rating] ?? ''}`}>
+                            {p.criticality_rating}
+                          </span>
                         )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      {tags.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {tags.map((t, i) => (
-                            <button
-                              key={i}
-                              onClick={() => setTagFilters(
-                                tagFilters.includes(t.tag)
-                                  ? tagFilters.filter(x => x !== t.tag)
-                                  : [...tagFilters, t.tag]
-                              )}
-                              className={`text-xs px-1.5 py-0.5 rounded border font-medium transition-colors ${
-                                TAG_COLORS[t.category] || 'bg-gray-50 text-gray-600 border-gray-200'
-                              } ${tagFilters.includes(t.tag) ? 'ring-2 ring-offset-1 ring-blue-400' : 'hover:opacity-80'}`}
-                              title={`${tagFilters.includes(t.tag) ? 'Remove' : 'Add'} filter: ${t.tag}`}
-                            >
-                              {t.tag}
-                            </button>
-                          ))}
+                      </td>
+                      <td className="px-5 py-4 text-slate-500 text-xs leading-snug max-w-[180px]">{p.department_name}</td>
+                      <td className="px-5 py-4 text-center">
+                        <span className="inline-flex items-center justify-center w-7 h-7 bg-indigo-50 text-indigo-600 text-xs font-bold rounded-lg ring-1 ring-indigo-100">
+                          {p.doc_count}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex gap-1 flex-wrap">
+                          {[1,2,3,4].map(n => {
+                            const hasDoc = n===1?p.has_s1:n===2?p.has_s2:n===3?p.has_s3:false;
+                            const extracted = n===1?p.s1_extracted:n===2?p.s2_extracted:n===3?p.s3_extracted:false;
+                            if (!hasDoc && !extracted) return null;
+                            return (
+                              <a key={n} href={`/CAStateIntel/stage${n}?project=${p.project_number}`}
+                                className={`text-xs px-2 py-0.5 rounded-lg font-semibold transition-colors ${ANALYSIS_LINK[n]} ${!extracted?'opacity-40':''}`}
+                                title={extracted?`View Stage ${n} analysis`:`Stage ${n} doc available — not yet extracted`}>
+                                S{n}
+                              </a>
+                            );
+                          })}
+                          {!p.has_s1&&!p.has_s2&&!p.has_s3&&<span className="text-xs text-slate-300">—</span>}
                         </div>
-                      ) : (
-                        <span className="text-xs text-gray-300">{p.s2_extracted ? 'No tags' : '—'}</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td className="px-5 py-4">
+                        {tags.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {tags.map((t, i) => (
+                              <button key={i}
+                                onClick={() => setTagFilters(tagFilters.includes(t.tag)?tagFilters.filter(x=>x!==t.tag):[...tagFilters,t.tag])}
+                                className={`text-xs px-2 py-0.5 rounded-lg font-medium transition-all ${TAG_PILL[t.category]||'bg-gray-50 text-gray-500 ring-1 ring-gray-200'} ${tagFilters.includes(t.tag)?'ring-2 ring-indigo-400 ring-offset-1':'hover:opacity-75'}`}
+                                title={`${tagFilters.includes(t.tag)?'Remove':'Add'} filter: ${t.tag}`}>
+                                {t.tag}
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-slate-300">{p.s2_extracted?'No tags':'—'}</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
