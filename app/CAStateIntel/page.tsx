@@ -272,7 +272,6 @@ export default function CAStateIntelPage() {
                             </button>
                           ))}
                         </div>
-                      )
                       ) : (
                         <span className="text-xs text-gray-300">
                           {p.s2_extracted ? 'No tags' : '—'}
