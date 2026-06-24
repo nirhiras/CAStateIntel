@@ -49,6 +49,8 @@ export default function UploadPage() {
   const [dragging, setDragging] = useState(false);
   const [running, setRunning] = useState(false);
   const [analyzeAfter, setAnalyzeAfter] = useState(false);
+  const [analyzeStatus, setAnalyzeStatus] = useState<'idle'|'running'|'done'|'error'>('idle');
+  const [analyzeLog, setAnalyzeLog] = useState<{pn: string; ok: boolean}[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef(false);
 
@@ -146,16 +148,23 @@ export default function UploadPage() {
     const done = files.filter(f => f.status === 'done' && f.project_number);
     const projectNums = [...new Set(done.map(f => f.project_number!))];
     if (!projectNums.length) return;
+    setAnalyzeStatus('running');
+    setAnalyzeLog([]);
+    const log: {pn: string; ok: boolean}[] = [];
     for (const pn of projectNums) {
       try {
-        await fetch('/api/castateintel/analysis/extract', {
+        const res = await fetch('/api/castateintel/analysis/extract', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ project_number: pn }),
         });
-      } catch {}
+        log.push({ pn, ok: res.ok });
+      } catch {
+        log.push({ pn, ok: false });
+      }
+      setAnalyzeLog([...log]);
     }
-    alert(`Triggered AI extraction for: ${projectNums.join(', ')}`);
+    setAnalyzeStatus(log.every(l => l.ok) ? 'done' : 'error');
   };
 
   const queued = files.filter(f => f.status === 'queued').length;
@@ -241,6 +250,33 @@ export default function UploadPage() {
               Auto-analyze after upload
             </label>
 
+            {analyzeStatus !== 'idle' && (
+              <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
+                {analyzeStatus === 'running' && (
+                  <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#494fdf", display: "inline-block", animation: "pulse 1s infinite" }} />
+                    Extracting {analyzeLog.length} / {files.filter(f => f.status === "done" && f.project_number).length}…
+                  </span>
+                )}
+                {analyzeStatus === 'done' && (
+                  <span style={{ fontSize: 13, color: "#3dd6a8", fontWeight: 600 }}>
+                    ✓ Extraction complete — {analyzeLog.filter(l => l.ok).length} projects analyzed
+                  </span>
+                )}
+                {analyzeStatus === 'error' && (
+                  <span style={{ fontSize: 13, color: "#f87171" }}>
+                    ⚠ {analyzeLog.filter(l => !l.ok).length} failed
+                  </span>
+                )}
+                {analyzeLog.map(l => (
+                  <span key={l.pn} style={{ fontSize: 12, padding: "2px 8px", borderRadius: 6, background: l.ok ? "rgba(0,168,126,0.15)" : "rgba(226,59,74,0.15)", color: l.ok ? "#3dd6a8" : "#f87171" }}>
+                    {l.pn} {l.ok ? "✓" : "✗"}
+                  </span>
+                ))}
+                <button onClick={() => { setAnalyzeStatus("idle"); setAnalyzeLog([]); }}
+                  style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", background: "none", border: "none", cursor: "pointer" }}>✕</button>
+              </div>
+            )}
             {!running && (
               <button onClick={() => setFiles([])}
                 className="ml-auto text-xs text-gray-400 hover:text-gray-600">
