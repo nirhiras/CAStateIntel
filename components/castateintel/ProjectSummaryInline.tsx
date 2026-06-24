@@ -120,37 +120,218 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
       {pdfModal&&(<div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"><div className="rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col"><div className="flex items-center justify-between px-4 py-3 border-b"><span className="text-sm font-semibold">{pdfModal.title}</span><button onClick={()=>setPdfModal(null)} className="text-xl text-gray-400 hover:text-gray-700 px-2">✕</button></div><iframe src={pdfModal.url} className="flex-1 w-full"/></div></div>)}
 
       {/* Header */}
-      <div style={{background:"var(--vg-canvas-soft)", borderBottom:"1px solid var(--vg-hairline)", padding:"16px 40px"}}>
-        <div style={{display:"flex", alignItems:"center", gap:8, marginBottom:8}}>
-          <a href="/CAStateIntel" style={{color:"var(--vg-primary)", fontSize:13, textDecoration:"none", fontWeight:500}}>← Dashboard</a>
-          <span style={{color:"var(--vg-hairline-soft)"}}>·</span>
-          <a href="/CAStateIntel" style={{color:"var(--vg-mute)", fontSize:13, textDecoration:"none"}}>All Projects</a>
+      <div style={{background:"var(--vg-canvas-soft)",borderBottom:"1px solid var(--vg-hairline)",padding:"12px 40px"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+          <a href="/CAStateIntel" style={{color:"var(--vg-primary)",fontSize:13,textDecoration:"none",fontWeight:500}}>← Dashboard</a>
+          <span style={{color:"var(--vg-mute)"}}>·</span>
+          <span style={{fontSize:13,color:"var(--vg-mute)"}}>{p?.project_number||"Select a project"}</span>
         </div>
-        <div style={{display:"flex", alignItems:"center", gap:16, flexWrap:"wrap"}}>
-          <div style={{flex:1, minWidth:0}}>
-            <h1 style={{fontSize:18, fontWeight:600, color:"var(--vg-ink-strong)", letterSpacing:"-0.3px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>
-              {p?.project_number?`${p.project_number} — ${p.name}`:"Select a project"}
-            </h1>
-            {p&&<p style={{fontSize:13, color:"var(--vg-mute)", marginTop:2}}>{p.department_name}{p.agency_name&&p.agency_name!==p.department_name?` · ${p.agency_name}`:""}</p>}
-          </div>
-          {p&&(
-            <div style={{display:"flex", gap:6, flexShrink:0}}>
-              {([{stage:1,label:"S1BA"},{stage:2,label:"S2AA"},{stage:3,label:"S3SA"},{stage:4,label:"S4PRA"}] as {stage:number;label:string}[]).map(({stage:s,label})=>{
-                const hasIt = s===1?!!s1:s===2?!!s2:s===3?!!s3:!!s4;
-                return(<button key={s} onClick={()=>setTab(`s${s}`)}
-                  style={{padding:"4px 10px", borderRadius:6, fontSize:12, fontWeight:600, cursor:"pointer",
-                    border:"1px solid",
-                    borderColor: tab===`s${s}` ? "var(--vg-primary)" : hasIt ? "var(--vg-hairline)" : "rgba(61,58,57,0.3)",
-                    background: tab===`s${s}` ? "rgba(0,217,146,0.12)" : "transparent",
-                    color: tab===`s${s}` ? "var(--vg-primary)" : hasIt ? "var(--vg-ink)" : "var(--vg-mute)",
-                    opacity: hasIt ? 1 : 0.4,
-                  }}>
-                  {label}{hasIt?" ✓":"—"}
-                </button>);
-              })}
-            </div>
-          )}
-          {selectedDoc&&<button onClick={()=>window.open(`/api/castateintel/pdf/${selectedDoc.document_id}`,"_blank")} style={{padding:"6px 14px", borderRadius:6, fontSize:13, fontWeight:600, cursor:"pointer", background:"transparent", border:"1px solid var(--vg-hairline)", color:"var(--vg-ink)"}}>📄 View PDF</button>}
+        <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+          <h1 style={{fontSize:17,fontWeight:600,color:"var(--vg-ink-strong)",letterSpacing:"-0.3px",flex:1,minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+            {p?`${p.project_number} — ${p.name}`:""}
+          </h1>
+          {p&&<div style={{display:"flex",gap:6,flexShrink:0}}>
+            {([{s:1,l:"S1BA"},{s:2,l:"S2AA"},{s:3,l:"S3SA"},{s:4,l:"S4PRA"}] as {s:number;l:string}[]).map(({s,l})=>{
+              const has=s===1?!!s1:s===2?!!s2:s===3?!!s3:!!s4;
+              return <button key={s} onClick={()=>setTab(`s${s}`)} style={{padding:"3px 10px",borderRadius:6,fontSize:12,fontWeight:600,cursor:"pointer",border:"1px solid",borderColor:tab===`s${s}`?"var(--vg-primary)":has?"var(--vg-hairline)":"rgba(61,58,57,0.3)",background:tab===`s${s}`?"rgba(0,217,146,0.12)":"transparent",color:tab===`s${s}`?"var(--vg-primary)":has?"var(--vg-ink)":"var(--vg-mute)",opacity:has?1:0.4}}>{l}{has?" ✓":"—"}</button>;
+            })}
+          </div>}
         </div>
       </div>
-      
+
+      {/* Tab bar */}
+      <div className="border-b border-white/10 sticky top-[108px] z-10" style={{background:"#16181a"}}>
+        <div className="flex overflow-x-auto">
+          {TABS.map(t=>{
+            const count=t.id==="contacts"?contacts.length:t.id==="procurements"?ancillary.length:0;
+            return(<button key={t.id} onClick={()=>setTab(t.id)}
+              className={`px-4 py-3 text-xs font-medium whitespace-nowrap border-b-2 transition-colors
+                ${tab===t.id?"border-indigo-500 text-white":"border-transparent"}`} style={tab===t.id?{color:"#ffffff"}:{color:"rgba(255,255,255,0.45)"}}>
+              {t.label}{count>0&&<span className="ml-1 text-xs px-1.5 py-0.5 rounded-full" style={{background:"rgba(73,79,223,0.2)",color:"#9da2fb"}}>{count}</span>}
+            </button>);
+          })}
+        </div>
+      </div>
+
+      <div className="max-w-screen-xl mx-auto px-10 py-10">
+        {loading&&<div className="flex items-center justify-center h-64 text-gray-400">Loading...</div>}
+        {!loading&&!data&&projectNumber&&<Card><p className="text-gray-400">No analysis data found for this project.</p></Card>}
+        {!loading&&!projectNumber&&<Card className="text-center py-12"><p className="text-gray-400 text-lg">Select a project from the dropdown above</p></Card>}
+
+        {!loading&&data&&(<>
+          {/* ── OVERVIEW ── */}
+          {tab==="overview"&&(<div className="space-y-7">
+            <div className="grid grid-cols-4 gap-6">
+              {[{label:"Total Project Value",value:totalVal,accent:true},{label:"One Time Cost",value:oneTime},{label:"Continuing Cost",value:ongoing},{label:"Project Duration",value:duration}].map(c=>(
+                <Card key={c.label} className="flex flex-col"><span className="text-xs text-gray-400 font-medium mb-1">{c.label}</span><span className={`text-lg font-bold ${c.accent?"text-blue-900":"text-gray-800"} ${c.value==="—"?"text-gray-300 font-normal text-sm":""}`}>{c.value}</span></Card>
+              ))}
+            </div>
+            <div className="grid grid-cols-3 gap-6">
+              <Card><SHead title="Analysis Status"/>
+                <div className="space-y-4">{stageInfo.map(s=>(
+                  <div key={s.num} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2"><span className={`w-2 h-2 rounded-full ${s.has?"bg-green-500":"bg-gray-200"}`}/><span className="text-sm text-gray-700">Stage {s.num} — {["","Business Analysis","Alternative Analysis","Solution Analysis","Project Readiness"][s.num]}</span></div>
+                    <div className="flex items-center gap-2">
+                      {s.has?<><button onClick={()=>setTab(`s${s.num}`)} className={`text-xs px-2 py-0.5 rounded border font-medium ${STAGE_COLORS[s.num]}`}>View</button>{s.doc&&<button onClick={()=>s.doc&&setPdfModal({url:`/api/castateintel/pdf/${s.doc.document_id}`,title:s.doc.filename})} className="text-xs text-gray-400 hover:text-gray-600">📄</button>}</>
+                      :<span className="text-xs text-gray-400">Not extracted</span>}
+                    </div>
+                  </div>
+                ))}</div>
+              </Card>
+              <Card><SHead title="Solution Tags"/>
+                {tags.length>0?<div className="flex flex-wrap gap-2">{tags.map((t:Tag,i:number)=><span key={i} className={`text-xs px-2.5 py-1 rounded-full font-medium ${TAG_COLORS[t.category]||"bg-gray-100 text-gray-600"}`}>{t.tag}</span>)}</div>
+                :<p className="text-sm text-gray-400">Extract Stage 2 to see solution tags</p>}
+              </Card>
+              <Card><SHead title="Key Dates"/>
+                <div className="space-y-3">{[
+                  ["S1 — Execution Start",s1?.proposed_execution_start],
+                  ["S1 — Form Accepted",s1?.dot_dates?.find((d:DotDate)=>d.label?.toLowerCase().includes("accept"))?.date],
+                  ["S3 — Form Accepted",s3?.dot_dates?.find((d:DotDate)=>d.label?.toLowerCase().includes("accept"))?.date],
+                  ["S4 — Contract Start",s4?.solicitation_results?.contract_start_date],
+                  ["S4 — Contract End",s4?.solicitation_results?.contract_end_date],
+                ].map(([label,val])=>(
+                  <div key={String(label)} className="flex items-center justify-between text-xs"><span className="text-gray-500">{label}</span><span className={`font-medium ${val?"text-gray-800":"text-gray-300"}`}>{fmt(val as string)||"—"}</span></div>
+                ))}</div>
+              </Card>
+            </div>
+            {(recommended||s4?.solicitation_results?.selected_vendor)&&(
+              <div className="grid grid-cols-2 gap-6">
+                {recommended&&<Card><SHead title="Recommended Solution (S2)"/>
+                  <div className="flex items-start justify-between mb-2"><h4 className="font-bold text-indigo-900 text-sm">{recommended.name}</h4>{recommended.estimated_cost&&<Badge label={recommended.estimated_cost} color="bg-indigo-50 text-indigo-700"/>}</div>
+                  <p className="text-xs text-gray-600 leading-relaxed line-clamp-4">{recommended.summary}</p>
+                </Card>}
+                {s4?.solicitation_results?.selected_vendor&&<Card><SHead title="Selected Vendor (S4)"/>
+                  <div className="space-y-3"><KV label="Vendor" value={s4.solicitation_results.selected_vendor} accent/><KV label="Contract #" value={s4.solicitation_results.contract_number}/><KV label="Total Contract Cost" value={s4.solicitation_results.total_contract_cost}/><KV label="Period" value={`${fmt(s4.solicitation_results.contract_start_date)} → ${fmt(s4.solicitation_results.contract_end_date)}`}/></div>
+                </Card>}
+              </div>
+            )}
+          </div>)}
+
+          {/* ── STAGE 1 ── */}
+          {tab==="s1"&&(<div className="space-y-7">
+            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 1 — Business Analysis" color="bg-green-100 text-green-800"/>{s1?.doc_created_date&&<span className="text-xs text-gray-400">Created {fmt(s1.doc_created_date)}</span>}</div><PdfBtn doc={s1?.document} stage={1} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
+            {!s1?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
+              <div className="grid grid-cols-2 gap-6"><Card><SHead title="General Summary"/><p className="text-sm text-gray-700 leading-relaxed">{s1.general_info_summary||"—"}</p></Card><Card><SHead title="Business Program"/><p className="text-sm text-gray-700 leading-relaxed">{s1.business_program_summary||"—"}</p></Card></div>
+              <div className="grid grid-cols-2 gap-6"><Card><SHead title="Project Justification"/><p className="text-sm text-gray-700 leading-relaxed">{s1.justification_summary||"—"}</p></Card><Card><SHead title="Business Outcomes"/>{s1.outcomes_raw?.length>0?<Tbl headers={["Outcome","Metric","Target"]} rows={s1.outcomes_raw.map((o:any)=>[o.outcome,o.metric,o.target])}/>:<p className="text-sm text-gray-700">{s1.outcomes_summary||"—"}</p>}</Card></div>
+              <div className="grid grid-cols-3 gap-6">
+                <Card><SHead title="Complexity"/>{s1.complexity_raw?.length>0?<Tbl headers={["Dimension","Score"]} rows={s1.complexity_raw.map((c:any)=>[c.dimension,c.score])}/>:<p className="text-sm text-gray-700">{s1.complexity_summary||"—"}</p>}</Card>
+                <Card><SHead title="Funding (ROM)"/>{s1.rom_estimate?.length>0?<Tbl headers={["Category","Amount"]} rows={s1.rom_estimate.map((r:any)=>[r.category,r.amount])}/>:<p className="text-sm text-gray-700">{s1.funding_summary||"—"}</p>}</Card>
+                <Card><SHead title="CDT Dates"/>{s1.dot_dates?.length>0?<div className="space-y-2">{s1.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>:<p className="text-xs text-gray-400">—</p>}</Card>
+              </div>
+              {s1.stakeholders?.length>0&&<Card><SHead title="Stakeholders"/><Tbl headers={["Name","Organization","Role","Interest"]} rows={s1.stakeholders.map((s:any)=>[s.name,s.organization,s.role,s.interest])}/></Card>}
+            </>)}
+          </div>)}
+
+          {/* ── STAGE 2 ── */}
+          {tab==="s2"&&(<div className="space-y-7">
+            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 2 — Alternative Analysis" color="bg-indigo-100 text-indigo-800"/>{s2?.doc_created_date&&<span className="text-xs text-gray-400">Created {fmt(s2.doc_created_date)}</span>}</div><PdfBtn doc={s2?.document} stage={2} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
+            {!s2?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
+              <div className="grid grid-cols-2 gap-6"><Card><SHead title="Baseline / Current State"/><p className="text-sm text-gray-700 leading-relaxed">{s2.baseline_summary||"—"}</p></Card><Card><SHead title="Requirements"/><p className="text-sm text-gray-700 leading-relaxed">{s2.requirements_summary||"—"}</p></Card></div>
+              <Card><SHead title="Market Research"/><p className="text-sm text-gray-700 leading-relaxed">{s2.market_research_summary||"—"}</p></Card>
+              <Card><SHead title="Viable Solutions"/><div className="space-y-4">{s2.viable_solutions?.map((sol:any,i:number)=>(
+                <div key={i} className={`rounded-lg p-4 border-2 ${sol.recommended?"border-indigo-400 bg-indigo-50":"border-gray-200"}`}>
+                  <div className="flex items-center justify-between mb-2"><h4 className="font-bold text-sm">{sol.name}</h4><div className="flex gap-2">{sol.estimated_cost&&<Badge label={sol.estimated_cost} color="bg-gray-100 text-gray-700"/>}{sol.recommended&&<Badge label="✓ Recommended" color="bg-indigo-100 text-indigo-800"/>}</div></div>
+                  <p className="text-xs text-gray-600 leading-relaxed mb-2">{sol.summary}</p>
+                  <div className="grid grid-cols-2 gap-3">{sol.pros?.length>0&&<div><p className="text-xs font-semibold text-green-700 mb-1">Pros</p>{sol.pros.map((p:string,j:number)=><p key={j} className="text-xs text-gray-600">✓ {p}</p>)}</div>}{sol.cons?.length>0&&<div><p className="text-xs font-semibold text-red-600 mb-1">Cons</p>{sol.cons.map((c:string,j:number)=><p key={j} className="text-xs text-gray-600">✗ {c}</p>)}</div>}</div>
+                </div>
+              ))}</div></Card>
+              <div className="grid grid-cols-2 gap-6">
+                <Card><SHead title="Financial Analysis"/>{s2.financial_analysis?.cost_table?.length?<Tbl headers={["Category","Total"]} rows={s2.financial_analysis.cost_table.map((r:any)=>[r.category,r.total])}/>:<p className="text-xs text-gray-400">—</p>}{s2.financial_analysis?.npv&&<div className="mt-3 text-xs"><span className="text-gray-500">NPV:</span> <span className="font-semibold">{s2.financial_analysis.npv}</span></div>}</Card>
+                <Card><SHead title="CDT Dates"/>{s2.dot_dates?.length>0?<div className="space-y-2">{s2.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>:<p className="text-xs text-gray-400">—</p>}</Card>
+              </div>
+            </>)}
+          </div>)}
+
+          {/* ── STAGE 3 ── */}
+          {tab==="s3"&&(<div className="space-y-7">
+            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 3 — Solution Analysis" color="bg-violet-100 text-violet-800"/>{s3?.doc_created_date&&<span className="text-xs text-gray-400">Created {fmt(s3.doc_created_date)}</span>}</div><PdfBtn doc={s3?.document} stage={3} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
+            {!s3?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
+              <Card><SHead title="Solution Requirements"/><p className="text-sm text-gray-700 leading-relaxed">{s3.solution_requirements_summary||"—"}</p></Card>
+              <div className="grid grid-cols-2 gap-6">
+                <Card><SHead title="Primary Solicitation"/><div className="space-y-3">{Object.entries(s3.primary_solicitation_raw||{}).filter(([,v])=>v&&v!=="null").map(([k,v])=><div key={k} className="flex justify-between text-xs"><span className="text-gray-500 capitalize">{k.replace(/_/g," ")}</span><span className="font-medium">{String(v)}</span></div>)}</div></Card>
+                <Card><SHead title="CDT Dates"/>{s3.dot_dates?.length>0?<div className="space-y-2">{s3.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>:<p className="text-xs text-gray-400">—</p>}</Card>
+              </div>
+              {s3.procurements_roadmap?.phases?.length>0&&<Card><SHead title="Roadmap"/><Tbl headers={["Phase","Start","End","Description"]} rows={s3.procurements_roadmap.phases.map((p:any)=>[p.phase,fmt(p.start_date)||p.start_date,fmt(p.end_date)||p.end_date,p.description])}/></Card>}
+              {s3.procurements_roadmap?.key_milestones?.length>0&&<Card><SHead title="Key Milestones"/><Tbl headers={["Milestone","Date","Type"]} rows={s3.procurements_roadmap.key_milestones.map((m:any)=>[m.milestone,fmt(m.date)||m.date,m.type])}/></Card>}
+            </>)}
+          </div>)}
+
+          {/* ── STAGE 4 ── */}
+          {tab==="s4"&&(<div className="space-y-7">
+            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 4 — Project Readiness" color="bg-amber-100 text-amber-800"/>{s4?.doc_created_date&&<span className="text-xs text-gray-400">Created {fmt(s4.doc_created_date)}</span>}</div><PdfBtn doc={s4?.document} stage={4} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
+            {!s4?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
+              <div className="grid grid-cols-3 gap-6"><Card><KV label="Selected Vendor" value={s4.solicitation_results?.selected_vendor} accent/></Card><Card><KV label="Total Contract Cost" value={s4.solicitation_results?.total_contract_cost} accent/></Card><Card><KV label="Contract Period" value={`${fmt(s4.solicitation_results?.contract_start_date)||"—"} → ${fmt(s4.solicitation_results?.contract_end_date)||"—"}`}/></Card></div>
+              <div className="grid grid-cols-2 gap-6">
+                <Card><SHead title="Schedule Baseline"/><Tbl headers={["","Proposed","Baseline","Variance"]} rows={[["Start",fmt(s4.schedule_baseline?.proposed_project_start)||"—",fmt(s4.schedule_baseline?.baseline_project_start)||"—",s4.schedule_baseline?.start_variance||"—"],["End",fmt(s4.schedule_baseline?.proposed_project_end)||"—",fmt(s4.schedule_baseline?.baseline_project_end)||"—",s4.schedule_baseline?.end_variance||"—"]]}/>{s4.schedule_baseline?.variance_reasons&&<p className="text-xs text-amber-700 mt-2 bg-amber-50 p-2 rounded">{s4.schedule_baseline.variance_reasons}</p>}</Card>
+                <Card><SHead title="Cost Baseline"/>{s4.cost_baseline?.cost_rows?.length>0?<Tbl headers={["Category","Proposed","Baseline","Variance"]} rows={s4.cost_baseline.cost_rows.map((r:any)=>[r.category,r.proposed,r.baseline,r.variance])}/>:<p className="text-xs text-gray-400">—</p>}</Card>
+              </div>
+              <div className="grid grid-cols-2 gap-6">
+                <Card><SHead title="Contract Management"/><Tbl headers={["Question","Answer"]} rows={(s4.contract_management||[]).map((r:any)=>[r.question,<YN key={r.question} v={r.answer}/>])}/></Card>
+                <Card><SHead title="Organizational Readiness"/><Tbl headers={["Question","Answer"]} rows={(s4.org_readiness||[]).map((r:any)=>[r.question,<YN key={r.question} v={r.answer}/>])}/></Card>
+              </div>
+              {s4.objectives?.length>0&&<Card><SHead title="Business Objectives"/><Tbl headers={["ID","Objective","Metric","Target","Valuation"]} rows={s4.objectives.map((o:any)=>[<strong key={o.id} className="text-amber-700">{o.id}</strong>,o.objective_summary,o.metric,o.target_result,o.valuation_pct])}/></Card>}
+              {s4.risk_register?.length>0&&<Card><SHead title="Risk Register"/><Tbl headers={["Risk","Probability","Impact","Mitigation"]} rows={s4.risk_register.map((r:any)=>[r.risk,<Badge key={r.risk_id} label={r.probability||"—"} color={RISK_COLORS[r.probability]||"bg-gray-100 text-gray-600"}/>,<Badge key={r.risk_id+"i"} label={r.impact||"—"} color={RISK_COLORS[r.impact]||"bg-gray-100 text-gray-600"}/>,r.mitigation])}/></Card>}
+              <div className="grid grid-cols-2 gap-6">
+                <Card><SHead title="Project Readiness"/><div className="space-y-3"><KV label="Methodology" value={s4.project_readiness?.methodology}/><KV label="OTech Engaged" value={s4.project_readiness?.otech_engaged}/>{s4.project_readiness?.methodology_description&&<p className="text-xs mt-3 leading-relaxed" style={{color:"rgba(255,255,255,0.6)"}}>{s4.project_readiness.methodology_description}</p>}</div></Card>
+                <Card><SHead title="CDT Use Only"/>{s4.dot_dates?.length>0&&<div className="space-y-1 mb-3">{s4.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>}{s4.dot_raw&&<div className="space-y-2">{s4.dot_raw.form_status&&<div className="flex justify-between text-xs"><span className="text-gray-500">Form Status</span><Badge label={s4.dot_raw.form_status} color="bg-indigo-100 text-indigo-700"/></div>}{s4.dot_raw.form_disposition&&<div className="flex justify-between text-xs"><span className="text-gray-500">Disposition</span><Badge label={s4.dot_raw.form_disposition} color="bg-green-50 text-green-700"/></div>}</div>}</Card>
+              </div>
+            </>)}
+          </div>)}
+
+          {/* ── PROCUREMENTS ── */}
+          {tab==="procurements"&&(<div className="space-y-7">
+            {!s3?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
+              {s3.primary_solicitation_raw&&<Card><SHead title="Primary Solicitation"/><div className="grid grid-cols-3 gap-6">{Object.entries(s3.primary_solicitation_raw).filter(([,v])=>v&&v!=="null").map(([k,v])=><KV key={k} label={k.replace(/_/g," ").replace(/\b\w/g,(l:string)=>l.toUpperCase())} value={String(v)}/>)}</div></Card>}
+              {ancillary.length===0?<Card><p className="text-gray-400">No ancillary procurements.</p></Card>
+              :<div className="grid grid-cols-2 gap-6">{ancillary.map((ap:AncillaryProc,i:number)=>(
+                <Card key={i}><div className="flex items-start justify-between mb-2"><h4 className="font-semibold text-sm">{ap.name}</h4>{ap.estimated_value&&<Badge label={ap.estimated_value} color="bg-violet-50 text-violet-700"/>}</div>
+                  {ap.procurement_type&&<Badge label={ap.procurement_type} color="bg-gray-100 text-gray-600"/>}
+                  {ap.timeline&&<p className="text-xs text-violet-700 mt-2">📅 {ap.timeline}</p>}
+                  {ap.vendor_or_source&&<p className="text-xs text-gray-500 mt-1">Vendor: {ap.vendor_or_source}</p>}
+                  {ap.description&&<p className="text-xs text-gray-600 mt-2 leading-relaxed line-clamp-3">{ap.description}</p>}
+                </Card>
+              ))}</div>}
+            </>)}
+          </div>)}
+
+          {/* ── CONTACTS ── */}
+          {tab==="contacts"&&(<div>
+            {contacts.length===0
+              ?<Card><p className="text-gray-400">No contacts extracted yet.</p></Card>
+              :<div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-200 bg-gray-50 text-left">
+                      <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Name</th>
+                      <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Title</th>
+                      <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Organization</th>
+                      <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</th>
+                      <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Phone</th>
+                      <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Stage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {contacts.map((c:Contact,i:number)=>(
+                      <tr key={i} className="border-b transition-colors" style={{borderColor:"rgba(255,255,255,0.05)",background:i%2===0?"transparent":"rgba(255,255,255,0.02)"}}>
+                        <td className="px-4 py-3 font-semibold whitespace-nowrap" style={{color:"rgba(255,255,255,0.9)"}}>{c.name||"—"}</td>
+                        <td className="px-4 py-3 text-xs max-w-[220px]" style={{color:"rgba(255,255,255,0.6)"}}>{c.title||"—"}</td>
+                        <td className="px-4 py-3 text-xs whitespace-nowrap" style={{color:"rgba(255,255,255,0.5)"}}>{c.organization||"—"}</td>
+                        <td className="px-4 py-3 text-xs">
+                          {c.email?<a href={`mailto:${c.email}`} style={{color:"#9da2fb",textDecoration:"none"}} className="hover:underline">{c.email}</a>:<span style={{color:"rgba(255,255,255,0.2)"}}>—</span>}
+                        </td>
+                        <td className="px-4 py-3 text-xs whitespace-nowrap" style={{color:"rgba(255,255,255,0.5)"}}>{c.phone||"—"}</td>
+                        <td className="px-4 py-3">
+                          <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${STAGE_COLORS[c.stage]||"bg-gray-100 text-gray-600"}`}>S{c.stage}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="px-4 py-2 border-t border-gray-100 text-xs text-gray-400 bg-gray-50">{contacts.length} contact{contacts.length!==1?"s":""} total</div>
+              </div>}
+          </div>)}
+        </>)}
+      </div>
+    </div>
+  );
+}
