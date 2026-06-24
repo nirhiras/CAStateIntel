@@ -206,22 +206,8 @@ export default function ContactsDashboardPage() {
                 className="border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-sm w-64 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all" />
             </div>
           </div>
-          <SmartMultiSelect label="Stage" placeholder="All Stages"
-            options={buildOptions(contacts, (c: any) => String(c.stage), [
-              (c: any) => !search || [c.name,c.email,c.title,c.organization].some((v: any)=>(v||"").toLowerCase().includes(search.toLowerCase())),
-              (c: any) => roleFilters.length===0||roleFilters.includes(c.role_type),
-              (c: any) => orgFilters.length===0||orgFilters.includes(c.organization),
-              (c: any) => projectFilters.length===0||projectFilters.includes(c.project_number),
-            ], ["1","2","3"], (v: string) => `Stage ${v}${v==="1"?" — BA":v==="2"?" — AA":v==="3"?" — SA":""}`)}
-            selected={stageFilters} onChange={setStageFilters} />
-          <SmartMultiSelect label="Role" placeholder="All Roles"
-            options={buildOptions(contacts, (c: any) => c.role_type, [
-              (c: any) => !search || [c.name,c.email,c.title,c.organization].some((v: any)=>(v||"").toLowerCase().includes(search.toLowerCase())),
-              (c: any) => stageFilters.length===0||stageFilters.includes(String(c.stage)),
-              (c: any) => orgFilters.length===0||orgFilters.includes(c.organization),
-              (c: any) => projectFilters.length===0||projectFilters.includes(c.project_number),
-            ], roleOptions, (v: string) => v.charAt(0).toUpperCase()+v.slice(1))}
-            selected={roleFilters} onChange={setRoleFilters} />
+          <SmartMultiSelect label="Stage" placeholder="All Stages" options={stageOpts} selected={stageFilters} onChange={setStageFilters} />
+          <SmartMultiSelect label="Role" placeholder="All Roles" options={roleOpts} selected={roleFilters} onChange={setRoleFilters} />
           <SmartMultiSelect label="Organization" placeholder="All Orgs"
             options={buildOptions(contacts, (c: any) => c.organization, [
               (c: any) => !search || [c.name,c.email,c.title,c.organization].some((v: any)=>(v||"").toLowerCase().includes(search.toLowerCase())),
