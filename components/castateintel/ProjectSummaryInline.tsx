@@ -114,7 +114,8 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
   const currentStageExtracted=currentStageNum?stageInfo[currentStageNum-1]?.has:false;
 
   return(
-    <div className="min-h-screen bg-gray-50">
+    <div style={{minHeight:"100vh",background:"#000000",color:"#ffffff"}}>
+      <RvtNav />
       {/* PDF Modal */}
       {pdfModal&&(<div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"><div className="rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col"><div className="flex items-center justify-between px-4 py-3 border-b"><span className="text-sm font-semibold">{pdfModal.title}</span><button onClick={()=>setPdfModal(null)} className="text-xl text-gray-400 hover:text-gray-700 px-2">✕</button></div><iframe src={pdfModal.url} className="flex-1 w-full"/></div></div>)}
 
@@ -163,7 +164,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
             const count=t.id==="contacts"?contacts.length:t.id==="procurements"?ancillary.length:0;
             return(<button key={t.id} onClick={()=>setTab(t.id)}
               className={`px-4 py-3 text-xs font-medium whitespace-nowrap border-b-2 transition-colors
-                ${tab===t.id?"border-blue-600 " style={{color:"#8b90f8"}}":"border-transparent" style={{color:"rgba(255,255,255,0.45)"}}"}`}>
+                ${tab===t.id?"border-indigo-500 text-white":"border-transparent"}`} style={tab===t.id?{color:"#ffffff"}:{color:"rgba(255,255,255,0.45)"}}>
               {t.label}{count>0&&<span className="ml-1 text-xs bg-blue-100 " style={{color:"#8b90f8"}} px-1.5 py-0.5 rounded-full">{count}</span>}
             </button>);
           })}
