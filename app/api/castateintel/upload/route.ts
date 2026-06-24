@@ -110,23 +110,45 @@ export async function POST(req: Request) {
       }, { status: 422 });
     }
 
-    // Get or create project
+    // Get or create project — also update name if we extracted a better one from PDF
     const { rows: existing } = await pool.query(
       'SELECT id, name FROM castateintel.pal_projects WHERE project_number = $1', [projectNumber]
     );
     let projectId: number;
     let projectName: string;
+
+    // Extract project name from PDF auto-detection (passed via autoProjectName)
+    const extractedName = (formData.get('extracted_project_name') as string)?.trim() || null;
+
     if (existing.length > 0) {
       projectId = existing[0].id;
-      projectName = existing[0].name || projectNumber;
+      const currentName = existing[0].name || '';
+      // Update name if we have a better one from PDF (not just "Project ####-###")
+      if (extractedName && extractedName.length > 5 &&
+          (currentName.startsWith('Project ') || currentName === projectNumber)) {
+        await pool.query(
+          'UPDATE castateintel.pal_projects SET name=$1, updated_at=NOW() WHERE id=$2',
+          [extractedName, projectId]
+        );
+        projectName = extractedName;
+      } else {
+        projectName = currentName || projectNumber;
+      }
     } else {
+      const insertName = extractedName && extractedName.length > 5
+        ? extractedName
+        : `Project ${projectNumber}`;
       const { rows } = await pool.query(`
         INSERT INTO castateintel.pal_projects (project_number, name, pal_stage, status, description)
         VALUES ($1,$2,$3,'Active','Manually uploaded document')
-        ON CONFLICT (project_number) DO UPDATE SET updated_at=NOW() RETURNING id, name
-      `, [projectNumber, `Project ${projectNumber}`, `Stage ${stage}`]);
+        ON CONFLICT (project_number) DO UPDATE SET
+          name=CASE WHEN castateintel.pal_projects.name LIKE 'Project %'
+               THEN EXCLUDED.name ELSE castateintel.pal_projects.name END,
+          updated_at=NOW()
+        RETURNING id, name
+      `, [projectNumber, insertName, `Stage ${stage}`]);
       projectId = rows[0].id;
-      projectName = rows[0].name || projectNumber;
+      projectName = rows[0].name || insertName;
     }
 
     const canonicalName = canonicalFilename(projectNumber, stage, projectName);
