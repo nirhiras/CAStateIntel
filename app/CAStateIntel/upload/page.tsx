@@ -332,7 +332,7 @@ export default function UploadPage() {
                     )}
 
                     {/* Manual override */}
-          showOverride && (
+          {uf.showOverride && (
                     <div style={{ marginTop: 8, padding: '10px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)' }}>
                       <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>Manual Override</div>
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
