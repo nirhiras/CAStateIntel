@@ -267,12 +267,18 @@ export default function ContactsDashboardPage() {
                 <thead className="bg-gray-50 sticky top-0">
                   <tr>
                     {([
-                      ["name", "Name"], ["title", "Title"], ["organization", "Organization"],
-                      ["email", "Email"], ["phone", "Phone"], ["role_type", "Role"],
-                      ["stage", "Stage"], ["doc_created_date", "Doc Date"],
-                    ] as [keyof Contact, string][]).map(([field, label]) => (
+                      { key: "name",             label: "Name",         w: 140 },
+                      { key: "title",            label: "Title",        w: 160 },
+                      { key: "organization",     label: "Organization", w: 160 },
+                      { key: "email",            label: "Email",        w: 180 },
+                      { key: "phone",            label: "Phone",        w: 110 },
+                      { key: "role_type",        label: "Role",         w: 90  },
+                      { key: "stage",            label: "Stage",        w: 110 },
+                      { key: "doc_created_date", label: "Doc Date",     w: 130 },
+                    ] as {key: keyof Contact; label: string; w: number}[]).map(({key: field, label, w}) => (
                       <th key={field}
                         onClick={() => toggleSort(field)}
+                        style={{ width: w, minWidth: w }}
                         className="text-left px-4 py-3 text-xs font-semibold text-gray-600 cursor-pointer hover:bg-gray-100 whitespace-nowrap border-b border-gray-200"
                       >
                         {label}<SortIcon field={field} />
@@ -327,8 +333,9 @@ export default function ContactsDashboardPage() {
                           );
                         })()}
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="text-xs text-gray-500 font-mono bg-gray-50 px-1.5 py-0.5 rounded border border-gray-200 whitespace-nowrap">
+                      <td className="px-4 py-3" style={{ maxWidth: 220, width: 220 }}>
+                        <span className="text-xs font-mono px-1.5 py-0.5 rounded border block truncate" style={{ background: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}
+                          title={buildSourceLabel(c)}>
                           {buildSourceLabel(c)}
                         </span>
                       </td>
