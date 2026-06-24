@@ -30,11 +30,16 @@ export async function GET(request: Request) {
         c.context,
         c.source,
         c.role_type,
-        c.doc_created_date
+        -- Use AI-extracted date first, fall back to document downloaded_at
+        COALESCE(
+          CASE WHEN c.doc_created_date IS NOT NULL AND c.doc_created_date::text NOT IN ('', 'null') 
+               THEN c.doc_created_date::text ELSE NULL END,
+          TO_CHAR(d.downloaded_at, 'YYYY-MM-DD')
+        ) AS doc_created_date
       FROM castateintel.pal_contacts c
       JOIN castateintel.pal_projects p ON c.project_id = p.id
       LEFT JOIN castateintel.pal_documents d
-        ON d.project_id = p.id AND d.stage = c.stage
+        ON d.project_id = p.id AND d.stage = c.stage AND d.document_id = c.document_id::uuid
       WHERE c.name IS NOT NULL AND c.name != ''
     `;
     const params: (string | number)[] = [];
