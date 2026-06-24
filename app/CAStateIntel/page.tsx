@@ -11,6 +11,7 @@ type Project = {
   doc_count: number; detail_url: string;
   has_s1: boolean; has_s2: boolean; has_s3: boolean;
   s1_extracted: boolean; s2_extracted: boolean; s3_extracted: boolean;
+  s1_doc_id: string | null; s2_doc_id: string | null; s3_doc_id: string | null;
   solution_tags: { tag: string; category: string; confidence: string }[];
 };
 
@@ -254,20 +255,40 @@ export default function CAStateIntelPage() {
                         )}
                       </td>
                       <td style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', width: 180, background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{p.department_name}</td>
-                      {/* Source Docs — CDT website link */}
-                      <td style={{ background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)', width: 120 }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                          {p.detail_url ? (
-                            <a href={p.detail_url} target="_blank" rel="noreferrer"
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#9da2fb', textDecoration: 'none', fontWeight: 500 }}
-                              title="View on CDT website">
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                              </svg>
-                              CDT
-                            </a>
-                          ) : null}
-                          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 8, background: 'rgba(73,79,223,0.2)', color: '#9da2fb', fontSize: 13, fontWeight: 700 }}>{p.doc_count}</span>
+                      {/* Source Docs — direct PDF links from DB */}
+                      <td style={{ background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)', width: 110 }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                          {([
+                            { n: 1, docId: p.s1_doc_id, has: p.has_s1 },
+                            { n: 2, docId: p.s2_doc_id, has: p.has_s2 },
+                            { n: 3, docId: p.s3_doc_id, has: p.has_s3 },
+                          ] as {n:number;docId:string|null;has:boolean}[]).filter(s => s.has || s.docId).map(s => {
+                            const stageColors: Record<number,{bg:string;color:string}> = {
+                              1:{bg:'rgba(79,85,241,0.15)',color:'#8b90f8'},
+                              2:{bg:'rgba(73,79,223,0.2)',color:'#9da2fb'},
+                              3:{bg:'rgba(0,168,126,0.15)',color:'#3dd6a8'},
+                            };
+                            const sc = stageColors[s.n];
+                            return s.docId ? (
+                              <a key={s.n}
+                                href={`/api/castateintel/pdf/${s.docId}`}
+                                target="_blank" rel="noreferrer"
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '3px 8px', borderRadius: 6, fontSize: 12, fontWeight: 600, textDecoration: 'none', background: sc.bg, color: sc.color }}
+                                title={`Open Stage ${s.n} PDF`}>
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                                S{s.n}
+                              </a>
+                            ) : (
+                              <span key={s.n} style={{ display: 'inline-flex', padding: '3px 8px', borderRadius: 6, fontSize: 12, fontWeight: 600, background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.2)' }}>
+                                S{s.n}
+                              </span>
+                            );
+                          })}
+                          {!p.has_s1 && !p.has_s2 && !p.has_s3 && (
+                            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>—</span>
+                          )}
                         </div>
                       </td>
                       <td style={{ background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
