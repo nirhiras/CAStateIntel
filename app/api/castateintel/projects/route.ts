@@ -44,7 +44,7 @@ export async function GET(request: Request) {
 
   if (search) {
     where += ` AND (p.name ILIKE $${idx} OR p.project_number ILIKE $${idx})`;
-    params.push(\`%\${search}%\`); idx++;
+    params.push(`%${search}%`); idx++;
   }
   if (stage) {
     where += ` AND p.pal_stage = $${idx}`;
@@ -61,7 +61,7 @@ export async function GET(request: Request) {
 
   // effective_stage: derive from highest stage doc that exists (not just pal_stage from CDT)
   // solution_tags: deduplicated by tag value in SQL using jsonb aggregation
-  const query = \`
+  const query = `
     SELECT
       p.id,
       p.project_number,
@@ -105,11 +105,11 @@ export async function GET(request: Request) {
     LEFT JOIN castateintel.pal_stage1_analysis s1 ON s1.project_id = p.id
     LEFT JOIN castateintel.pal_stage2_analysis s2 ON s2.project_id = p.id
     LEFT JOIN castateintel.pal_stage3_analysis s3 ON s3.project_id = p.id
-    \${where}
+    ${where}
     GROUP BY p.id, p.project_number, p.name, p.pal_stage, p.criticality_rating,
              p.status, p.detail_url, dep.name, ag.name, s2.solution_tags
     ORDER BY p.project_number
-  \`;
+  `;
 
   try {
     const result = await db.query(query, params);
