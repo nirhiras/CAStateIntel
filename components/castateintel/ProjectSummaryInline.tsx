@@ -114,7 +114,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
   const currentStageExtracted=currentStageNum?stageInfo[currentStageNum-1]?.has:false;
 
   return(
-    <div style={{minHeight:"100vh",background:"#000000",color:"#ffffff"}}>
+    <div className="psi-dark" style={{minHeight:"100vh",background:"#000000",color:"#ffffff"}}>
       <RvtNav />
       {/* PDF Modal */}
       {pdfModal&&(<div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"><div className="rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col"><div className="flex items-center justify-between px-4 py-3 border-b"><span className="text-sm font-semibold">{pdfModal.title}</span><button onClick={()=>setPdfModal(null)} className="text-xl text-gray-400 hover:text-gray-700 px-2">✕</button></div><iframe src={pdfModal.url} className="flex-1 w-full"/></div></div>)}
