@@ -149,13 +149,14 @@ export default function ContactsDashboardPage() {
 
   const exportCSV = () => {
     const headers = ["Name","Title","Organization","Email","Phone","Role","Stage","Source","Section","Doc Date","Project"];
-    const esc = (v: unknown) => '"' + String(v||"").replace(/"/g, '""') + '"';
-    const rows = sorted.map(ct => [ct.name, ct.title, ct.organization, ct.email, ct.phone, ct.role_type, "Stage " + ct.stage, buildSourceLabel(ct), ct.source, ct.doc_created_date, ct.project_number].map(esc).join(","));
-    const csv = [headers.join(","), ...rows].join("\n");
+    const esc = (v: unknown) => { const s = String(v || ""); return s.includes(",") || s.includes('"') ? ('"' + s.replace(/"/g, '""') + '"') : s; };
+    const rows = sorted.map(ct => [ct.name, ct.title, ct.organization, ct.email, ct.phone, ct.role_type, "Stage " + String(ct.stage), buildSourceLabel(ct), ct.source, ct.doc_created_date, ct.project_number].map(esc).join(","));
+    const csv = [headers.join(","), ...rows].join("
+");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = "pal_contacts.csv"; a.click();
+    a.href = url; a.download = "pal_contacts.csv"; a.click(); URL.revokeObjectURL(url);
   };
 
   return (
