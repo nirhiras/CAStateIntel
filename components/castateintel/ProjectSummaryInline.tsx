@@ -16,15 +16,15 @@ interface DotDate { label:string;date:string; }
 const fmt = (d?:string|null) => { if(!d||d==="null")return null; try{return new Date(d).toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"});}catch{return d;} };
 const TAG_COLORS:Record<string,string> = { vendor:"bg-blue-100 text-blue-800",technology:"bg-purple-100 text-purple-800",approach:"bg-green-100 text-green-800",deployment:"bg-orange-100 text-orange-800" };
 const RISK_COLORS:Record<string,string> = { High:"bg-red-100 text-red-800",Medium:"bg-yellow-100 text-yellow-800",Low:"bg-green-100 text-green-800" };
-const STAGE_COLORS:Record<number,string> = { 1:"" style={{background:"rgba(0,168,126,0.15)",color:"#3dd6a8"}} border-green-300",2:"bg-indigo-100 text-indigo-700 border-indigo-300",3:"bg-violet-100 text-violet-700 border-violet-300",4:"bg-amber-100 text-amber-700 border-amber-300" };
+const STAGE_COLORS:Record<number,string> = { 1:"bg-sky-100 text-sky-700 border-sky-300",2:"bg-indigo-100 text-indigo-700 border-indigo-300",3:"bg-violet-100 text-violet-700 border-violet-300",4:"bg-amber-100 text-amber-700 border-amber-300" };
 const STAGE_ABBREV:Record<number,string> = { 1:"S1BA",2:"S2AA",3:"S3SA",4:"S4PRA" };
-const CRIT_COLORS:Record<string,string> = { High:"" style={{background:"rgba(226,59,74,0.15)",color:"#f87171"}}",Medium:"" style={{background:"rgba(176,144,0,0.15)",color:"#e8c840"}}",Low:"bg-gray-100 text-gray-600" };
+const CRIT_COLORS:Record<string,string> = { High:"bg-red-100 text-red-700",Medium:"bg-yellow-100 text-yellow-700",Low:"bg-gray-100 text-gray-600" };
 
 function Badge({label,color="bg-gray-100 text-gray-600"}:{label:string;color?:string}){return <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${color}`}>{label}</span>;}
-function YN({v}:{v:string}){const lv=(v||"").toLowerCase();return <Badge label={v||"—"} color={lv==="yes"?"bg-green-100 text-green-800":lv==="no"?"" style={{background:"rgba(226,59,74,0.15)",color:"#f87171"}}":"bg-gray-100 text-gray-500"}/>;}
-function KV({label,value,accent=false}:{label:string;value?:string|null;accent?:boolean}){return(<div className="flex flex-col"><span className="text-xs text-gray-400 font-medium">{label}</span><span className={`text-sm mt-0.5 ${accent?"font-bold text-blue-900":"text-gray-800"} ${!value?"text-gray-300 font-normal text-xs":""}`}>{value||"—"}</span></div>);}
-function SHead({title}:{title:string}){return <div className="flex items-center gap-2 mb-4"><div className="w-1 h-5 rounded bg-blue-500"/><h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide">{title}</h3></div>;}
-function Card({children,className=""}:{children:React.ReactNode;className?:string}){return <div className={`bg-white rounded-xl border border-gray-200 p-5 ${className}`}>{children}</div>;}
+function YN({v}:{v:string}){const lv=(v||"").toLowerCase();return <Badge label={v||"—"} color={lv==="yes"?"bg-green-100 text-green-800":lv==="no"?"bg-red-100 text-red-700":"bg-gray-100 text-gray-500"}/>;}
+function KV({label,value,accent=false}:{label:string;value?:string|null;accent?:boolean}){return(<div className="flex flex-col"><span className="text-xs font-medium" style={{color:"rgba(255,255,255,0.45)"}}>{label}</span><span className={`text-sm mt-0.5 ${accent?"font-bold":"" } ${!value?"text-xs font-normal":""}`} style={{color:value?(accent?"#9da2fb":"rgba(255,255,255,0.85)"):"rgba(255,255,255,0.25)"}}>{value||"—"}</span></div>);}
+function SHead({title}:{title:string}){return <div className="flex items-center gap-2 mb-4"><div className="w-1 h-5 rounded" style={{background:"#494fdf"}}/><h3 className="text-sm font-bold uppercase tracking-wide" style={{color:"rgba(255,255,255,0.7)"}}>{title}</h3></div>;}
+function Card({children,className=""}:{children:React.ReactNode;className?:string}){return <div className={`rounded-xl border p-5 ${className}`} style={{background:"#16181a",borderColor:"rgba(255,255,255,0.08)"}}>{children}</div>;}
 function Tbl({headers,rows}:{headers:string[];rows:(string|React.ReactNode)[][]}){
   if(!rows.length)return <p className="text-xs italic" style={{color:"rgba(255,255,255,0.3)"}}>No data</p>;
   return(<div className="overflow-x-auto"><table className="w-full text-xs border-collapse">
