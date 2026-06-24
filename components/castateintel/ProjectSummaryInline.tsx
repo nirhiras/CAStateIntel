@@ -311,17 +311,40 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
           </div>)}
 
           {/* ── CONTACTS ── */}
-          {tab==="contacts"&&(<div className="space-y-4">
-            {contacts.length===0?<Card><p className="text-gray-400">No contacts extracted yet.</p></Card>
-            :<div className="grid grid-cols-3 gap-4">{contacts.map((c:Contact,i:number)=>(
-              <Card key={i} className="flex flex-col gap-1">
-                <div className="flex items-start justify-between"><div><p className="font-semibold text-sm">{c.name}</p>{c.title&&<p className="text-xs text-gray-500">{c.title}</p>}{c.organization&&<p className="text-xs text-gray-400">{c.organization}</p>}</div>
-                  <Badge label={`S${c.stage}`} color={STAGE_COLORS[c.stage]||"bg-gray-100 text-gray-600"}/>
-                </div>
-                {c.email&&<a href={`mailto:${c.email}`} className="text-xs text-blue-600 hover:underline truncate">{c.email}</a>}
-                {c.phone&&<p className="text-xs text-gray-400">{c.phone}</p>}
-              </Card>
-            ))}</div>}
+          {tab==="contacts"&&(<div>
+            {contacts.length===0
+              ?<Card><p className="text-gray-400">No contacts extracted yet.</p></Card>
+              :<div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-200 bg-gray-50 text-left">
+                      <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Name</th>
+                      <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Title</th>
+                      <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Organization</th>
+                      <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</th>
+                      <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Phone</th>
+                      <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Stage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {contacts.map((c:Contact,i:number)=>(
+                      <tr key={i} className={`border-b border-gray-50 hover:bg-blue-50/40 transition-colors ${i%2===0?"bg-white":"bg-gray-50/30"}`}>
+                        <td className="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap">{c.name||"—"}</td>
+                        <td className="px-4 py-3 text-gray-600 text-xs max-w-[220px]">{c.title||"—"}</td>
+                        <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{c.organization||"—"}</td>
+                        <td className="px-4 py-3 text-xs">
+                          {c.email?<a href={`mailto:${c.email}`} className="text-blue-600 hover:underline">{c.email}</a>:<span className="text-gray-300">—</span>}
+                        </td>
+                        <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{c.phone||"—"}</td>
+                        <td className="px-4 py-3">
+                          <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${STAGE_COLORS[c.stage]||"bg-gray-100 text-gray-600"}`}>S{c.stage}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="px-4 py-2 border-t border-gray-100 text-xs text-gray-400 bg-gray-50">{contacts.length} contact{contacts.length!==1?"s":""} total</div>
+              </div>}
           </div>)}
         </>)}
       </div>
