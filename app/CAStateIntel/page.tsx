@@ -16,6 +16,7 @@ type Project = {
   has_s1: boolean;
   has_s2: boolean;
   has_s3: boolean;
+  effective_stage: string;
   s1_extracted: boolean;
   s2_extracted: boolean;
   s3_extracted: boolean;
@@ -61,14 +62,18 @@ const STAGE_LINK_COLORS: Record<number, string> = {
 export default function CAStateIntelPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [departments, setDepartments] = useState<string[]>([]);
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState('');
+  const [deptFilter, setDeptFilter] = useState('');
   const [tagFilter, setTagFilter] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch('/api/castateintel/projects?stats=true')
       .then(r => r.json()).then(setStats);
+    fetch('/api/castateintel/projects?departments=true')
+      .then(r => r.json()).then(setDepartments);
   }, []);
 
   useEffect(() => {
@@ -76,10 +81,11 @@ export default function CAStateIntelPage() {
     const params = new URLSearchParams();
     if (search) params.set('search', search);
     if (stageFilter) params.set('stage', stageFilter);
+    if (deptFilter) params.set('department', deptFilter);
     fetch(`/api/castateintel/projects?${params}`)
       .then(r => r.json())
       .then(data => { setProjects(Array.isArray(data) ? data : data.projects || []); setLoading(false); });
-  }, [search, stageFilter]);
+  }, [search, stageFilter, deptFilter]);
 
   // Collect all unique tags across all projects
   const allTags = [...new Set(
@@ -144,6 +150,17 @@ export default function CAStateIntelPage() {
             </select>
           </div>
           <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Department</label>
+            <select
+              value={deptFilter}
+              onChange={e => setDeptFilter(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white min-w-[200px] max-w-xs"
+            >
+              <option value="">All Departments</option>
+              {departments.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Solution Tag</label>
             <select
               value={tagFilter}
@@ -157,7 +174,7 @@ export default function CAStateIntelPage() {
           <div className="flex items-end gap-2 pb-0.5">
             {(search || stageFilter || tagFilter) && (
               <button
-                onClick={() => { setSearch(''); setStageFilter(''); setTagFilter(''); }}
+                onClick={() => { setSearch(''); setStageFilter(''); setDeptFilter(''); setTagFilter(''); }}
                 className="px-3 py-2 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
               >
                 ✕ Clear filters
@@ -203,8 +220,8 @@ export default function CAStateIntelPage() {
                     <td className="px-4 py-3 font-mono text-xs text-gray-600">{p.project_number}</td>
                     <td className="px-4 py-3 font-medium text-gray-900 max-w-xs">{p.name}</td>
                     <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${STAGE_COLORS[p.pal_stage] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {p.pal_stage === 'Stage 1' ? 'S1BA' : p.pal_stage === 'Stage 2' ? 'S2AA' : p.pal_stage === 'Stage 3' ? 'S3SA' : p.pal_stage === 'Stage 4' ? 'S4PRA' : p.pal_stage}
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${STAGE_COLORS[p.effective_stage||p.pal_stage] ?? 'bg-gray-100 text-gray-600'}`}>
+                        {(p.effective_stage||p.pal_stage) === 'Stage 1' ? 'S1BA' : (p.effective_stage||p.pal_stage) === 'Stage 2' ? 'S2AA' : (p.effective_stage||p.pal_stage) === 'Stage 3' ? 'S3SA' : (p.effective_stage||p.pal_stage) === 'Stage 4' ? 'S4PRA' : (p.effective_stage||p.pal_stage)}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -240,12 +257,9 @@ export default function CAStateIntelPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      {tags.length > 0 ? (() => {
-                        const seen = new Set<string>();
-                        const unique = tags.filter(t => { if (seen.has(t.tag)) return false; seen.add(t.tag); return true; });
-                        return (
+                      {tags.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
-                          {unique.map((t, i) => (
+                          {tags.map((t, i) => (
                             <button
                               key={i}
                               onClick={() => setTagFilter(t.tag === tagFilter ? '' : t.tag)}
@@ -258,8 +272,7 @@ export default function CAStateIntelPage() {
                             </button>
                           ))}
                         </div>
-                        );
-                      })()
+                      )
                       ) : (
                         <span className="text-xs text-gray-300">
                           {p.s2_extracted ? 'No tags' : '—'}
