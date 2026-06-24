@@ -308,27 +308,8 @@ export default function CAStateIntelPage() {
                           {!p.has_s1&&!p.has_s2&&!p.has_s3&&<span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12 }}>—</span>}
                         </div>
                       </td>
-                      <td style={{ background: 'transparent', borderBottom: '1px solid rgba(61,58,57,0.4)', maxWidth: 340, width: 340 }}>
-                        {tags.length > 0 ? (
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                            {tags.map((t, i) => (
-                              <button key={i}
-                                onClick={() => setTagFilters(tagFilters.includes(t.tag) ? tagFilters.filter(x => x !== t.tag) : [...tagFilters, t.tag])}
-                                style={{
-                                  padding: '3px 8px', borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: 'pointer', border: 'none',
-                                  background: tagFilters.includes(t.tag) ? 'rgba(0,217,146,0.35)' : 'rgba(61,58,57,0.6)',
-                                  color: tagFilters.includes(t.tag) ? 'var(--vg-primary-soft)' : 'rgba(255,255,255,0.55)',
-                                  outline: tagFilters.includes(t.tag) ? '1px solid rgba(0,217,146,0.6)' : 'none',
-                                  transition: 'all 0.1s',
-                                }}
-                                title={`${tagFilters.includes(t.tag)?'Remove':'Add'} filter: ${t.tag}`}>
-                                {t.tag}
-                              </button>
-                            ))}
-                          </div>
-                        ) : (
-                          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>{p.s2_extracted?'No tags':'—'}</span>
-                        )}
+                      <td style={{ background: 'transparent', borderBottom: tags.length > 0 ? 'none' : '1px solid rgba(61,58,57,0.4)', width: 120 }}>
+                        {tags.length === 0 && <span style={{ fontSize: 12, color: 'var(--vg-mute)' }}>{p.s2_extracted ? 'No tags' : '—'}</span>}
                       </td>
                     </tr>
                     {tags.length > 0 && (
