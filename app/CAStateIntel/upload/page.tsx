@@ -298,15 +298,381 @@ export default function UploadPage() {
                           <span className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded font-semibold">
                             {uf.project_number}
                           </span>
-                          {uf.stage && (
+                          {uf.stage && uf.stage > 0 && (
                             <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
                               style={{ background: STAGE_BG[uf.stage], color: STAGE_COLOR[uf.stage] }}>
-                              Stage {uf.stage}
+                              Stage {uf.stage}{uf.sub_label ? `${uf.sub_label}` : ''}
+                            </span>
+                          )}
+                          {uf.is_other_doc && (
+                            <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: '#ECFDF5', color: '#065F46' }}>
+                              📎 Other Doc
                             </span>
                           )}
                           <span className="text-xs text-gray-500">{uf.chars_extracted?.toLocaleString()} chars</span>
-                          <a href={`/CAStateIntel/stage${uf.stage}?project=${uf.project_number}`}
-                            className="text-xs text-blue-600 hover:underline">View Analysis →</a>
+                          {uf.stage && uf.stage > 0 && (
+                            <a href={`/CAStateIntel/stage${uf.stage}?project=${uf.project_number}`}
+                              className="text-xs text-blue-600 hover:underline">View Analysis →</a>
+                          )}
+                        </div>
+                        {/* Canonical filename */}
+                        {uf.canonical_filename && (
+                          <div className="text-xs text-gray-400 font-mono truncate">
+                            📄 {uf.canonical_filename}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Error */}
+                    {uf.status === 'error' && (
+                      <p className="text-xs text-red-600 mt-1">{uf.error}</p>
+                    )}
+
+                    {/* Manual override */}
+          showOverride && (
+                    <div style={{ marginTop: 8, padding: '10px 12px', background: '#F8F7F5', borderRadius: 8, border: '1px solid #E5E3DF' }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: '#6B6861', marginBottom: 6 }}>Manual Override</div>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <input type="text" placeholder="Project # (e.g. 4265-081)"
+                          value={uf.manualProject || ''}
+                          onChange={e => update(uf.id, { manualProject: e.target.value })}
+                          style={{ border: '1px solid #E5E3DF', borderRadius: 6, padding: '4px 8px', fontSize: 12, width: 160 }} />
+                        <select value={uf.manualStage || ''}
+                          onChange={e => update(uf.id, { manualStage: parseInt(e.target.value) || undefined })}
+                          style={{ border: '1px solid #E5E3DF', borderRadius: 6, padding: '4px 8px', fontSize: 12 }}>
+                          <option value="">Auto-detect stage</option>
+                          <option value="1">Stage 1 — Business Analysis</option>
+                          <option value="2">Stage 2 — Alternative Analysis</option>
+                          <option value="3">Stage 3 — Solutions Analysis</option>
+                          <option value="4">Stage 4 — Project Readiness</option>
+                          <option value="0">Other document (non-stage)</option>
+                        </select>
+                        <select value={uf.manualSubLabel || ''}
+                          onChange={e => update(uf.id, { manualSubLabel: e.target.value || undefined })}
+                          style={{ border: '1px solid #E5E3DF', borderRadius: 6, padding: '4px 8px', fontSize: 12 }}
+                          title="Use A or B if this is one of multiple docs for the same stage">
+                          <option value="">No sub-label (single doc)</option>
+                          <option value="A">Part A</option>
+                          <option value="B">Part B</option>
+                          <option value="C">Part C</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}rt { useState, useRef, useCallback } from 'react';
+
+type FileStatus = 'queued' | 'uploading' | 'done' | 'error';
+
+type UploadFile = {
+  id: string;
+  file: File;
+  status: FileStatus;
+  project_number?: string;
+  project_name?: string;
+  stage?: number;
+  label?: string;
+  sub_label?: string;
+  doc_type?: string;
+  is_other_doc?: boolean;
+  chars_extracted?: number;
+  file_size_kb?: number;
+  document_id?: string;
+  canonical_filename?: string;
+  was_overwrite?: boolean;
+  error?: string;
+  manualProject?: string;
+  manualStage?: number;
+  manualSubLabel?: string;
+  showOverride?: boolean;
+};
+
+const STAGE_LABELS: Record<number, string> = {
+  1: 'Stage 1 Business Analysis',
+  2: 'Stage 2 Alternative Analysis',
+  3: 'Stage 3 Solutions Analysis',
+  4: 'Stage 4 Project Readiness & Approval',
+};
+const STAGE_COLOR: Record<number, string> = {
+  1: '#1D4ED8', 2: '#4F46E5', 3: '#7C3AED', 4: '#B45309'
+};
+const STAGE_BG: Record<number, string> = {
+  1: '#EFF6FF', 2: '#EEF2FF', 3: '#F5F3FF', 4: '#FFFBEB'
+};
+
+let idCounter = 0;
+const newId = () => `f${++idCounter}_${Date.now()}`;
+
+export default function UploadPage() {
+  const [files, setFiles] = useState<UploadFile[]>([]);
+  const [dragging, setDragging] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [analyzeAfter, setAnalyzeAfter] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const abortRef = useRef(false);
+
+  const addFiles = useCallback((incoming: FileList | File[]) => {
+    const arr = Array.from(incoming).filter(f => f.type === 'application/pdf');
+    if (!arr.length) return;
+    setFiles(prev => [...prev, ...arr.map(f => ({
+      id: newId(), file: f, status: 'queued' as FileStatus
+    }))]);
+  }, []);
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); setDragging(false);
+    addFiles(e.dataTransfer.files);
+  }, [addFiles]);
+
+  const update = (id: string, patch: Partial<UploadFile>) =>
+    setFiles(prev => prev.map(f => f.id === id ? { ...f, ...patch } : f));
+
+  const remove = async (uf: UploadFile) => {
+    // If already uploaded, delete from DB
+    if (uf.document_id && uf.status === 'done') {
+      try {
+        await fetch('/api/castateintel/upload', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ document_id: uf.document_id }),
+        });
+      } catch {}
+    }
+    setFiles(prev => prev.filter(f => f.id !== uf.id));
+  };
+
+  const uploadOne = async (uf: UploadFile): Promise<void> => {
+    update(uf.id, { status: 'uploading' });
+    const formData = new FormData();
+    formData.append('pdf', uf.file);
+    if (uf.manualProject) formData.append('project_number', uf.manualProject);
+    if (uf.manualStage) formData.append('stage', String(uf.manualStage));
+    if (uf.manualSubLabel) formData.append('sub_label', uf.manualSubLabel);
+    try {
+      const res = await fetch('/api/castateintel/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.success) {
+        update(uf.id, {
+          status: 'done',
+          project_number: data.project_number,
+          sub_label: data.sub_label || '',
+          doc_type: data.doc_type || '',
+          is_other_doc: data.is_other_doc || false,
+          project_name: data.project_name,
+          stage: data.stage,
+          label: data.label,
+          chars_extracted: data.chars_extracted,
+          file_size_kb: data.file_size_kb,
+          document_id: data.document_id,
+          canonical_filename: data.filename,
+          was_overwrite: data.was_overwrite,
+        });
+      } else {
+        update(uf.id, { status: 'error', error: data.error ?? 'Upload failed' });
+      }
+    } catch {
+      update(uf.id, { status: 'error', error: 'Network error' });
+    }
+  };
+
+  const runAll = async () => {
+    const queued = files.filter(f => f.status === 'queued' || f.status === 'error');
+    if (!queued.length) return;
+    setRunning(true); abortRef.current = false;
+    // Upload 3 at a time
+    for (let i = 0; i < queued.length; i += 3) {
+      if (abortRef.current) break;
+      await Promise.all(queued.slice(i, i + 3).map(uploadOne));
+    }
+    // Auto-analyze if checked
+    if (analyzeAfter && !abortRef.current) {
+      const done = files.filter(f => f.status === 'done' && f.project_number);
+      const projectNums = [...new Set(done.map(f => f.project_number!))];
+      for (const pn of projectNums) {
+        try {
+          await fetch('/api/castateintel/analysis/extract', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ project_number: pn }),
+          });
+        } catch {}
+      }
+    }
+    setRunning(false);
+  };
+
+  const analyzeAll = async () => {
+    const done = files.filter(f => f.status === 'done' && f.project_number);
+    const projectNums = [...new Set(done.map(f => f.project_number!))];
+    if (!projectNums.length) return;
+    for (const pn of projectNums) {
+      try {
+        await fetch('/api/castateintel/analysis/extract', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ project_number: pn }),
+        });
+      } catch {}
+    }
+    alert(`Triggered AI extraction for: ${projectNums.join(', ')}`);
+  };
+
+  const queued = files.filter(f => f.status === 'queued').length;
+  const done = files.filter(f => f.status === 'done').length;
+  const errors = files.filter(f => f.status === 'error').length;
+  const active = files.filter(f => f.status === 'uploading').length;
+  const totalChars = files.filter(f => f.status === 'done').reduce((s, f) => s + (f.chars_extracted ?? 0), 0);
+  const overwriteCount = files.filter(f => f.was_overwrite).length;
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-gray-900 text-white px-8 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <a href="/CAStateIntel/documents" className="text-gray-400 hover:text-white text-sm">← Documents</a>
+          <div className="w-px h-4 bg-gray-700" />
+          <span className="text-sm font-semibold">Bulk PDF Upload</span>
+        </div>
+        {files.length > 0 && (
+          <div className="flex gap-3 text-xs items-center">
+            <span className="text-gray-400">{files.length} file{files.length !== 1 ? 's' : ''}</span>
+            {done > 0 && <span className="text-green-400">· {done} uploaded</span>}
+            {overwriteCount > 0 && <span className="text-amber-400">· {overwriteCount} overwritten</span>}
+            {errors > 0 && <span className="text-red-400">· {errors} failed</span>}
+            {active > 0 && <span className="text-blue-400">· {active} uploading</span>}
+            {totalChars > 0 && <span className="text-gray-500">· {totalChars.toLocaleString()} chars</span>}
+          </div>
+        )}
+      </div>
+
+      <div className="max-w-4xl mx-auto px-6 py-8">
+
+        {/* Drop zone */}
+        <div
+          onDragOver={e => { e.preventDefault(); setDragging(true); }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={onDrop}
+          onClick={() => fileRef.current?.click()}
+          className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all mb-5
+            ${dragging ? 'border-gray-900 bg-gray-100' : 'border-gray-300 bg-white hover:border-gray-400'}`}
+        >
+          <input ref={fileRef} type="file" accept=".pdf" multiple className="hidden"
+            onChange={e => { if (e.target.files) addFiles(e.target.files); e.target.value = ''; }} />
+          <div className="text-4xl mb-3">📂</div>
+          <div className="text-base font-semibold text-gray-900">
+            {dragging ? 'Drop PDFs here' : 'Drop multiple PDFs here'}
+          </div>
+          <div className="text-sm text-gray-500 mt-1">or click to browse — S1, S2, S3, or S4 documents</div>
+          <div className="text-xs text-gray-400 mt-2">
+            Project number, stage & label auto-detected · Existing files overwritten · Filenames standardized
+          </div>
+        </div>
+
+        {/* Action bar */}
+        {files.length > 0 && (
+          <div className="flex items-center gap-3 mb-4 flex-wrap">
+            <button onClick={runAll} disabled={running || (queued === 0 && errors === 0)}
+              className={`px-5 py-2 rounded-lg text-sm font-semibold text-white transition-colors
+                ${(running || (queued === 0 && errors === 0)) ? 'bg-gray-400 cursor-not-allowed' : 'bg-gray-900 hover:bg-gray-700'}`}>
+              {running
+                ? `Uploading ${active} file${active !== 1 ? 's' : ''}...`
+                : `⬆ Upload ${queued + errors} PDF${(queued + errors) !== 1 ? 's' : ''}`}
+            </button>
+
+            {done > 0 && !running && (
+              <button onClick={analyzeAll}
+                className="px-4 py-2 rounded-lg text-sm font-semibold bg-amber-600 text-white hover:bg-amber-700 transition-colors">
+                ⚡ Analyze All with AI
+              </button>
+            )}
+
+            {running && (
+              <button onClick={() => { abortRef.current = true; }}
+                className="px-4 py-2 rounded-lg text-sm bg-red-50 text-red-600 border border-red-200 hover:bg-red-100">
+                ✕ Stop
+              </button>
+            )}
+
+            <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer ml-1">
+              <input type="checkbox" checked={analyzeAfter} onChange={e => setAnalyzeAfter(e.target.checked)}
+                className="rounded" />
+              Auto-analyze after upload
+            </label>
+
+            {!running && (
+              <button onClick={() => setFiles([])}
+                className="ml-auto text-xs text-gray-400 hover:text-gray-600">
+                Clear all
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Progress bar */}
+        {running && files.length > 0 && (
+          <div className="mb-4">
+            <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-full bg-gray-900 rounded-full transition-all duration-300"
+                style={{ width: `${Math.round((done / files.length) * 100)}%` }} />
+            </div>
+            <p className="text-xs text-gray-400 mt-1">{done} of {files.length} complete</p>
+          </div>
+        )}
+
+        {/* File list */}
+        {files.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            {files.map((uf, i) => (
+              <div key={uf.id}
+                className={`px-4 py-3 ${i < files.length - 1 ? 'border-b border-gray-100' : ''}
+                  ${uf.status === 'done' ? 'bg-green-50/30' : uf.status === 'error' ? 'bg-red-50/30' : 'bg-white'}`}>
+                <div className="flex items-start gap-3">
+                  {/* Status dot */}
+                  <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0
+                    ${uf.status === 'done' ? 'bg-green-500' :
+                      uf.status === 'error' ? 'bg-red-500' :
+                      uf.status === 'uploading' ? 'bg-blue-500 animate-pulse' : 'bg-gray-300'}`} />
+
+                  <div className="flex-1 min-w-0">
+                    {/* Filename row */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium text-gray-800 truncate max-w-xs">{uf.file.name}</span>
+                      <span className="text-xs text-gray-400">{(uf.file.size / 1024).toFixed(0)} KB</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium
+                        ${uf.status === 'done' ? 'bg-green-100 text-green-700' :
+                          uf.status === 'error' ? 'bg-red-100 text-red-700' :
+                          uf.status === 'uploading' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                        {uf.status === 'uploading' ? 'Uploading...' : uf.status}
+                      </span>
+                      {uf.was_overwrite && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
+                          ↺ Overwritten
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Success details */}
+                    {uf.status === 'done' && uf.project_number && (
+                      <div className="mt-1.5 space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded font-semibold">
+                            {uf.project_number}
+                          </span>
+                          {uf.stage && uf.stage > 0 && (
+                            <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                              style={{ background: STAGE_BG[uf.stage], color: STAGE_COLOR[uf.stage] }}>
+                              Stage {uf.stage}{uf.sub_label ? `${uf.sub_label}` : ''}
+                            </span>
+                          )}
+                          {uf.is_other_doc && (
+                            <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: '#ECFDF5', color: '#065F46' }}>
+                              📎 Other Doc
+                            </span>
+                          )}
+                          <span className="text-xs text-gray-500">{uf.chars_extracted?.toLocaleString()} chars</span>
+                          {uf.stage && uf.stage > 0 && (
+                            <a href={`/CAStateIntel/stage${uf.stage}?project=${uf.project_number}`}
+                              className="text-xs text-blue-600 hover:underline">View Analysis →</a>
+                          )}
                         </div>
                         {/* Canonical filename */}
                         {uf.canonical_filename && (
