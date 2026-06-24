@@ -94,11 +94,11 @@ export default function DocumentsPage() {
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: "'Inter', -apple-system, sans-serif", background: 'rgba(255,255,255,0.04)', color: '#ffffff' }}>
       {/* LEFT PANEL — project list */}
-      <div style={{ width: 300, flexShrink: 0, borderRight: '1px solid rgba(255,255,255,0.08)', background: '#16181a', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ padding: '20px 16px 12px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+      <div style={{ width: 300, flexShrink: 0, borderRight: '1px solid var(--vg-hairline)', background: 'var(--vg-canvas-soft)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ padding: '20px 16px 12px', borderBottom: '1px solid var(--vg-hairline)' }}>
           <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: 12 }}>PAL Documents</div>
           <input type="text" placeholder="Search projects..." value={search} onChange={e => setSearch(e.target.value)}
-            style={{ width: '100%', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '8px 12px', fontSize: 13, background: 'rgba(255,255,255,0.04)', outline: 'none', boxSizing: 'border-box' }} />
+            style={{ width: '100%', border: '1px solid var(--vg-hairline)', borderRadius: 8, padding: '8px 12px', fontSize: 13, background: 'rgba(255,255,255,0.04)', outline: 'none', boxSizing: 'border-box' }} />
           <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
             {['', 'Stage 3', 'Stage 2', 'Stage 1'].map(s => (
               <button key={s} onClick={() => setStageFilter(s)}
@@ -145,16 +145,16 @@ export default function DocumentsPage() {
           </div>
         ) : (
           <>
-            <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', background: '#16181a', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--vg-hairline)', background: 'var(--vg-canvas-soft)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <div style={{ fontSize: 18, fontWeight: 600 }}>{selectedProject.project_name}</div>
                 <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>{selectedProject.project_number}</div>
               </div>
-              <a href="/CAStateIntel/upload" style={{ fontSize: 13, padding: '8px 16px', background: 'rgba(255,255,255,0.08)', borderRadius: 8, textDecoration: 'none', color: '#ffffff', fontWeight: 500 }}>+ Upload PDF</a>
+              <a href="/CAStateIntel/upload" style={{ fontSize: 13, padding: '8px 16px', background: 'var(--vg-hairline)', borderRadius: 8, textDecoration: 'none', color: '#ffffff', fontWeight: 500 }}>+ Upload PDF</a>
             </div>
 
             {/* Doc tabs */}
-            <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(255,255,255,0.08)', background: '#16181a', padding: '0 24px' }}>
+            <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--vg-hairline)', background: 'var(--vg-canvas-soft)', padding: '0 24px' }}>
               {selectedProject.docs.map(doc => (
                 <button key={doc.id} onClick={() => { setSelectedDoc(doc); setPdfOpen(false); }}
                   style={{ padding: '10px 16px', fontSize: 13, border: 'none',
@@ -178,14 +178,14 @@ export default function DocumentsPage() {
                     <div style={{ position: 'relative', flex: 1, maxWidth: 360 }}>
                       <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>🔍</span>
                       <input type="text" placeholder="Search within document..." value={textSearch} onChange={e => setTextSearch(e.target.value)}
-                        style={{ width: '100%', padding: '8px 12px 8px 32px', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box', background: '#16181a' }} />
+                        style={{ width: '100%', padding: '8px 12px 8px 32px', border: '1px solid var(--vg-hairline)', borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box', background: 'var(--vg-canvas-soft)' }} />
                     </div>
                     <button onClick={() => setPdfOpen(v => !v)}
                       style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: '#1A1A1A', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, cursor: 'pointer', fontWeight: 500 }}>
                       {pdfOpen ? '📄 Hide PDF' : '📄 View Source PDF'}
                     </button>
                     <a href={`/api/castateintel/pdf/${selectedDoc.document_id}`} target="_blank" rel="noreferrer"
-                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'rgba(255,255,255,0.08)', color: '#ffffff', borderRadius: 8, fontSize: 13, textDecoration: 'none', fontWeight: 500 }}>
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'var(--vg-hairline)', color: '#ffffff', borderRadius: 8, fontSize: 13, textDecoration: 'none', fontWeight: 500 }}>
                       ↓ Download
                     </a>
                   </div>
@@ -198,7 +198,7 @@ export default function DocumentsPage() {
                           {snippets.length} match{snippets.length !== 1 ? 'es' : ''} found
                         </div>
                         {snippets.map((snippet, i) => (
-                          <div key={i} style={{ padding: '12px 16px', background: '#16181a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, marginBottom: 8, fontSize: 13, lineHeight: 1.6, color: 'rgba(255,255,255,0.8)' }}>
+                          <div key={i} style={{ padding: '12px 16px', background: 'var(--vg-canvas-soft)', border: '1px solid var(--vg-hairline)', borderRadius: 8, marginBottom: 8, fontSize: 13, lineHeight: 1.6, color: 'rgba(255,255,255,0.8)' }}>
                             ...{renderHighlighted(snippet, textSearch)}...
                           </div>
                         ))}
@@ -212,7 +212,7 @@ export default function DocumentsPage() {
                   })()}
 
                   {selectedDoc.content_text ? (
-                    <div style={{ background: '#16181a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 24 }}>
+                    <div style={{ background: 'var(--vg-canvas-soft)', border: '1px solid var(--vg-hairline)', borderRadius: 12, padding: 24 }}>
                       <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 16 }}>
                         Extracted Text — {selectedDoc.content_text.length.toLocaleString()} characters
                       </div>
@@ -221,7 +221,7 @@ export default function DocumentsPage() {
                       </div>
                     </div>
                   ) : (
-                    <div style={{ padding: 40, textAlign: 'center', color: 'rgba(255,255,255,0.3)', background: '#16181a', borderRadius: 12, border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div style={{ padding: 40, textAlign: 'center', color: 'rgba(255,255,255,0.3)', background: 'var(--vg-canvas-soft)', borderRadius: 12, border: '1px solid var(--vg-hairline)' }}>
                       <div style={{ fontSize: 32, marginBottom: 8 }}>⏳</div>
                       <div style={{ fontSize: 14, fontWeight: 500 }}>Text not yet extracted</div>
                     </div>
