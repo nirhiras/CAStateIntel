@@ -34,14 +34,14 @@ export async function GET(request: Request) {
         COALESCE(
           -- 1st: Form Received Date from stage analysis dot_dates array
           -- dot_dates is [{label, date}] — find element where label contains "received"
-          CASE WHEN c.stage = 1 THEN (
-            SELECT elem->>'date' FROM jsonb_array_elements(COALESCE(s1.dot_dates,'[]'::jsonb)) AS elem
+          CASE WHEN c.stage = 1 AND s1.dot_dates IS NOT NULL AND jsonb_typeof(s1.dot_dates) = 'array' THEN (
+            SELECT elem->>'date' FROM jsonb_array_elements(s1.dot_dates) AS elem
             WHERE lower(elem->>'label') LIKE '%received%' LIMIT 1)
-          WHEN c.stage = 2 THEN (
-            SELECT elem->>'date' FROM jsonb_array_elements(COALESCE(s2.dot_dates,'[]'::jsonb)) AS elem
+          WHEN c.stage = 2 AND s2.dot_dates IS NOT NULL AND jsonb_typeof(s2.dot_dates) = 'array' THEN (
+            SELECT elem->>'date' FROM jsonb_array_elements(s2.dot_dates) AS elem
             WHERE lower(elem->>'label') LIKE '%received%' LIMIT 1)
-          WHEN c.stage = 3 THEN (
-            SELECT elem->>'date' FROM jsonb_array_elements(COALESCE(s3.dot_dates,'[]'::jsonb)) AS elem
+          WHEN c.stage = 3 AND s3.dot_dates IS NOT NULL AND jsonb_typeof(s3.dot_dates) = 'array' THEN (
+            SELECT elem->>'date' FROM jsonb_array_elements(s3.dot_dates) AS elem
             WHERE lower(elem->>'label') LIKE '%received%' LIMIT 1)
           ELSE NULL END,
           -- 2nd: AI-extracted date from contact record
