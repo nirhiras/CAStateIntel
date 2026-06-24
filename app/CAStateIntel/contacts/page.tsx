@@ -3,6 +3,7 @@
 // Cross-project contacts dashboard with source tracking
 
 import { useState, useEffect, useCallback } from "react";
+import { SmartMultiSelect, buildOptions, FilterPills } from "@/components/castateintel/SmartMultiSelect";
 
 interface Contact {
   contact_id: string;
@@ -58,10 +59,10 @@ export default function ContactsDashboardPage() {
 
   // Filters
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("");
-  const [stageFilter, setStageFilter] = useState("");
-  const [orgFilter, setOrgFilter] = useState("");
-  const [projectFilter, setProjectFilter] = useState("");
+  const [roleFilters, setRoleFilters] = useState<string[]>([]);
+  const [stageFilters, setStageFilters] = useState<string[]>([]);
+  const [orgFilters, setOrgFilters] = useState<string[]>([]);
+  const [projectFilters, setProjectFilters] = useState<string[]>([]);
 
   // Sort
   const [sortField, setSortField] = useState<keyof Contact>("name");
@@ -99,10 +100,10 @@ export default function ContactsDashboardPage() {
     if (q && ![c.name, c.email, c.title, c.organization, c.phone, c.source].some(
       v => (v || "").toLowerCase().includes(q)
     )) return false;
-    if (roleFilter && c.role_type !== roleFilter) return false;
-    if (stageFilter && String(c.stage) !== stageFilter) return false;
-    if (orgFilter && c.organization !== orgFilter) return false;
-    if (projectFilter && c.project_number !== projectFilter) return false;
+    if (roleFilters.length > 0 && !roleFilters.includes(c.role_type)) return false;
+    if (stageFilters.length > 0 && !stageFilters.includes(String(c.stage))) return false;
+    if (orgFilters.length > 0 && !orgFilters.includes(c.organization)) return false;
+    if (projectFilters.length > 0 && !projectFilters.includes(c.project_number)) return false;
     return true;
   });
 
@@ -211,9 +212,9 @@ export default function ContactsDashboardPage() {
           <option value="">All Organizations</option>
           {orgOptions.map(o => <option key={o} value={o}>{o}</option>)}
         </select>
-        {(search || roleFilter || stageFilter || orgFilter || projectFilter) && (
+        {(search || roleFilters.length > 0 || stageFilters.length > 0 || orgFilters.length > 0 || projectFilters.length > 0) && (
           <button
-            onClick={() => { setSearch(""); setRoleFilter(""); setStageFilter(""); setOrgFilter(""); setProjectFilter(""); }}
+            onClick={() => { setSearch(""); setRoleFilters([]); setStageFilters([]); setOrgFilters([]); setProjectFilters([]); }}
             className="text-xs text-red-500 hover:text-red-700 underline"
           >
             Clear filters
