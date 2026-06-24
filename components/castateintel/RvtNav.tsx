@@ -16,14 +16,14 @@ export default function RvtNav() {
   const path = usePathname();
 
   return (
-    <nav className="rvt-nav px-6 md:px-10" style={{ gap: 0 }}>
+    <nav className="vg-nav px-6 md:px-10" style={{ gap: 0 }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%', display: 'flex', alignItems: 'center', gap: 0 }}>
 
         {/* Wordmark */}
         <Link href="/CAStateIntel" style={{ display: 'flex', alignItems: 'center', gap: 10, marginRight: 40, textDecoration: 'none' }}>
           {/* Brand glyph — cobalt violet stamp */}
           <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <rect width="28" height="28" rx="8" fill="#494fdf"/>
+            <rect width="28" height="28" rx="8" fill="var(--vg-primary)"/>
             <path d="M8 8h8a4 4 0 0 1 0 8h-4l5 5" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           <span style={{
@@ -44,8 +44,8 @@ export default function RvtNav() {
                 borderRadius: 9999,
                 fontSize: 14,
                 fontWeight: active ? 600 : 400,
-                color: active ? '#ffffff' : 'rgba(255,255,255,0.6)',
-                background: active ? 'rgba(255,255,255,0.1)' : 'transparent',
+                color: active ? 'var(--vg-primary)' : 'var(--vg-mute, #8b949e)',
+                background: active ? 'rgba(0,217,146,0.1)' : 'transparent',
                 textDecoration: 'none',
                 transition: 'all 0.15s',
                 letterSpacing: '0.24px',
@@ -60,7 +60,7 @@ export default function RvtNav() {
         </div>
 
         {/* Right side CTA */}
-        <Link href="/CAStateIntel/upload" className="btn btn-primary" style={{ height: 40, padding: '0 20px', fontSize: 14 }}>
+        <Link href="/CAStateIntel/upload" className="vg-btn vg-btn-primary" style={{ height: 40, padding: '0 20px', fontSize: 14 }}>
           + Upload PDF
         </Link>
       </div>
