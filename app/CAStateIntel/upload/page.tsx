@@ -12,6 +12,9 @@ type UploadFile = {
   project_name?: string;
   stage?: number;
   label?: string;
+  sub_label?: string;
+  doc_type?: string;
+  is_other_doc?: boolean;
   chars_extracted?: number;
   file_size_kb?: number;
   document_id?: string;
@@ -20,6 +23,7 @@ type UploadFile = {
   error?: string;
   manualProject?: string;
   manualStage?: number;
+  manualSubLabel?: string;
   showOverride?: boolean;
 };
 
@@ -83,6 +87,7 @@ export default function UploadPage() {
     formData.append('pdf', uf.file);
     if (uf.manualProject) formData.append('project_number', uf.manualProject);
     if (uf.manualStage) formData.append('stage', String(uf.manualStage));
+    if (uf.manualSubLabel) formData.append('sub_label', uf.manualSubLabel);
     try {
       const res = await fetch('/api/castateintel/upload', { method: 'POST', body: formData });
       const data = await res.json();
@@ -90,6 +95,9 @@ export default function UploadPage() {
         update(uf.id, {
           status: 'done',
           project_number: data.project_number,
+          sub_label: data.sub_label || '',
+          doc_type: data.doc_type || '',
+          is_other_doc: data.is_other_doc || false,
           project_name: data.project_name,
           stage: data.stage,
           label: data.label,
