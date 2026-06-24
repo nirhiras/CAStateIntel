@@ -2,7 +2,7 @@
 // app/CAStateIntel/project/[projectNumber]/page.tsx
 // Detailed analysis page — Excel-style layout
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 
 interface StageDoc {
   document_id: string;
@@ -120,8 +120,8 @@ function StageLink({ num, projectNumber, extracted, doc }: {
   );
 }
 
-export default function ProjectSummaryPage({ params }: { params: { projectNumber: string } }) {
-  const projectNumber = params?.projectNumber;
+export default function ProjectSummaryPage({ params }: { params: Promise<{ projectNumber: string }> }) {
+  const { projectNumber } = use(params);
   const [data, setData] = useState<ProjectData | null>(null);
   const [loading, setLoading] = useState(true);
   const [pdfModal, setPdfModal] = useState<{ url: string; title: string } | null>(null);
