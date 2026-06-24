@@ -147,6 +147,17 @@ export default function ContactsDashboardPage() {
   const orgOpts     = buildOptions(contacts, (ct: Contact) => ct.organization,         [matchSearch, matchStage, matchRole,  matchProject], orgOptions);
   const projectOpts = buildOptions(contacts, (ct: Contact) => ct.project_number,       [matchSearch, matchStage, matchRole,  matchOrg],     projectOptions);
 
+  const exportCSV = () => {
+    const headers = ["Name","Title","Organization","Email","Phone","Role","Stage","Source","Section","Doc Date","Project"];
+    const esc = (v: unknown) => '"' + String(v||"").replace(/"/g, '""') + '"';
+    const rows = sorted.map(ct => [ct.name, ct.title, ct.organization, ct.email, ct.phone, ct.role_type, "Stage " + ct.stage, buildSourceLabel(ct), ct.source, ct.doc_created_date, ct.project_number].map(esc).join(","));
+    const csv = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "pal_contacts.csv"; a.click();
+  };
+
   return (
     <div style={{ minHeight: "100vh", background: "#000000", color: "#ffffff" }}>
       <RvtNav />
@@ -232,20 +243,8 @@ export default function ContactsDashboardPage() {
 
       {/* Export CSV */}
         <button
-          onClick={() => {
-            const headers = ["Name","Title","Organization","Email","Phone","Role","Stage","Source","Section","Doc Date","Project"];
-            const rows = sorted.map(c => [
-              c.name, c.title, c.organization, c.email, c.phone,
-              c.role_type, `Stage ${c.stage}`, buildSourceLabel(c),
-              c.source, c.doc_created_date, c.project_number
-            ].map(v => `"${(v||"").replace(/"/g,'""')}"`).join(","));
-            const csv = [headers.join(","), ...rows].join("\n");
-            const blob = new Blob([csv], { type: "text/csv" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url; a.download = "pal_contacts.csv"; a.click();
-          }}
-          className="ml-auto px-3 py-1.5 rounded-lg text-xs font-medium bg-green-50 text-green-700 border border-green-200 hover:bg-green-100"
+          onClick={exportCSV}
+          style={{ marginLeft: "auto", padding: "6px 14px", borderRadius: 9999, fontSize: 13, fontWeight: 600, background: "rgba(0,168,126,0.15)", color: "#3dd6a8", border: "1px solid rgba(0,168,126,0.3)", cursor: "pointer" }}
         >
           ↓ Export CSV
         </button>
