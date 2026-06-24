@@ -739,11 +739,15 @@ Extract ALL of the following. Return ONLY valid JSON, no preamble, no markdown f
     {{
       "name": "procurement name",
       "description": "detailed description",
-      "procurement_type": "...",
-      "vendor_or_source": "...",
-      "estimated_value": "...",
-      "timeline": "...",
-      "justification": "...",
+      "procurement_type": "RFP|IFB|RFO|MSA|CMAS|Sole Source|WSCA|IT-MSA|other",
+      "vendor_or_source": "vendor name or contract source or null",
+      "estimated_value": "dollar amount or duration (e.g. $500,000 or 3 years)",
+      "proposed_start_date": "YYYY-MM-DD — extract from document text. Look for phrases like 'planned start date', 'anticipated start', 'begin approximately', 'prior to system implementation', 'scheduled to begin'. If a relative date like '6 months prior to system implementation' is given, note it as-is. null if not mentioned.",
+      "proposed_end_date": "YYYY-MM-DD or relative description or null",
+      "duration": "e.g. 3 years, 18 months, or null",
+      "timeline": "full timeline text from document — copy verbatim",
+      "solicitation_number": "solicitation or contract number if mentioned, or null",
+      "justification": "reason this procurement is needed",
       "key_values": {{}}
     }}
   ],
