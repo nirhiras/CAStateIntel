@@ -19,28 +19,35 @@ const NAV = [
 export default function RvtNav() {
   const path = usePathname();
   return (
-    <nav style={{ background: T.bg, borderBottom: `1px solid ${T.border}`, padding: '0 40px', fontFamily: T.font, display: 'flex', alignItems: 'center', height: 60, position: 'sticky', top: 0, zIndex: 100 }}>
-      <Link href="/CAStateIntel" style={{ textDecoration: 'none', marginRight: 48, flexShrink: 0 }}>
-        <span style={{ fontSize: 17, fontWeight: 800, color: T.ink, letterSpacing: '-0.3px' }}>
-          State of CA{' '}
-          <span style={{ color: '#64748b', fontWeight: 400 }}>—</span>{' '}
-          <span style={{ color: T.accent }}>Procurement Intelligence</span>
-        </span>
-      </Link>
-      <div style={{ display: 'flex', gap: 2, flex: 1 }}>
+    <div style={{ background: T.bg, borderBottom: `1px solid ${T.border}`, fontFamily: T.font, position: 'sticky', top: 0, zIndex: 100 }}>
+      {/* Row 1 — bold title */}
+      <div style={{ padding: '10px 40px 0', display: 'flex', alignItems: 'center' }}>
+        <Link href="/CAStateIntel" style={{ textDecoration: 'none' }}>
+          <span style={{ fontSize: 16, fontWeight: 800, color: T.ink, letterSpacing: '-0.2px' }}>
+            State of CA{' '}
+            <span style={{ color: '#64748b', fontWeight: 300 }}>—</span>{' '}
+            <span style={{ color: T.accent }}>Procurement Intelligence</span>
+          </span>
+        </Link>
+      </div>
+      {/* Row 2 — nav links */}
+      <div style={{ padding: '0 40px', display: 'flex', alignItems: 'center', gap: 2 }}>
         {NAV.map(l => {
           const active = path === l.href || (l.href !== '/CAStateIntel' && path.startsWith(l.href));
           return (
             <Link key={l.href} href={l.href} style={{
-              padding: '6px 16px', borderRadius: 6, fontSize: 13, fontWeight: active ? 600 : 400,
-              color: active ? T.accent : T.mute, background: active ? T.accentDim : 'transparent',
+              padding: '8px 14px', fontSize: 13, fontWeight: active ? 600 : 400,
+              color: active ? T.accent : T.mute,
+              background: active ? T.accentDim : 'transparent',
               textDecoration: 'none', whiteSpace: 'nowrap',
+              borderBottom: active ? `2px solid ${T.accent}` : '2px solid transparent',
+              display: 'inline-block',
             }}>
               {l.label}
             </Link>
           );
         })}
       </div>
-    </nav>
+    </div>
   );
 }
