@@ -230,7 +230,7 @@ export default function CAStateIntelPage() {
               <thead>
                 <tr>
                   {['#','Project Name','Stage','Crit.','Department','Docs','Tags'].map(h=>(
-                    <th key={h} style={{ padding:'10px 16px', textAlign:'left', fontSize:11, fontWeight:600, letterSpacing:'0.12em', textTransform:'uppercase', color:T.mute, background:T.canvas, borderBottom:`1px solid ${T.border}` }}>{h}</th>
+                    <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:11, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', color:T.mute, background:'#111', borderBottom:`2px solid ${T.border}` }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -244,9 +244,9 @@ export default function CAStateIntelPage() {
                   const ts = tags(p);
                   return (
                     <>
-                      <tr key={p.id} style={{ borderBottom: ts.length>0 ? 'none' : `1px solid ${T.border}` }}
-                        onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background='rgba(255,255,255,0.015)'}
-                        onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background='transparent'}>
+                      <tr key={p.id} style={{ borderBottom: ts.length>0 ? 'none' : `1px solid ${T.border}`, cursor:'default' }}
+                        onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.background='rgba(0,217,146,0.03)'; }}
+                        onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background='transparent'; }}>
                         <td style={{ padding:'14px 16px', fontFamily:T.mono, fontSize:12, color:T.mute, whiteSpace:'nowrap' }}>{p.project_number}</td>
                         <td style={{ padding:'14px 16px', fontWeight:500, color:T.ink, maxWidth:260 }}>
                           <div style={{ fontSize:14, lineHeight:1.4 }}>{p.name}</div>
@@ -257,7 +257,7 @@ export default function CAStateIntelPage() {
                         <td style={{ padding:'14px 16px' }}>
                           {p.criticality_rating && <span style={{ fontSize:12, fontWeight:600, color:CRIT_COLOR[p.criticality_rating]||T.mute }}>{p.criticality_rating}</span>}
                         </td>
-                        <td style={{ padding:'14px 16px', fontSize:13, color:T.mute, maxWidth:180 }}>
+                        <td style={{ padding:'14px 16px', fontSize:13, color:T.ink, maxWidth:180 }}>
                           <span style={{ overflow:'hidden', textOverflow:'ellipsis', display:'block', whiteSpace:'nowrap' }}>{p.department_name}</span>
                         </td>
                         <td style={{ padding:'14px 16px' }}>
@@ -281,7 +281,7 @@ export default function CAStateIntelPage() {
                       </tr>
                       {ts.length > 0 && (
                         <tr key={`${p.id}-t`} style={{ borderBottom:`1px solid ${T.border}` }}>
-                          <td colSpan={7} style={{ padding:'4px 16px 12px' }}>
+                          <td colSpan={7} style={{ padding:'2px 16px 10px', paddingTop:0 }}>
                             <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
                               {ts.map((tag,i)=>(
                                 <button key={i} onClick={()=>setTagF(tagF.includes(tag)?tagF.filter(x=>x!==tag):[...tagF,tag])}
