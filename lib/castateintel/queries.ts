@@ -76,10 +76,23 @@ export async function getProjectByNumber(projectNumber: string) {
 
 export async function getAllDocuments(filters?: { stage?: number; projectNumber?: string }): Promise<PalDocument[]> {
   let query = `
-    SELECT doc.*, p.project_number, p.name AS project_name,
+    SELECT doc.*, p.project_number, p.name AS project_name, p.department_name,
       COALESCE(doc.sub_label, '') AS sub_label,
       COALESCE(doc.doc_type, '') AS doc_type,
-      doc.short_description
+      doc.short_description,
+      -- contact count for this document
+      (SELECT COUNT(*) FROM castateintel.pal_contacts ct
+       WHERE ct.document_id::text = doc.document_id::text) AS contact_count,
+      -- procurement count for this project+stage
+      (SELECT COUNT(*) FROM castateintel.pal_ancillary_procurements ap
+       WHERE ap.project_id = doc.project_id AND ap.stage = doc.stage) AS procurement_count,
+      -- tags from stage analysis
+      CASE doc.stage
+        WHEN 1 THEN (SELECT COALESCE(jsonb_agg(elem->>'tag'), '[]'::jsonb) FROM castateintel.pal_stage1_analysis sa, jsonb_array_elements(COALESCE(sa.solution_tags,'[]'::jsonb)) elem WHERE sa.project_id = doc.project_id LIMIT 1)
+        WHEN 2 THEN (SELECT COALESCE(jsonb_agg(elem->>'tag'), '[]'::jsonb) FROM castateintel.pal_stage2_analysis sa, jsonb_array_elements(COALESCE(sa.solution_tags,'[]'::jsonb)) elem WHERE sa.project_id = doc.project_id LIMIT 1)
+        WHEN 3 THEN (SELECT COALESCE(jsonb_agg(elem->>'tag'), '[]'::jsonb) FROM castateintel.pal_stage3_analysis sa, jsonb_array_elements(COALESCE(sa.solution_tags,'[]'::jsonb)) elem WHERE sa.project_id = doc.project_id LIMIT 1)
+        ELSE '[]'::jsonb
+      END AS solution_tags
     FROM castateintel.pal_documents doc
     JOIN castateintel.pal_projects p ON p.id = doc.project_id
     WHERE 1=1
