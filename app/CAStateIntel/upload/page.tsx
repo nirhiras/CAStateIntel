@@ -224,12 +224,12 @@ export default function UploadPage() {
         </div>
         {files.length > 0 && (
           <div className="flex gap-3 text-xs items-center">
-            <span className="text-gray-400">{files.length} file{files.length !== 1 ? 's' : ''}</span>
+            <span className="text-white">{files.length} file{files.length !== 1 ? 's' : ''}</span>
             {done > 0 && <span className="text-green-400">· {done} uploaded</span>}
             {overwriteCount > 0 && <span className="text-amber-400">· {overwriteCount} overwritten</span>}
             {errors > 0 && <span className="text-red-400">· {errors} failed</span>}
             {active > 0 && <span className="text-blue-400">· {active} uploading</span>}
-            {totalChars > 0 && <span className="text-gray-500">· {totalChars.toLocaleString()} chars</span>}
+            {totalChars > 0 && <span className="text-white">· {totalChars.toLocaleString()} chars</span>}
           </div>
         )}
       </div>
@@ -251,8 +251,8 @@ export default function UploadPage() {
           <div className="text-base font-semibold text-gray-900">
             {dragging ? 'Drop PDFs here' : 'Drop multiple PDFs here'}
           </div>
-          <div className="text-sm text-gray-500 mt-1">or click to browse — S1, S2, S3, or S4 documents</div>
-          <div className="text-xs text-gray-400 mt-2">
+          <div className="text-sm text-white mt-1">or click to browse — S1, S2, S3, or S4 documents</div>
+          <div className="text-xs text-white mt-2">
             Project number, stage & label auto-detected · Existing files overwritten · Filenames standardized
           </div>
         </div>
@@ -282,7 +282,7 @@ export default function UploadPage() {
               </button>
             )}
 
-            <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer ml-1">
+            <label className="flex items-center gap-2 text-xs text-white cursor-pointer ml-1">
               <input type="checkbox" checked={analyzeAfter} onChange={e => setAnalyzeAfter(e.target.checked)}
                 className="rounded" />
               Auto-analyze after upload
@@ -317,7 +317,7 @@ export default function UploadPage() {
             )}
             {!running && (
               <button onClick={() => setFiles([])}
-                className="ml-auto text-xs text-gray-400 hover:text-gray-600">
+                className="ml-auto text-xs text-white hover:text-white">
                 Clear all
               </button>
             )}
@@ -331,7 +331,7 @@ export default function UploadPage() {
               <div className="h-full bg-gray-900 rounded-full transition-all duration-300"
                 style={{ width: `${Math.round((done / files.length) * 100)}%` }} />
             </div>
-            <p className="text-xs text-gray-400 mt-1">{done} of {files.length} complete</p>
+            <p className="text-xs text-white mt-1">{done} of {files.length} complete</p>
           </div>
         )}
 
@@ -357,7 +357,7 @@ export default function UploadPage() {
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium
                         ${uf.status === 'done' ? 'bg-green-100 text-green-700' :
                           uf.status === 'error' ? 'bg-red-100 text-red-700' :
-                          uf.status === 'uploading' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                          uf.status === 'uploading' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-white'}`}>
                         {uf.status === 'uploading' ? 'Uploading...' : uf.status}
                       </span>
                       {uf.was_overwrite && (
@@ -385,7 +385,7 @@ export default function UploadPage() {
                               📎 Other Doc
                             </span>
                           )}
-                          <span className="text-xs text-gray-500">{uf.chars_extracted?.toLocaleString()} chars</span>
+                          <span className="text-xs text-white">{uf.chars_extracted?.toLocaleString()} chars</span>
                           {uf.stage && uf.stage > 0 && (
                             <a href={`/CAStateIntel/stage${uf.stage}?project=${uf.project_number}`}
                               className="text-xs text-blue-600 hover:underline">View Analysis →</a>
@@ -396,8 +396,8 @@ export default function UploadPage() {
                           <div style={{ fontSize: 12, color: "var(--vg-mute)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {uf.canonical_filename && uf.canonical_filename !== uf.file.name ? (
                               <span>
-                                <span style={{color:"rgba(255,255,255,0.4)",fontSize:11}}>Original: </span>
-                                <span style={{color:"rgba(255,255,255,0.5)"}}>{uf.file.name}</span>
+                                <span style={{color:"#d8d8d8",fontSize:11}}>Original: </span>
+                                <span style={{color:"#e8e8e8"}}>{uf.file.name}</span>
                                 <br/>
                                 <span style={{color:"rgba(0,217,146,0.7)",fontSize:11}}>Imported as: </span>
                                 <span style={{color:"#00d992",fontWeight:600}}>{uf.canonical_filename}</span>
@@ -418,7 +418,7 @@ export default function UploadPage() {
                     {/* Manual override */}
           {uf.showOverride && (
                     <div style={{ marginTop: 8, padding: '10px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 8, border: '1px solid var(--vg-hairline)' }}>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>Manual Override</div>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: '#e8e8e8', marginBottom: 6 }}>Manual Override</div>
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                         <input type="text" placeholder="Project # (e.g. 4265-081)"
                           value={uf.manualProject || ''}
@@ -473,7 +473,7 @@ export default function UploadPage() {
               <div key={c.title} className="bg-white border border-gray-200 rounded-xl p-4">
                 <div className="text-2xl mb-2">{c.icon}</div>
                 <div className="text-sm font-semibold text-gray-900 mb-1">{c.title}</div>
-                <div className="text-xs text-gray-500 leading-relaxed">{c.desc}</div>
+                <div className="text-xs text-white leading-relaxed">{c.desc}</div>
               </div>
             ))}
           </div>
