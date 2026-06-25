@@ -394,7 +394,17 @@ export default function UploadPage() {
                         {/* Canonical filename — shown immediately on drop */}
                         {(uf.canonical_filename || uf.status === 'queued') && (
                           <div style={{ fontSize: 12, color: "var(--vg-mute)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            📄 {uf.canonical_filename || uf.file.name}
+                            {uf.canonical_filename && uf.canonical_filename !== uf.file.name ? (
+                              <span>
+                                <span style={{color:"rgba(255,255,255,0.4)",fontSize:11}}>Original: </span>
+                                <span style={{color:"rgba(255,255,255,0.5)"}}>{uf.file.name}</span>
+                                <br/>
+                                <span style={{color:"rgba(0,217,146,0.7)",fontSize:11}}>Imported as: </span>
+                                <span style={{color:"#00d992",fontWeight:600}}>{uf.canonical_filename}</span>
+                              </span>
+                            ) : (
+                              <span>📄 {uf.file.name}</span>
+                            )}
                           </div>
                         )}
                       </div>
