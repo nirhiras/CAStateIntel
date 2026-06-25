@@ -3,6 +3,41 @@
 import RvtNav from "@/components/castateintel/RvtNav";
 import { useState, useRef, useCallback } from 'react';
 
+
+// ── Client-side canonical filename preview ─────────────────────────────────────
+// Parses filename to extract project number + stage, then builds canonical name.
+// Format: "NNNN-NNN - S1BA - Project Name.pdf"
+// This runs instantly on drop, before any upload.
+function previewCanonical(filename: string): string | null {
+  const base = filename.replace(/\.pdf$/i, '').replace(/[_]+/g, ' ').trim();
+  // Try to detect project number: 4-digit dash 3-digit pattern
+  const pnMatch = base.match(/\b(\d{4}-\d{3})\b/);
+  // Try to detect stage label
+  const stageMatch = base.match(/\b(S[1-4][A-Z]{0,3})\b/i) ||
+                     base.match(/\bStage[\s_]?([1-4])\b/i) ||
+                     base.match(/\b(stage[1-4])\b/i);
+  const stageLabelMap: Record<string, string> = {
+    's1': 'S1BA', 's1ba': 'S1BA', 'stage1': 'S1BA', 'stage 1': 'S1BA',
+    's2': 'S2AA', 's2aa': 'S2AA', 'stage2': 'S2AA', 'stage 2': 'S2AA',
+    's3': 'S3SA', 's3sa': 'S3SA', 'stage3': 'S3SA', 'stage 3': 'S3SA',
+    's4': 'S4PRA','s4pra': 'S4PRA','stage4': 'S4PRA','stage 4': 'S4PRA',
+    's3a': 'S3SAA','s3b': 'S3SAB',
+  };
+  const rawStage = stageMatch ? (stageMatch[1] || stageMatch[0]).toLowerCase().replace(/\s/g,'') : null;
+  const stageLabel = rawStage ? (stageLabelMap[rawStage] || rawStage.toUpperCase()) : null;
+  if (!pnMatch && !stageLabel) return null;
+  // Extract project name: remove known prefixes
+  let name = base
+    .replace(/\b\d{4}-\d{3}\b/g, '')
+    .replace(/\b(S[1-4][A-Za-z]*|Stage[\s_]?[1-4])[A-Za-z]*/gi, '')
+    .replace(/[-_–]+/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  // Build canonical: "NNNN-NNN - STAGE - Name" or best guess
+  const parts = [pnMatch?.[0], stageLabel, name].filter(Boolean);
+  return parts.join(' - ');
+}
+
 type FileStatus = 'queued' | 'uploading' | 'done' | 'error';
 
 type UploadFile = {
@@ -58,7 +93,10 @@ export default function UploadPage() {
     const arr = Array.from(incoming).filter(f => f.type === 'application/pdf');
     if (!arr.length) return;
     setFiles(prev => [...prev, ...arr.map(f => ({
-      id: newId(), file: f, status: 'queued' as FileStatus
+      id: newId(),
+      file: f,
+      status: 'queued' as FileStatus,
+      canonical_filename: previewCanonical(f.name) || undefined,
     }))]);
   }, []);
 
@@ -353,10 +391,10 @@ export default function UploadPage() {
                               className="text-xs text-blue-600 hover:underline">View Analysis →</a>
                           )}
                         </div>
-                        {/* Canonical filename */}
-                        {uf.canonical_filename && (
+                        {/* Canonical filename — shown immediately on drop */}
+                        {(uf.canonical_filename || uf.status === 'queued') && (
                           <div style={{ fontSize: 12, color: "var(--vg-mute)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            📄 {uf.canonical_filename}
+                            📄 {uf.canonical_filename || uf.file.name}
                           </div>
                         )}
                       </div>
