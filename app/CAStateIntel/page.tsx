@@ -138,8 +138,7 @@ export default function CAStateIntelPage() {
   const filtered = projects.filter(p =>
     (!search || p.name.toLowerCase().includes(search.toLowerCase()) || p.project_number.includes(search)) &&
     (stageF.length===0 || stageF.includes(effStage(p))) &&
-    (deptF.length===0  || deptF.includes(p.department_name)) &&
-
+    (deptF.length===0  || deptF.includes(p.department_name))
   );
 
   const allStages = ['Stage 1','Stage 2','Stage 3','Stage 4'];
