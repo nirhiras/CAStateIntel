@@ -31,6 +31,54 @@ const STAGE_DOC_COLOR: Record<number,{bg:string;color:string}> = {
 const TABS = ['Overview','Contacts','Documents','Procurements'] as const;
 type Tab = typeof TABS[number];
 
+
+// ── Lightweight tab content loaders ──────────────────────────────────────────
+function ContactsTab() {
+  return (
+    <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:16,padding:'48px 0',color:'#cccccc'}}>
+      <div style={{fontSize:32}}>👤</div>
+      <div style={{fontSize:15,fontWeight:600,color:'#f0f0f0'}}>All Contacts</div>
+      <p style={{fontSize:13,color:'#aaaaaa',textAlign:'center',maxWidth:400}}>
+        View all contacts extracted from PAL documents across all projects and stages.
+      </p>
+      <a href="/CAStateIntel/contacts" style={{padding:'9px 20px',borderRadius:8,background:'rgba(0,217,146,0.12)',border:'1px solid rgba(0,217,146,0.35)',color:'#00d992',textDecoration:'none',fontSize:14,fontWeight:600}}>
+        Open Contacts →
+      </a>
+    </div>
+  );
+}
+
+function DocumentsTab() {
+  return (
+    <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:16,padding:'48px 0',color:'#cccccc'}}>
+      <div style={{fontSize:32}}>📄</div>
+      <div style={{fontSize:15,fontWeight:600,color:'#f0f0f0'}}>All PAL Documents</div>
+      <p style={{fontSize:13,color:'#aaaaaa',textAlign:'center',maxWidth:400}}>
+        Browse and analyze all PAL Stage 1–4 documents uploaded across all projects.
+      </p>
+      <a href="/CAStateIntel/documents" style={{padding:'9px 20px',borderRadius:8,background:'rgba(0,217,146,0.12)',border:'1px solid rgba(0,217,146,0.35)',color:'#00d992',textDecoration:'none',fontSize:14,fontWeight:600}}>
+        Open Documents →
+      </a>
+    </div>
+  );
+}
+
+function ProcurementsTab({deptF}:{deptF:string}) {
+  const href = `/CAStateIntel/procurements${deptF?`?dept=${encodeURIComponent(deptF)}`:''}`;
+  return (
+    <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:16,padding:'48px 0',color:'#cccccc'}}>
+      <div style={{fontSize:32}}>📋</div>
+      <div style={{fontSize:15,fontWeight:600,color:'#f0f0f0'}}>Procurements</div>
+      <p style={{fontSize:13,color:'#aaaaaa',textAlign:'center',maxWidth:400}}>
+        View all procurement opportunities extracted from Stage 3 Solution Analysis documents.
+      </p>
+      <a href={href} style={{padding:'9px 20px',borderRadius:8,background:'rgba(0,217,146,0.12)',border:'1px solid rgba(0,217,146,0.35)',color:'#00d992',textDecoration:'none',fontSize:14,fontWeight:600}}>
+        Open Procurements →
+      </a>
+    </div>
+  );
+}
+
 function PALInner() {
   const searchParams = useSearchParams();
   const initTab = (searchParams.get('tab') as Tab) || 'Overview';
@@ -79,6 +127,9 @@ function PALInner() {
                   ← All departments
                 </button>
               )}
+            </div>
+            <div style={{display:'flex',gap:10,alignItems:'flex-start',paddingBottom:16}}>
+              <a href="/CAStateIntel/upload" style={{padding:'8px 18px',borderRadius:8,background:'#00d992',color:'#0d0d0d',textDecoration:'none',fontSize:13,fontWeight:700,flexShrink:0,alignSelf:'flex-end',marginBottom:4}}>+ Upload PDF</a>
             </div>
             {stats && (
               <div style={{display:'flex',gap:8,paddingBottom:16}}>
@@ -201,17 +252,9 @@ function PALInner() {
             </>
           )}
 
-          {tab==='Contacts' && (
-            <iframe src="/CAStateIntel/contacts" style={{width:'100%',height:'80vh',border:'none',borderRadius:10,background:T.canvas}}/>
-          )}
-
-          {tab==='Documents' && (
-            <iframe src="/CAStateIntel/documents" style={{width:'100%',height:'80vh',border:'none',borderRadius:10,background:T.canvas}}/>
-          )}
-
-          {tab==='Procurements' && (
-            <iframe src={`/CAStateIntel/procurements${deptF?`?dept=${encodeURIComponent(deptF)}`:''}`} style={{width:'100%',height:'80vh',border:'none',borderRadius:10,background:T.canvas}}/>
-          )}
+          {tab==='Contacts' && <ContactsTab/>}
+          {tab==='Documents' && <DocumentsTab/>}
+          {tab==='Procurements' && <ProcurementsTab deptF={deptF}/>}
 
         </div>
       </div>
