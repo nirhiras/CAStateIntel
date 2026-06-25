@@ -37,7 +37,7 @@ export default function ContactsPage() {
 
   useEffect(() => {
     fetch('/api/castateintel/contacts').then(r=>r.json())
-      .then(d=>{setContacts(Array.isArray(d)?d:[]);setLoading(false);})
+      .then(d=>{setContacts(Array.isArray(d)?d:(d.contacts||[]));setLoading(false);})
       .catch(()=>setLoading(false));
   }, []);
 
