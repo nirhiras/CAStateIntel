@@ -3,7 +3,6 @@
 // Full project summary — used by stage pages and project/[projectNumber] page
 
 import { useState, useEffect, useCallback } from "react";
-import RvtNav from "@/components/castateintel/RvtNav";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Contact { name:string;title:string;email:string;phone:string;organization:string;role_type:string;stage:number;source:string;doc_created_date?:string; }
@@ -115,7 +114,6 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
 
   return(
     <div className="psi-dark" style={{minHeight:"100vh",background:"#000000",color:"#ffffff"}}>
-      <RvtNav />
       {/* PDF Modal */}
       {pdfModal&&(<div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"><div className="rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col"><div className="flex items-center justify-between px-4 py-3 border-b"><span className="text-sm font-semibold">{pdfModal.title}</span><button onClick={()=>setPdfModal(null)} className="text-xl text-white/40 hover:text-white/85 px-2">✕</button></div><iframe src={pdfModal.url} className="flex-1 w-full"/></div></div>)}
 
@@ -302,9 +300,9 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
                 <table className="w-full text-sm border-collapse">
                   <thead>
                     <tr style={{borderBottom:"2px solid #2a2a2a",background:"#111",textAlign:"left"}}>
-                      <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#d4d4d4",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Name</th>
+                      <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#d4d4d4",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap",minWidth:160}}>Name</th>
                       <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#d4d4d4",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Title</th>
-                      <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#d4d4d4",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Organization</th>
+                      <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#d4d4d4",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap",maxWidth:140}}>Organization</th>
                       <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#d4d4d4",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Email</th>
                       <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#d4d4d4",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Phone</th>
                       <th className="px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wide">Stage</th>
@@ -315,8 +313,8 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
                     {contacts.map((c:Contact,i:number)=>(
                       <tr key={i} className="border-b transition-colors" style={{borderColor:"rgba(255,255,255,0.05)",background:i%2===0?"transparent":"rgba(255,255,255,0.02)"}}>
                         <td className="px-4 py-3 font-semibold whitespace-nowrap" style={{color:"rgba(255,255,255,0.9)"}}>{c.name||"—"}</td>
-                        <td className="px-4 py-3 text-xs max-w-[220px]" style={{color:"#e0e0e0"}}>{c.title||"—"}</td>
-                        <td className="px-4 py-3 text-xs whitespace-nowrap" style={{color:"#d8d8d8"}}>{c.organization||"—"}</td>
+                        <td className="px-4 py-3 text-xs" style={{color:"#e0e0e0",maxWidth:180,lineHeight:1.4}}>{c.title||"—"}</td>
+                        <td className="px-4 py-3 text-xs" style={{color:"#d8d8d8",maxWidth:130,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={c.organization||""}>{c.organization||"—"}</td>
                         <td className="px-4 py-3 text-xs">
                           {c.email?<a href={`mailto:${c.email}`} style={{color:"#9da2fb",textDecoration:"none"}} className="hover:underline">{c.email}</a>:<span style={{color:"rgba(255,255,255,0.2)"}}>—</span>}
                         </td>
