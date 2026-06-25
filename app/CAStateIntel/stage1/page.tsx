@@ -1,7 +1,4 @@
 "use client";
-// app/CAStateIntel/stage1/page.tsx
-// Renders full project summary with Stage 1 tab pre-selected
-
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import ProjectSummaryInline from "@/components/castateintel/ProjectSummaryInline";
@@ -9,9 +6,10 @@ import ProjectSummaryInline from "@/components/castateintel/ProjectSummaryInline
 function Stage1Inner() {
   const searchParams = useSearchParams();
   const projectNumber = searchParams.get("project") || "";
-  return <ProjectSummaryInline defaultTab="s1" defaultProject={projectNumber} />;
+  const tab = searchParams.get("tab") || "s1";
+  return <ProjectSummaryInline defaultTab={tab} defaultProject={projectNumber} />;
 }
 
 export default function Stage1Page() {
-  return <Suspense fallback={<div className="flex items-center justify-center h-screen text-gray-400">Loading...</div>}><Stage1Inner /></Suspense>;
+  return <Suspense fallback={<div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",background:"#0d0d0d",color:"#888"}}>Loading…</div>}><Stage1Inner /></Suspense>;
 }
