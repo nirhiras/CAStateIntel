@@ -33,7 +33,7 @@ function Tbl({headers,rows}:{headers:string[];rows:(string|React.ReactNode)[][]}
   </table></div>);
 }
 function PdfBtn({doc,stage,onView}:{doc:StageDoc|null|undefined;stage:number;onView:(url:string,title:string)=>void}){
-  const cls=["","text-green-700 border-green-200 bg-green-50","text-indigo-700 border-indigo-200 bg-indigo-50","text-violet-700 border-violet-200 bg-violet-50","text-amber-700 border-amber-200 bg-amber-50"];
+  const cls=["","text-green-400 border-green-200 bg-green-900/20","text-indigo-300 border-indigo-500/30 bg-indigo-900/20","text-violet-300 border-violet-500/30 bg-violet-900/20","text-amber-300 border-amber-500/30 bg-amber-900/20"];
   if(!doc?.document_id)return null;
   return <button onClick={()=>onView(`/api/castateintel/pdf/${doc.document_id}`,doc.filename)} className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded border font-medium ${cls[stage]||cls[1]}`}>📄 View PDF</button>;
 }
@@ -117,7 +117,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
     <div className="psi-dark" style={{minHeight:"100vh",background:"#000000",color:"#ffffff"}}>
       <RvtNav />
       {/* PDF Modal */}
-      {pdfModal&&(<div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"><div className="rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col"><div className="flex items-center justify-between px-4 py-3 border-b"><span className="text-sm font-semibold">{pdfModal.title}</span><button onClick={()=>setPdfModal(null)} className="text-xl text-gray-400 hover:text-gray-700 px-2">✕</button></div><iframe src={pdfModal.url} className="flex-1 w-full"/></div></div>)}
+      {pdfModal&&(<div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"><div className="rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col"><div className="flex items-center justify-between px-4 py-3 border-b"><span className="text-sm font-semibold">{pdfModal.title}</span><button onClick={()=>setPdfModal(null)} className="text-xl text-white/40 hover:text-white/85 px-2">✕</button></div><iframe src={pdfModal.url} className="flex-1 w-full"/></div></div>)}
 
       {/* Header */}
       <div style={{background:"var(--vg-canvas-soft)",borderBottom:"1px solid var(--vg-hairline)",padding:"12px 40px"}}>
@@ -146,41 +146,41 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
             const count=t.id==="contacts"?contacts.length:t.id==="procurements"?ancillary.length:0;
             return(<button key={t.id} onClick={()=>setTab(t.id)}
               className={`px-4 py-3 text-xs font-medium whitespace-nowrap border-b-2 transition-colors
-                ${tab===t.id?"border-indigo-500 text-white":"border-transparent"}`} style={tab===t.id?{color:"#ffffff"}:{color:"#ccc"}}>
-              {t.label}{count>0&&<span className="ml-1 text-xs px-1.5 py-0.5 rounded-full" style={{background:"rgba(73,79,223,0.2)",color:"#9da2fb"}}>{count}</span>}
+                ${tab===t.id?"border-indigo-500/50 text-white":"border-transparent"}`} style={tab===t.id?{color:"#ffffff"}:{color:"#ccc"}}>
+              {t.label}{count>0&&<span className="ml-1 text-xs px-1.5 py-0.5 rounded-full" style={{background:"rgba(0,217,146,0.15)",color:"#00d992"}} style={{background:"rgba(73,79,223,0.2)",color:"#9da2fb"}}>{count}</span>}
             </button>);
           })}
         </div>
       </div>
 
       <div className="max-w-screen-xl mx-auto px-10 py-10">
-        {loading&&<div className="flex items-center justify-center h-64 text-gray-400">Loading...</div>}
-        {!loading&&!data&&projectNumber&&<Card><p className="text-gray-400">No analysis data found for this project.</p></Card>}
-        {!loading&&!projectNumber&&<Card className="text-center py-12"><p className="text-gray-400 text-lg">Select a project from the dropdown above</p></Card>}
+        {loading&&<div className="flex items-center justify-center h-64 text-white/40">Loading...</div>}
+        {!loading&&!data&&projectNumber&&<Card><p className="text-white/40">No analysis data found for this project.</p></Card>}
+        {!loading&&!projectNumber&&<Card className="text-center py-12"><p className="text-white/40 text-lg">Select a project from the dropdown above</p></Card>}
 
         {!loading&&data&&(<>
           {/* ── OVERVIEW ── */}
           {tab==="overview"&&(<div className="space-y-7">
             <div className="grid grid-cols-4 gap-6">
               {[{label:"Total Project Value",value:totalVal,accent:true},{label:"One Time Cost",value:oneTime},{label:"Continuing Cost",value:ongoing},{label:"Project Duration",value:duration}].map(c=>(
-                <Card key={c.label} className="flex flex-col"><span className="text-xs text-gray-400 font-medium mb-1">{c.label}</span><span className={`text-lg font-bold ${c.accent?"text-blue-900":"text-gray-800"} ${c.value==="—"?"text-gray-300 font-normal text-sm":""}`}>{c.value}</span></Card>
+                <Card key={c.label} className="flex flex-col"><span className="text-xs text-white/40 font-medium mb-1">{c.label}</span><span className={`text-lg font-bold ${c.accent?"text-blue-300":"text-white/90"} ${c.value==="—"?"text-white/30 font-normal text-sm":""}`}>{c.value}</span></Card>
               ))}
             </div>
             <div className="grid grid-cols-3 gap-6">
               <Card><SHead title="Analysis Status"/>
                 <div className="space-y-4">{stageInfo.map(s=>(
                   <div key={s.num} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2"><span className={`w-2 h-2 rounded-full ${s.has?"bg-green-500":"bg-gray-200"}`}/><span className="text-sm text-gray-700">Stage {s.num} — {["","Business Analysis","Alternative Analysis","Solution Analysis","Project Readiness"][s.num]}</span></div>
+                    <div className="flex items-center gap-2"><span className={`w-2 h-2 rounded-full ${s.has?"bg-green-900/200":"bg-white/12"}`}/><span className="text-sm text-white/85">Stage {s.num} — {["","Business Analysis","Alternative Analysis","Solution Analysis","Project Readiness"][s.num]}</span></div>
                     <div className="flex items-center gap-2">
-                      {s.has?<><button onClick={()=>setTab(`s${s.num}`)} className={`text-xs px-2 py-0.5 rounded border font-medium ${STAGE_COLORS[s.num]}`}>View</button>{s.doc&&<button onClick={()=>s.doc&&setPdfModal({url:`/api/castateintel/pdf/${s.doc.document_id}`,title:s.doc.filename})} className="text-xs text-gray-400 hover:text-gray-600">📄</button>}</>
-                      :<span className="text-xs text-gray-400">Not extracted</span>}
+                      {s.has?<><button onClick={()=>setTab(`s${s.num}`)} className={`text-xs px-2 py-0.5 rounded border font-medium ${STAGE_COLORS[s.num]}`}>View</button>{s.doc&&<button onClick={()=>s.doc&&setPdfModal({url:`/api/castateintel/pdf/${s.doc.document_id}`,title:s.doc.filename})} className="text-xs text-white/40 hover:text-white/70">📄</button>}</>
+                      :<span className="text-xs text-white/40">Not extracted</span>}
                     </div>
                   </div>
                 ))}</div>
               </Card>
               <Card><SHead title="Solution Tags"/>
-                {tags.length>0?<div className="flex flex-wrap gap-2">{tags.map((t:Tag,i:number)=><span key={i} className={`text-xs px-2.5 py-1 rounded-full font-medium ${TAG_COLORS[t.category]||"bg-gray-100 text-gray-600"}`}>{t.tag}</span>)}</div>
-                :<p className="text-sm text-gray-400">Extract Stage 2 to see solution tags</p>}
+                {tags.length>0?<div className="flex flex-wrap gap-2">{tags.map((t:Tag,i:number)=><span key={i} className={`text-xs px-2.5 py-1 rounded-full font-medium ${TAG_COLORS[t.category]||"bg-white/8 text-white/70"}`}>{t.tag}</span>)}</div>
+                :<p className="text-sm text-white/40">Extract Stage 2 to see solution tags</p>}
               </Card>
               <Card><SHead title="Key Dates"/>
                 <div className="space-y-3">{[
@@ -190,15 +190,15 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
                   ["S4 — Contract Start",s4?.solicitation_results?.contract_start_date],
                   ["S4 — Contract End",s4?.solicitation_results?.contract_end_date],
                 ].map(([label,val])=>(
-                  <div key={String(label)} className="flex items-center justify-between text-xs"><span className="text-gray-500">{label}</span><span className={`font-medium ${val?"text-gray-800":"text-gray-300"}`}>{fmt(val as string)||"—"}</span></div>
+                  <div key={String(label)} className="flex items-center justify-between text-xs"><span className="text-white/50">{label}</span><span className={`font-medium ${val?"text-white/90":"text-white/30"}`}>{fmt(val as string)||"—"}</span></div>
                 ))}</div>
               </Card>
             </div>
             {(recommended||s4?.solicitation_results?.selected_vendor)&&(
               <div className="grid grid-cols-2 gap-6">
                 {recommended&&<Card><SHead title="Recommended Solution (S2)"/>
-                  <div className="flex items-start justify-between mb-2"><h4 className="font-bold text-indigo-900 text-sm">{recommended.name}</h4>{recommended.estimated_cost&&<Badge label={recommended.estimated_cost} color="bg-indigo-50 text-indigo-700"/>}</div>
-                  <p className="text-xs text-gray-600 leading-relaxed line-clamp-4">{recommended.summary}</p>
+                  <div className="flex items-start justify-between mb-2"><h4 className="font-bold text-indigo-300 text-sm">{recommended.name}</h4>{recommended.estimated_cost&&<Badge label={recommended.estimated_cost} color="bg-indigo-900/20 text-indigo-300"/>}</div>
+                  <p className="text-xs text-white/70 leading-relaxed line-clamp-4">{recommended.summary}</p>
                 </Card>}
                 {s4?.solicitation_results?.selected_vendor&&<Card><SHead title="Selected Vendor (S4)"/>
                   <div className="space-y-3"><KV label="Vendor" value={s4.solicitation_results.selected_vendor} accent/><KV label="Contract #" value={s4.solicitation_results.contract_number}/><KV label="Total Contract Cost" value={s4.solicitation_results.total_contract_cost}/><KV label="Period" value={`${fmt(s4.solicitation_results.contract_start_date)} → ${fmt(s4.solicitation_results.contract_end_date)}`}/></div>
@@ -209,14 +209,14 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
 
           {/* ── STAGE 1 ── */}
           {tab==="s1"&&(<div className="space-y-7">
-            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 1 — Business Analysis" color="bg-green-100 text-green-800"/>{s1?.doc_created_date&&<span className="text-xs text-gray-400">Created {fmt(s1.doc_created_date)}</span>}</div><PdfBtn doc={s1?.document} stage={1} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
-            {!s1?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
-              <div className="grid grid-cols-2 gap-6"><Card><SHead title="General Summary"/><p className="text-sm text-gray-700 leading-relaxed">{s1.general_info_summary||"—"}</p></Card><Card><SHead title="Business Program"/><p className="text-sm text-gray-700 leading-relaxed">{s1.business_program_summary||"—"}</p></Card></div>
-              <div className="grid grid-cols-2 gap-6"><Card><SHead title="Project Justification"/><p className="text-sm text-gray-700 leading-relaxed">{s1.justification_summary||"—"}</p></Card><Card><SHead title="Business Outcomes"/>{s1.outcomes_raw?.length>0?<Tbl headers={["Outcome","Metric","Target"]} rows={s1.outcomes_raw.map((o:any)=>[o.outcome,o.metric,o.target])}/>:<p className="text-sm text-gray-700">{s1.outcomes_summary||"—"}</p>}</Card></div>
+            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 1 — Business Analysis" color="bg-green-900/30 text-green-400"/>{s1?.doc_created_date&&<span className="text-xs text-white/40">Created {fmt(s1.doc_created_date)}</span>}</div><PdfBtn doc={s1?.document} stage={1} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
+            {!s1?<Card><p className="text-white/40">Not yet extracted.</p></Card>:(<>
+              <div className="grid grid-cols-2 gap-6"><Card><SHead title="General Summary"/><p className="text-sm text-white/85 leading-relaxed">{s1.general_info_summary||"—"}</p></Card><Card><SHead title="Business Program"/><p className="text-sm text-white/85 leading-relaxed">{s1.business_program_summary||"—"}</p></Card></div>
+              <div className="grid grid-cols-2 gap-6"><Card><SHead title="Project Justification"/><p className="text-sm text-white/85 leading-relaxed">{s1.justification_summary||"—"}</p></Card><Card><SHead title="Business Outcomes"/>{s1.outcomes_raw?.length>0?<Tbl headers={["Outcome","Metric","Target"]} rows={s1.outcomes_raw.map((o:any)=>[o.outcome,o.metric,o.target])}/>:<p className="text-sm text-white/85">{s1.outcomes_summary||"—"}</p>}</Card></div>
               <div className="grid grid-cols-3 gap-6">
-                <Card><SHead title="Complexity"/>{s1.complexity_raw?.length>0?<Tbl headers={["Dimension","Score"]} rows={s1.complexity_raw.map((c:any)=>[c.dimension,c.score])}/>:<p className="text-sm text-gray-700">{s1.complexity_summary||"—"}</p>}</Card>
-                <Card><SHead title="Funding (ROM)"/>{s1.rom_estimate?.length>0?<Tbl headers={["Category","Amount"]} rows={s1.rom_estimate.map((r:any)=>[r.category,r.amount])}/>:<p className="text-sm text-gray-700">{s1.funding_summary||"—"}</p>}</Card>
-                <Card><SHead title="CDT Dates"/>{s1.dot_dates?.length>0?<div className="space-y-2">{s1.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>:<p className="text-xs text-gray-400">—</p>}</Card>
+                <Card><SHead title="Complexity"/>{s1.complexity_raw?.length>0?<Tbl headers={["Dimension","Score"]} rows={s1.complexity_raw.map((c:any)=>[c.dimension,c.score])}/>:<p className="text-sm text-white/85">{s1.complexity_summary||"—"}</p>}</Card>
+                <Card><SHead title="Funding (ROM)"/>{s1.rom_estimate?.length>0?<Tbl headers={["Category","Amount"]} rows={s1.rom_estimate.map((r:any)=>[r.category,r.amount])}/>:<p className="text-sm text-white/85">{s1.funding_summary||"—"}</p>}</Card>
+                <Card><SHead title="CDT Dates"/>{s1.dot_dates?.length>0?<div className="space-y-2">{s1.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-white/50">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>:<p className="text-xs text-white/40">—</p>}</Card>
               </div>
               {s1.stakeholders?.length>0&&<Card><SHead title="Stakeholders"/><Tbl headers={["Name","Organization","Role","Interest"]} rows={s1.stakeholders.map((s:any)=>[s.name,s.organization,s.role,s.interest])}/></Card>}
             </>)}
@@ -224,32 +224,32 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
 
           {/* ── STAGE 2 ── */}
           {tab==="s2"&&(<div className="space-y-7">
-            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 2 — Alternative Analysis" color="bg-indigo-100 text-indigo-800"/>{s2?.doc_created_date&&<span className="text-xs text-gray-400">Created {fmt(s2.doc_created_date)}</span>}</div><PdfBtn doc={s2?.document} stage={2} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
-            {!s2?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
-              <div className="grid grid-cols-2 gap-6"><Card><SHead title="Baseline / Current State"/><p className="text-sm text-gray-700 leading-relaxed">{s2.baseline_summary||"—"}</p></Card><Card><SHead title="Requirements"/><p className="text-sm text-gray-700 leading-relaxed">{s2.requirements_summary||"—"}</p></Card></div>
-              <Card><SHead title="Market Research"/><p className="text-sm text-gray-700 leading-relaxed">{s2.market_research_summary||"—"}</p></Card>
+            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 2 — Alternative Analysis" color="bg-indigo-900/30 text-indigo-300"/>{s2?.doc_created_date&&<span className="text-xs text-white/40">Created {fmt(s2.doc_created_date)}</span>}</div><PdfBtn doc={s2?.document} stage={2} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
+            {!s2?<Card><p className="text-white/40">Not yet extracted.</p></Card>:(<>
+              <div className="grid grid-cols-2 gap-6"><Card><SHead title="Baseline / Current State"/><p className="text-sm text-white/85 leading-relaxed">{s2.baseline_summary||"—"}</p></Card><Card><SHead title="Requirements"/><p className="text-sm text-white/85 leading-relaxed">{s2.requirements_summary||"—"}</p></Card></div>
+              <Card><SHead title="Market Research"/><p className="text-sm text-white/85 leading-relaxed">{s2.market_research_summary||"—"}</p></Card>
               <Card><SHead title="Viable Solutions"/><div className="space-y-4">{s2.viable_solutions?.map((sol:any,i:number)=>(
-                <div key={i} className={`rounded-lg p-4 border-2 ${sol.recommended?"border-indigo-400 bg-indigo-50":"border-gray-200"}`}>
-                  <div className="flex items-center justify-between mb-2"><h4 className="font-bold text-sm">{sol.name}</h4><div className="flex gap-2">{sol.estimated_cost&&<Badge label={sol.estimated_cost} color="bg-gray-100 text-gray-700"/>}{sol.recommended&&<Badge label="✓ Recommended" color="bg-indigo-100 text-indigo-800"/>}</div></div>
-                  <p className="text-xs text-gray-600 leading-relaxed mb-2">{sol.summary}</p>
-                  <div className="grid grid-cols-2 gap-3">{sol.pros?.length>0&&<div><p className="text-xs font-semibold text-green-700 mb-1">Pros</p>{sol.pros.map((p:string,j:number)=><p key={j} className="text-xs text-gray-600">✓ {p}</p>)}</div>}{sol.cons?.length>0&&<div><p className="text-xs font-semibold text-red-600 mb-1">Cons</p>{sol.cons.map((c:string,j:number)=><p key={j} className="text-xs text-gray-600">✗ {c}</p>)}</div>}</div>
+                <div key={i} className={`rounded-lg p-4 border-2 ${sol.recommended?"border-indigo-500/50 bg-indigo-900/20":"border-gray-200"}`}>
+                  <div className="flex items-center justify-between mb-2"><h4 className="font-bold text-sm">{sol.name}</h4><div className="flex gap-2">{sol.estimated_cost&&<Badge label={sol.estimated_cost} color="bg-white/8 text-white/85"/>}{sol.recommended&&<Badge label="✓ Recommended" color="bg-indigo-900/30 text-indigo-300"/>}</div></div>
+                  <p className="text-xs text-white/70 leading-relaxed mb-2">{sol.summary}</p>
+                  <div className="grid grid-cols-2 gap-3">{sol.pros?.length>0&&<div><p className="text-xs font-semibold text-green-400 mb-1">Pros</p>{sol.pros.map((p:string,j:number)=><p key={j} className="text-xs text-white/70">✓ {p}</p>)}</div>}{sol.cons?.length>0&&<div><p className="text-xs font-semibold text-red-400 mb-1">Cons</p>{sol.cons.map((c:string,j:number)=><p key={j} className="text-xs text-white/70">✗ {c}</p>)}</div>}</div>
                 </div>
               ))}</div></Card>
               <div className="grid grid-cols-2 gap-6">
-                <Card><SHead title="Financial Analysis"/>{s2.financial_analysis?.cost_table?.length?<Tbl headers={["Category","Total"]} rows={s2.financial_analysis.cost_table.map((r:any)=>[r.category,r.total])}/>:<p className="text-xs text-gray-400">—</p>}{s2.financial_analysis?.npv&&<div className="mt-3 text-xs"><span className="text-gray-500">NPV:</span> <span className="font-semibold">{s2.financial_analysis.npv}</span></div>}</Card>
-                <Card><SHead title="CDT Dates"/>{s2.dot_dates?.length>0?<div className="space-y-2">{s2.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>:<p className="text-xs text-gray-400">—</p>}</Card>
+                <Card><SHead title="Financial Analysis"/>{s2.financial_analysis?.cost_table?.length?<Tbl headers={["Category","Total"]} rows={s2.financial_analysis.cost_table.map((r:any)=>[r.category,r.total])}/>:<p className="text-xs text-white/40">—</p>}{s2.financial_analysis?.npv&&<div className="mt-3 text-xs"><span className="text-white/50">NPV:</span> <span className="font-semibold">{s2.financial_analysis.npv}</span></div>}</Card>
+                <Card><SHead title="CDT Dates"/>{s2.dot_dates?.length>0?<div className="space-y-2">{s2.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-white/50">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>:<p className="text-xs text-white/40">—</p>}</Card>
               </div>
             </>)}
           </div>)}
 
           {/* ── STAGE 3 ── */}
           {tab==="s3"&&(<div className="space-y-7">
-            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 3 — Solution Analysis" color="bg-violet-100 text-violet-800"/>{s3?.doc_created_date&&<span className="text-xs text-gray-400">Created {fmt(s3.doc_created_date)}</span>}</div><PdfBtn doc={s3?.document} stage={3} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
-            {!s3?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
-              <Card><SHead title="Solution Requirements"/><p className="text-sm text-gray-700 leading-relaxed">{s3.solution_requirements_summary||"—"}</p></Card>
+            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 3 — Solution Analysis" color="bg-violet-900/30 text-violet-300"/>{s3?.doc_created_date&&<span className="text-xs text-white/40">Created {fmt(s3.doc_created_date)}</span>}</div><PdfBtn doc={s3?.document} stage={3} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
+            {!s3?<Card><p className="text-white/40">Not yet extracted.</p></Card>:(<>
+              <Card><SHead title="Solution Requirements"/><p className="text-sm text-white/85 leading-relaxed">{s3.solution_requirements_summary||"—"}</p></Card>
               <div className="grid grid-cols-2 gap-6">
-                <Card><SHead title="Primary Solicitation"/><div className="space-y-3">{Object.entries(s3.primary_solicitation_raw||{}).filter(([,v])=>v&&v!=="null").map(([k,v])=><div key={k} className="flex justify-between text-xs"><span className="text-gray-500 capitalize">{k.replace(/_/g," ")}</span><span className="font-medium">{String(v)}</span></div>)}</div></Card>
-                <Card><SHead title="CDT Dates"/>{s3.dot_dates?.length>0?<div className="space-y-2">{s3.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>:<p className="text-xs text-gray-400">—</p>}</Card>
+                <Card><SHead title="Primary Solicitation"/><div className="space-y-3">{Object.entries(s3.primary_solicitation_raw||{}).filter(([,v])=>v&&v!=="null").map(([k,v])=><div key={k} className="flex justify-between text-xs"><span className="text-white/50 capitalize">{k.replace(/_/g," ")}</span><span className="font-medium">{String(v)}</span></div>)}</div></Card>
+                <Card><SHead title="CDT Dates"/>{s3.dot_dates?.length>0?<div className="space-y-2">{s3.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-white/50">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>:<p className="text-xs text-white/40">—</p>}</Card>
               </div>
               {s3.procurements_roadmap?.phases?.length>0&&<Card><SHead title="Roadmap"/><Tbl headers={["Phase","Start","End","Description"]} rows={s3.procurements_roadmap.phases.map((p:any)=>[p.phase,fmt(p.start_date)||p.start_date,fmt(p.end_date)||p.end_date,p.description])}/></Card>}
               {s3.procurements_roadmap?.key_milestones?.length>0&&<Card><SHead title="Key Milestones"/><Tbl headers={["Milestone","Date","Type"]} rows={s3.procurements_roadmap.key_milestones.map((m:any)=>[m.milestone,fmt(m.date)||m.date,m.type])}/></Card>}
@@ -258,37 +258,37 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
 
           {/* ── STAGE 4 ── */}
           {tab==="s4"&&(<div className="space-y-7">
-            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 4 — Project Readiness" color="bg-amber-100 text-amber-800"/>{s4?.doc_created_date&&<span className="text-xs text-gray-400">Created {fmt(s4.doc_created_date)}</span>}</div><PdfBtn doc={s4?.document} stage={4} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
-            {!s4?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
+            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 4 — Project Readiness" color="bg-amber-900/30 text-amber-300"/>{s4?.doc_created_date&&<span className="text-xs text-white/40">Created {fmt(s4.doc_created_date)}</span>}</div><PdfBtn doc={s4?.document} stage={4} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div>
+            {!s4?<Card><p className="text-white/40">Not yet extracted.</p></Card>:(<>
               <div className="grid grid-cols-3 gap-6"><Card><KV label="Selected Vendor" value={s4.solicitation_results?.selected_vendor} accent/></Card><Card><KV label="Total Contract Cost" value={s4.solicitation_results?.total_contract_cost} accent/></Card><Card><KV label="Contract Period" value={`${fmt(s4.solicitation_results?.contract_start_date)||"—"} → ${fmt(s4.solicitation_results?.contract_end_date)||"—"}`}/></Card></div>
               <div className="grid grid-cols-2 gap-6">
-                <Card><SHead title="Schedule Baseline"/><Tbl headers={["","Proposed","Baseline","Variance"]} rows={[["Start",fmt(s4.schedule_baseline?.proposed_project_start)||"—",fmt(s4.schedule_baseline?.baseline_project_start)||"—",s4.schedule_baseline?.start_variance||"—"],["End",fmt(s4.schedule_baseline?.proposed_project_end)||"—",fmt(s4.schedule_baseline?.baseline_project_end)||"—",s4.schedule_baseline?.end_variance||"—"]]}/>{s4.schedule_baseline?.variance_reasons&&<p className="text-xs text-amber-700 mt-2 bg-amber-50 p-2 rounded">{s4.schedule_baseline.variance_reasons}</p>}</Card>
-                <Card><SHead title="Cost Baseline"/>{s4.cost_baseline?.cost_rows?.length>0?<Tbl headers={["Category","Proposed","Baseline","Variance"]} rows={s4.cost_baseline.cost_rows.map((r:any)=>[r.category,r.proposed,r.baseline,r.variance])}/>:<p className="text-xs text-gray-400">—</p>}</Card>
+                <Card><SHead title="Schedule Baseline"/><Tbl headers={["","Proposed","Baseline","Variance"]} rows={[["Start",fmt(s4.schedule_baseline?.proposed_project_start)||"—",fmt(s4.schedule_baseline?.baseline_project_start)||"—",s4.schedule_baseline?.start_variance||"—"],["End",fmt(s4.schedule_baseline?.proposed_project_end)||"—",fmt(s4.schedule_baseline?.baseline_project_end)||"—",s4.schedule_baseline?.end_variance||"—"]]}/>{s4.schedule_baseline?.variance_reasons&&<p className="text-xs text-amber-300 mt-2 bg-amber-900/20 p-2 rounded">{s4.schedule_baseline.variance_reasons}</p>}</Card>
+                <Card><SHead title="Cost Baseline"/>{s4.cost_baseline?.cost_rows?.length>0?<Tbl headers={["Category","Proposed","Baseline","Variance"]} rows={s4.cost_baseline.cost_rows.map((r:any)=>[r.category,r.proposed,r.baseline,r.variance])}/>:<p className="text-xs text-white/40">—</p>}</Card>
               </div>
               <div className="grid grid-cols-2 gap-6">
                 <Card><SHead title="Contract Management"/><Tbl headers={["Question","Answer"]} rows={(s4.contract_management||[]).map((r:any)=>[r.question,<YN key={r.question} v={r.answer}/>])}/></Card>
                 <Card><SHead title="Organizational Readiness"/><Tbl headers={["Question","Answer"]} rows={(s4.org_readiness||[]).map((r:any)=>[r.question,<YN key={r.question} v={r.answer}/>])}/></Card>
               </div>
-              {s4.objectives?.length>0&&<Card><SHead title="Business Objectives"/><Tbl headers={["ID","Objective","Metric","Target","Valuation"]} rows={s4.objectives.map((o:any)=>[<strong key={o.id} className="text-amber-700">{o.id}</strong>,o.objective_summary,o.metric,o.target_result,o.valuation_pct])}/></Card>}
-              {s4.risk_register?.length>0&&<Card><SHead title="Risk Register"/><Tbl headers={["Risk","Probability","Impact","Mitigation"]} rows={s4.risk_register.map((r:any)=>[r.risk,<Badge key={r.risk_id} label={r.probability||"—"} color={RISK_COLORS[r.probability]||"bg-gray-100 text-gray-600"}/>,<Badge key={r.risk_id+"i"} label={r.impact||"—"} color={RISK_COLORS[r.impact]||"bg-gray-100 text-gray-600"}/>,r.mitigation])}/></Card>}
+              {s4.objectives?.length>0&&<Card><SHead title="Business Objectives"/><Tbl headers={["ID","Objective","Metric","Target","Valuation"]} rows={s4.objectives.map((o:any)=>[<strong key={o.id} className="text-amber-300">{o.id}</strong>,o.objective_summary,o.metric,o.target_result,o.valuation_pct])}/></Card>}
+              {s4.risk_register?.length>0&&<Card><SHead title="Risk Register"/><Tbl headers={["Risk","Probability","Impact","Mitigation"]} rows={s4.risk_register.map((r:any)=>[r.risk,<Badge key={r.risk_id} label={r.probability||"—"} color={RISK_COLORS[r.probability]||"bg-white/8 text-white/70"}/>,<Badge key={r.risk_id+"i"} label={r.impact||"—"} color={RISK_COLORS[r.impact]||"bg-white/8 text-white/70"}/>,r.mitigation])}/></Card>}
               <div className="grid grid-cols-2 gap-6">
                 <Card><SHead title="Project Readiness"/><div className="space-y-3"><KV label="Methodology" value={s4.project_readiness?.methodology}/><KV label="OTech Engaged" value={s4.project_readiness?.otech_engaged}/>{s4.project_readiness?.methodology_description&&<p className="text-xs mt-3 leading-relaxed" style={{color:"#e0e0e0"}}>{s4.project_readiness.methodology_description}</p>}</div></Card>
-                <Card><SHead title="CDT Use Only"/>{s4.dot_dates?.length>0&&<div className="space-y-1 mb-3">{s4.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-gray-500">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>}{s4.dot_raw&&<div className="space-y-2">{s4.dot_raw.form_status&&<div className="flex justify-between text-xs"><span className="text-gray-500">Form Status</span><Badge label={s4.dot_raw.form_status} color="bg-indigo-100 text-indigo-700"/></div>}{s4.dot_raw.form_disposition&&<div className="flex justify-between text-xs"><span className="text-gray-500">Disposition</span><Badge label={s4.dot_raw.form_disposition} color="bg-green-50 text-green-700"/></div>}</div>}</Card>
+                <Card><SHead title="CDT Use Only"/>{s4.dot_dates?.length>0&&<div className="space-y-1 mb-3">{s4.dot_dates.map((d:DotDate,i:number)=><div key={i} className="flex justify-between text-xs"><span className="text-white/50">{d.label}</span><span className="font-medium">{fmt(d.date)||d.date}</span></div>)}</div>}{s4.dot_raw&&<div className="space-y-2">{s4.dot_raw.form_status&&<div className="flex justify-between text-xs"><span className="text-white/50">Form Status</span><Badge label={s4.dot_raw.form_status} color="bg-indigo-900/30 text-indigo-300"/></div>}{s4.dot_raw.form_disposition&&<div className="flex justify-between text-xs"><span className="text-white/50">Disposition</span><Badge label={s4.dot_raw.form_disposition} color="bg-green-900/20 text-green-400"/></div>}</div>}</Card>
               </div>
             </>)}
           </div>)}
 
           {/* ── PROCUREMENTS ── */}
           {tab==="procurements"&&(<div className="space-y-7">
-            {!s3?<Card><p className="text-gray-400">Not yet extracted.</p></Card>:(<>
+            {!s3?<Card><p className="text-white/40">Not yet extracted.</p></Card>:(<>
               {s3.primary_solicitation_raw&&<Card><SHead title="Primary Solicitation"/><div className="grid grid-cols-3 gap-6">{Object.entries(s3.primary_solicitation_raw).filter(([,v])=>v&&v!=="null").map(([k,v])=><KV key={k} label={k.replace(/_/g," ").replace(/\b\w/g,(l:string)=>l.toUpperCase())} value={String(v)}/>)}</div></Card>}
-              {ancillary.length===0?<Card><p className="text-gray-400">No ancillary procurements.</p></Card>
+              {ancillary.length===0?<Card><p className="text-white/40">No ancillary procurements.</p></Card>
               :<div className="grid grid-cols-2 gap-6">{ancillary.map((ap:AncillaryProc,i:number)=>(
-                <Card key={i}><div className="flex items-start justify-between mb-2"><h4 className="font-semibold text-sm">{ap.name}</h4>{ap.estimated_value&&<Badge label={ap.estimated_value} color="bg-violet-50 text-violet-700"/>}</div>
-                  {ap.procurement_type&&<Badge label={ap.procurement_type} color="bg-gray-100 text-gray-600"/>}
-                  {ap.timeline&&<p className="text-xs text-violet-700 mt-2">📅 {ap.timeline}</p>}
-                  {ap.vendor_or_source&&<p className="text-xs text-gray-500 mt-1">Vendor: {ap.vendor_or_source}</p>}
-                  {ap.description&&<p className="text-xs text-gray-600 mt-2 leading-relaxed line-clamp-3">{ap.description}</p>}
+                <Card key={i}><div className="flex items-start justify-between mb-2"><h4 className="font-semibold text-sm">{ap.name}</h4>{ap.estimated_value&&<Badge label={ap.estimated_value} color="bg-violet-900/20 text-violet-300"/>}</div>
+                  {ap.procurement_type&&<Badge label={ap.procurement_type} color="bg-white/8 text-white/70"/>}
+                  {ap.timeline&&<p className="text-xs text-violet-300 mt-2">📅 {ap.timeline}</p>}
+                  {ap.vendor_or_source&&<p className="text-xs text-white/50 mt-1">Vendor: {ap.vendor_or_source}</p>}
+                  {ap.description&&<p className="text-xs text-white/70 mt-2 leading-relaxed line-clamp-3">{ap.description}</p>}
                 </Card>
               ))}</div>}
             </>)}
@@ -307,7 +307,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
                       <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#bbb",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Organization</th>
                       <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#bbb",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Email</th>
                       <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#bbb",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Phone</th>
-                      <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Stage</th>
+                      <th className="px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wide">Stage</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -321,13 +321,13 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
                         </td>
                         <td className="px-4 py-3 text-xs whitespace-nowrap" style={{color:"#d8d8d8"}}>{c.phone||"—"}</td>
                         <td className="px-4 py-3">
-                          <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${STAGE_COLORS[c.stage]||"bg-gray-100 text-gray-600"}`}>S{c.stage}</span>
+                          <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${STAGE_COLORS[c.stage]||"bg-white/8 text-white/70"}`}>S{c.stage}</span>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                <div className="px-4 py-2 border-t border-gray-100 text-xs text-gray-400 bg-gray-50">{contacts.length} contact{contacts.length!==1?"s":""} total</div>
+                <div className="px-4 py-2 border-t border-gray-100 text-xs text-white/40 bg-white/5">{contacts.length} contact{contacts.length!==1?"s":""} total</div>
               </div>}
           </div>)}
         </>)}
