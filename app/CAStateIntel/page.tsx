@@ -229,16 +229,16 @@ export default function CAStateIntelPage() {
             <table style={{ width:'100%', borderCollapse:'collapse' }}>
               <thead>
                 <tr>
-                  {['#','Project Name','Stage','Crit.','Department','Docs','Tags'].map(h=>(
+                  {['#','Project Name','Stage','Crit.','Department','Docs'].map(h=>(
                     <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:11, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', color:T.ink, background:'#111', borderBottom:`2px solid ${T.border}` }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={7} style={{ padding:48, textAlign:'center', color:T.ink, fontSize:14 }}>Loading projects…</td></tr>
+                  <tr><td colSpan={6} style={{ padding:48, textAlign:'center', color:T.ink, fontSize:14 }}>Loading projects…</td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={7} style={{ padding:48, textAlign:'center', color:T.ink, fontSize:14 }}>No projects match the selected filters</td></tr>
+                  <tr><td colSpan={6} style={{ padding:48, textAlign:'center', color:T.ink, fontSize:14 }}>No projects match the selected filters</td></tr>
                 ) : filtered.map(p => {
                   const es = effStage(p);
                   const ts = tags(p);
@@ -273,13 +273,11 @@ export default function CAStateIntelPage() {
                             })}
                           </div>
                         </td>
-                        <td style={{ padding:'14px 16px', color:T.ink, fontSize:12 }}>
-                          {ts.length === 0 && <span>—</span>}
-                        </td>
+
                       </tr>
                       {ts.length > 0 && (
                         <tr key={`${p.id}-t`} style={{ borderBottom:`1px solid ${T.border}` }}>
-                          <td colSpan={7} style={{ padding:'2px 16px 10px', paddingTop:0 }}>
+                          <td colSpan={6} style={{ padding:'2px 16px 10px', paddingTop:0 }}>
                             <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
                               {ts.map((tag,i)=>(
                                 <button key={i} onClick={()=>setTagF(tagF.includes(tag)?tagF.filter(x=>x!==tag):[...tagF,tag])}
