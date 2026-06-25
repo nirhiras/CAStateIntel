@@ -32,6 +32,7 @@ export default function ContactsPage() {
   const [stageF, setStageF]     = useState('');
   const [roleF, setRoleF]       = useState('');
   const [orgF, setOrgF]         = useState('');
+  const [dateF, setDateF]       = useState('');
   const [sortKey, setSortKey]   = useState<keyof Contact>('name');
   const [sortDir, setSortDir]   = useState<'asc'|'desc'>('asc');
 
@@ -46,7 +47,8 @@ export default function ContactsPage() {
 
   const filtered = contacts.filter(c=>
     (!search||[c.name,c.email,c.title,c.organization].some(f=>f?.toLowerCase().includes(search.toLowerCase())))&&
-    (!stageF||String(c.stage)===stageF)&&(!roleF||c.role_type===roleF)&&(!orgF||c.organization===orgF)
+    (!stageF||String(c.stage)===stageF)&&(!roleF||c.role_type===roleF)&&(!orgF||c.organization===orgF)&&
+    (!dateF||String(c.doc_created_date||'').startsWith(dateF))
   );
   const sorted = [...filtered].sort((a,b)=>{
     const av=String(a[sortKey]||''), bv=String(b[sortKey]||'');
@@ -105,8 +107,14 @@ export default function ContactsPage() {
             {f.opts.map(o=><option key={o.v} value={o.v}>{o.l}</option>)}
           </select>
         ))}
-        {(search||stageF||roleF||orgF)&&(
-          <button onClick={()=>{setSearch('');setStageF('');setRoleF('');setOrgF('');}}
+        {/* Year filter */}
+        <select value={dateF} onChange={e=>setDateF(e.target.value)}
+          style={{height:36,padding:'0 10px',borderRadius:6,border:`1px solid ${dateF?T.accentBdr:T.border}`,background:dateF?T.accentDim:T.canvas,color:dateF?T.accent:T.ink,fontSize:13,fontFamily:T.font,cursor:'pointer',outline:'none'}}>
+          <option value="">All Years</option>
+          {['2019','2020','2021','2022','2023','2024','2025','2026'].map(y=><option key={y} value={y}>{y}</option>)}
+        </select>
+        {(search||stageF||roleF||orgF||dateF)&&(
+          <button onClick={()=>{setSearch('');setStageF('');setRoleF('');setOrgF('');setDateF('');}}>
             style={{height:36,padding:'0 10px',borderRadius:6,border:'1px solid rgba(239,68,68,0.3)',background:'rgba(239,68,68,0.08)',color:T.red,fontSize:13,cursor:'pointer',fontFamily:T.font}}>
             ✕ Clear
           </button>
