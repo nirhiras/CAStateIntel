@@ -140,7 +140,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
       </div>
 
       {/* Tab bar */}
-      <div className="border-b border-white/10 sticky top-[60px] z-10" style={{background:"#16181a"}}>
+      <div className="border-b border-white/10 sticky top-[76px] z-10" style={{background:"#16181a"}}>
         <div className="flex overflow-x-auto" style={{paddingLeft:"40px"}}>
           {TABS.map(t=>{
             const count=t.id==="contacts"?contacts.length:t.id==="procurements"?ancillary.length:0;
