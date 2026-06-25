@@ -13,7 +13,8 @@ type Proc = {
   id:number; name:string; procurement_type:string; estimated_value:string;
   timeline:string; vendor_or_source:string; description:string; justification:string;
   proposed_start_date:string; proposed_end_date:string; duration:string;
-  solicitation_number:string; project_id:number; project_number:string; project_name:string; stage:number;
+  solicitation_number:string; project_id:number; project_number:string; project_name:string; department_name:string; stage:number;
+  source_doc_id:string; source_filename:string;
 };
 
 function fmtVal(v:string) {
@@ -225,6 +226,7 @@ export default function ProcurementsPage() {
   const [projF,  setProjF]    = useState('');
   const [typeF,  setTypeF]    = useState('');
   const [view,   setView]     = useState<'cards'|'table'|'calendar'>('cards');
+  const [yearF,  setYearF]    = useState('');
 
   useEffect(() => {
     fetch('/api/castateintel/procurements').then(r=>r.json())
@@ -238,7 +240,8 @@ export default function ProcurementsPage() {
   const filtered = procs.filter(p=>
     (!search || p.name?.toLowerCase().includes(search.toLowerCase()) || p.description?.toLowerCase().includes(search.toLowerCase())) &&
     (!projF || p.project_number === projF) &&
-    (!typeF || p.procurement_type === typeF)
+    (!typeF || p.procurement_type === typeF) &&
+    (!yearF || p.proposed_start_date?.startsWith(yearF) || p.proposed_end_date?.startsWith(yearF))
   );
 
   const withDates = procs.filter(p=>p.proposed_start_date||p.proposed_end_date||p.timeline).length;
@@ -303,7 +306,12 @@ export default function ProcurementsPage() {
             <option value="">All Types</option>
             {allTypes.map(t=><option key={t} value={t}>{t}</option>)}
           </select>
-          {(search||projF||typeF)&&(
+          <select value={yearF} onChange={e=>setYearF(e.target.value)}
+          style={{height:36,padding:'0 10px',borderRadius:6,border:`1px solid ${yearF?T.accentBdr:T.border}`,background:yearF?T.accentDim:T.canvas,color:yearF?T.accent:T.ink,fontSize:13,fontFamily:T.font,cursor:'pointer',outline:'none'}}>
+          <option value="">All Years</option>
+          {['2019','2020','2021','2022','2023','2024','2025','2026'].map(y=><option key={y} value={y}>{y}</option>)}
+        </select>
+        {(search||projF||typeF||yearF)&&(
             <button onClick={()=>{setSearch('');setProjF('');setTypeF('');}}
               style={{height:36,padding:'0 10px',borderRadius:6,border:'1px solid rgba(239,68,68,0.3)',background:'rgba(239,68,68,0.08)',color:T.red,fontSize:13,cursor:'pointer',fontFamily:T.font}}>✕ Clear</button>
           )}
@@ -356,10 +364,18 @@ export default function ProcurementsPage() {
                   </div>
                 )}
                 {/* Footer */}
-                {(p.vendor_or_source||p.justification) && (
+                {(p.vendor_or_source||p.justification||p.source_doc_id) && (
                   <div style={{borderTop:`1px solid ${T.border}`,paddingTop:8,marginTop:4,fontSize:12,lineHeight:1.5}}>
                     {p.vendor_or_source && <div style={{color:T.faint}}>Vendor: <span style={{color:T.ink}}>{p.vendor_or_source}</span></div>}
                     {p.justification && <div style={{marginTop:3,color:T.faint,fontStyle:'italic',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{p.justification}</div>}
+                    {p.source_doc_id && (
+                      <div style={{marginTop:8}}>
+                        <a href={`/api/castateintel/pdf/${p.source_doc_id}`} target="_blank" rel="noreferrer"
+                          style={{display:'inline-flex',alignItems:'center',gap:6,fontSize:11,fontWeight:600,color:T.accent,textDecoration:'none',padding:'4px 10px',borderRadius:6,border:`1px solid ${T.accentBdr}`,background:T.accentDim}}>
+                          📄 View Source PDF
+                        </a>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
