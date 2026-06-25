@@ -283,26 +283,26 @@ export default function DocumentsPage() {
 
                     {/* Short description */}
                     {doc.short_description && (
-                      <div style={{ fontSize:13, color:T.mute, lineHeight:1.5, marginBottom:8, maxWidth:700 }}>
+                      <div style={{ fontSize:13, color:T.ink, lineHeight:1.5, marginBottom:8, maxWidth:700 }}>
                         {doc.short_description}
                       </div>
                     )}
 
                     {/* Stats row */}
                     <div style={{ display:'flex', gap:16, alignItems:'center', flexWrap:'wrap', marginBottom: tags.length > 0 ? 8 : 0 }}>
-                      <span style={{ fontSize:12, color:T.mute, display:'flex', alignItems:'center', gap:4 }}>
+                      <span style={{ fontSize:12, color:T.ink, display:'flex', alignItems:'center', gap:4 }}>
                         <span style={{ color: isExtracted ? T.accent : T.faint }}>●</span>
                         {isExtracted ? fmtChars(chars) : 'Not extracted'}
                       </span>
                       {doc.contact_count > 0 && (
                         <a href={`/CAStateIntel/contacts?project=${doc.project_number}`}
-                          style={{ fontSize:12, color:T.mute, textDecoration:'none', display:'flex', alignItems:'center', gap:4 }}>
+                          style={{ fontSize:12, color:T.ink, textDecoration:'none', display:'flex', alignItems:'center', gap:4 }}>
                           👤 <span style={{ color:T.ink }}>{doc.contact_count}</span> contact{doc.contact_count !== 1 ? 's' : ''}
                         </a>
                       )}
                       {doc.procurement_count > 0 && (
                         <a href={`/CAStateIntel/procurements?project=${doc.project_number}`}
-                          style={{ fontSize:12, color:T.mute, textDecoration:'none', display:'flex', alignItems:'center', gap:4 }}>
+                          style={{ fontSize:12, color:T.ink, textDecoration:'none', display:'flex', alignItems:'center', gap:4 }}>
                           📋 <span style={{ color:T.ink }}>{doc.procurement_count}</span> procurement{doc.procurement_count !== 1 ? 's' : ''}
                         </a>
                       )}
