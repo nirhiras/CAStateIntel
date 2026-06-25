@@ -36,13 +36,13 @@ export async function GET(request: Request) {
           -- dot_dates is [{label, date}] — find element where label contains "received"
           CASE WHEN c.stage = 1 AND s1.dot_dates IS NOT NULL AND jsonb_typeof(s1.dot_dates) = 'array' THEN (
             SELECT elem->>'date' FROM jsonb_array_elements(s1.dot_dates) AS elem
-            WHERE lower(elem->>'label') LIKE '%received%' LIMIT 1)
+            WHERE (lower(elem->>'label') LIKE '%received%' OR lower(elem->>'label') LIKE '%accepted%' OR lower(elem->>'label') LIKE '%submitted%' OR lower(elem->>'label') LIKE '%form date%') LIMIT 1)
           WHEN c.stage = 2 AND s2.dot_dates IS NOT NULL AND jsonb_typeof(s2.dot_dates) = 'array' THEN (
             SELECT elem->>'date' FROM jsonb_array_elements(s2.dot_dates) AS elem
-            WHERE lower(elem->>'label') LIKE '%received%' LIMIT 1)
+            WHERE (lower(elem->>'label') LIKE '%received%' OR lower(elem->>'label') LIKE '%accepted%' OR lower(elem->>'label') LIKE '%submitted%' OR lower(elem->>'label') LIKE '%form date%') LIMIT 1)
           WHEN c.stage = 3 AND s3.dot_dates IS NOT NULL AND jsonb_typeof(s3.dot_dates) = 'array' THEN (
             SELECT elem->>'date' FROM jsonb_array_elements(s3.dot_dates) AS elem
-            WHERE lower(elem->>'label') LIKE '%received%' LIMIT 1)
+            WHERE (lower(elem->>'label') LIKE '%received%' OR lower(elem->>'label') LIKE '%accepted%' OR lower(elem->>'label') LIKE '%submitted%' OR lower(elem->>'label') LIKE '%form date%') LIMIT 1)
           ELSE NULL END,
           -- 2nd: AI-extracted date from contact record
           CASE WHEN c.doc_created_date IS NOT NULL AND c.doc_created_date::text NOT IN ('', 'null')
