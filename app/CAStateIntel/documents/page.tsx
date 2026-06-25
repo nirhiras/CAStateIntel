@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
-import RvtNav from '@/components/castateintel/RvtNav';
 
 const T = {
   canvas:'#0d0d0d', surface:'#161616', surface2:'#1e1e1e',
@@ -164,7 +163,6 @@ export default function DocumentsPage() {
 
   return (
     <div style={{ minHeight:'100vh', background:T.canvas, color:T.ink, fontFamily:T.font }}>
-      <RvtNav />
 
       {/* ── Header ── */}
       <div style={{ borderBottom:`1px solid ${T.border}`, padding:'24px 32px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
