@@ -167,7 +167,7 @@ export default function DocumentsPage() {
         </div>
         <div style={{ display:'flex', gap:8 }}>
           <Btn onClick={exportCSV} variant="outline">⬇ Export CSV</Btn>
-          <a href="/CAStateIntel/upload" style={{ padding:'6px 14px', borderRadius:6, fontSize:13, fontWeight:600, background:T.accent, color:T.canvas, textDecoration:'none' }}>+ Upload PDF</a>
+          
         </div>
       </div>
 
