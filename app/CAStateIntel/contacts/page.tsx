@@ -19,7 +19,7 @@ type Contact = {
 function fmtDate(s:string) {
   if (!s||s==='null') return '—';
   const d = new Date(s);
-  return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('en-US',{month:'short',year:'numeric'});
+  return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 }
 const DQUOTE = String.fromCharCode(34);
 const NEWLINE = String.fromCharCode(10);
@@ -81,7 +81,7 @@ export default function ContactsPage() {
           <h1 style={{fontSize:24,fontWeight:700,letterSpacing:'-0.5px',color:T.ink,margin:0}}>
             {loading?'Loading…':`${sorted.length} of ${contacts.length} contacts`}
           </h1>
-          <p style={{fontSize:13,color:T.ink,marginTop:4}}>Extracted from PAL documents across all stages</p>
+          <p style={{fontSize:13,color:T.mute,marginTop:4}}>Extracted from PAL documents across all stages</p>
         </div>
         <button onClick={exportCSV} style={{padding:'8px 16px',borderRadius:6,fontSize:13,fontWeight:600,border:`1px solid ${T.border}`,background:'transparent',color:T.ink,cursor:'pointer',fontFamily:T.font}}>
           ⬇ Export CSV
@@ -127,7 +127,7 @@ export default function ContactsPage() {
                   <Th k="phone"            label="Phone"/>
                   <Th k="role_type"        label="Role"/>
                   <Th k="stage"            label="Stage"/>
-                  <Th k="doc_created_date" label="Doc Date"/>
+                  <Th k="doc_created_date" label="Form Received"/>
                   <Th k="project_number"   label="Source"/>
                 </tr>
               </thead>
@@ -141,7 +141,7 @@ export default function ContactsPage() {
                     onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background='rgba(255,255,255,0.02)'}
                     onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background='transparent'}>
                     <td style={{padding:'12px 14px',fontSize:14,fontWeight:600,color:T.ink,whiteSpace:'nowrap'}}>{ct.name||'—'}</td>
-                    <td style={{padding:'12px 14px',fontSize:13,color:T.ink,maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={ct.title}>{ct.title||'—'}</td>
+                    <td style={{padding:'12px 14px',fontSize:13,color:T.ink,maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={ct.title}>{ct.title||'—'}</td>
                     <td style={{padding:'12px 14px',fontSize:13,color:T.ink,maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={ct.organization}>{ct.organization||'—'}</td>
                     <td style={{padding:'12px 14px',fontSize:13,whiteSpace:'nowrap'}}>
                       {ct.email?<a href={`mailto:${ct.email}`} style={{color:T.accent,textDecoration:'none'}}>{ct.email}</a>:<span style={{color:T.faint}}>—</span>}
@@ -149,13 +149,13 @@ export default function ContactsPage() {
                     <td style={{padding:'12px 14px',fontSize:13,color:T.ink,whiteSpace:'nowrap'}}>{ct.phone||'—'}</td>
                     <td style={{padding:'12px 14px'}}><span style={{fontSize:12,fontWeight:600,color:ROLE_COLOR[ct.role_type]||T.mute}}>{ct.role_type||'—'}</span></td>
                     <td style={{padding:'12px 14px'}}><span style={{fontSize:11,fontWeight:700,fontFamily:T.mono,padding:'2px 7px',borderRadius:4,background:T.accentDim,color:T.accent,border:'1px solid rgba(0,217,146,0.3)'}}>S{ct.stage}</span></td>
-                    <td style={{padding:'12px 14px',fontSize:12,color:T.ink,whiteSpace:'nowrap'}}>{fmtDate(ct.doc_created_date)}</td>
+                    <td style={{padding:'12px 14px',fontSize:12,whiteSpace:'nowrap'}}><span style={{color: ct.doc_created_date && ct.doc_created_date!=='null' ? T.ink : T.faint, fontWeight: ct.doc_created_date && ct.doc_created_date!=='null' ? 600 : 400}}>{fmtDate(ct.doc_created_date)}</span></td>
                     <td style={{padding:'12px 14px',maxWidth:220}}>
                       <a href={`/CAStateIntel/stage${ct.stage}?project=${ct.project_number}&tab=overview`}
                         style={{fontSize:12,color:T.ink,textDecoration:'none',display:'block',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}
                         title={`${ct.project_number} - ${ct.project_name}`}
                         onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color=T.accent}
-                        onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color=T.mute}>
+                        onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color=T.ink}>
                         {ct.project_number} · {ct.project_name}
                       </a>
                     </td>
