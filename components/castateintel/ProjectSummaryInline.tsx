@@ -14,16 +14,16 @@ interface DotDate { label:string;date:string; }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const fmt = (d?:string|null) => { if(!d||d==="null")return null; try{return new Date(d).toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"});}catch{return d;} };
-const TAG_COLORS:Record<string,string> = { vendor:"bg-blue-100 text-blue-800",technology:"bg-purple-100 text-purple-800",approach:"bg-green-100 text-green-800",deployment:"bg-orange-100 text-orange-800" };
-const RISK_COLORS:Record<string,string> = { High:"bg-red-100 text-red-800",Medium:"bg-yellow-100 text-yellow-800",Low:"bg-green-100 text-green-800" };
-const STAGE_COLORS:Record<number,string> = { 1:"bg-sky-100 text-sky-700 border-sky-300",2:"bg-indigo-100 text-indigo-700 border-indigo-300",3:"bg-violet-100 text-violet-700 border-violet-300",4:"bg-amber-100 text-amber-700 border-amber-300" };
+const TAG_COLORS:Record<string,string> = { vendor:"",technology:"",approach:"",deployment:"" }; // unused — tags use inline styles now
+const RISK_COLORS:Record<string,string> = { High:"",Medium:"",Low:"" }; // unused
+const STAGE_COLORS:Record<number,string> = { 1:"",2:"",3:"",4:"" }; // unused
 const STAGE_ABBREV:Record<number,string> = { 1:"S1BA",2:"S2AA",3:"S3SA",4:"S4PRA" };
-const CRIT_COLORS:Record<string,string> = { High:"bg-red-100 text-red-700",Medium:"bg-yellow-100 text-yellow-700",Low:"bg-gray-100 text-gray-600" };
+const CRIT_COLORS:Record<string,string> = { High:"",Medium:"",Low:"" }; // unused
 
-function Badge({label,color="bg-gray-100 text-gray-600"}:{label:string;color?:string}){return <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${color}`}>{label}</span>;}
-function YN({v}:{v:string}){const lv=(v||"").toLowerCase();return <Badge label={v||"—"} color={lv==="yes"?"bg-green-100 text-green-800":lv==="no"?"bg-red-100 text-red-700":"bg-gray-100 text-gray-500"}/>;}
+function Badge({label,color="#333",textColor="#ccc"}:{label:string;color?:string;textColor?:string}){return <span style={{fontSize:11,padding:"2px 8px",borderRadius:9999,fontWeight:600,background:color,color:textColor,border:`1px solid ${textColor}33`}}>{label}</span>;}
+function YN({v}:{v:string}){const lv=(v||"").toLowerCase();const bg=lv==="yes"?"rgba(0,217,146,0.15)":lv==="no"?"rgba(239,68,68,0.15)":"rgba(255,255,255,0.08)";const tc=lv==="yes"?"#00d992":lv==="no"?"#ef4444":"#aaa";return <Badge label={v||"—"} color={bg} textColor={tc}/>;}
 function KV({label,value,accent=false}:{label:string;value?:string|null;accent?:boolean}){return(<div className="flex flex-col"><span className="text-xs font-medium mb-1 block" style={{color:"#ccc"}}>{label}</span><span className={`text-sm mt-0.5 ${accent?"font-bold":"" } ${!value?"text-xs font-normal":""}`} style={{color:value?(accent?"#9da2fb":"rgba(255,255,255,0.85)"):"rgba(255,255,255,0.25)"}}>{value||"—"}</span></div>);}
-function SHead({title}:{title:string}){return <div className="flex items-center gap-2 mb-5"><div className="w-1 h-5 rounded" style={{background:"#494fdf"}}/><h3 className="text-sm font-bold uppercase tracking-wide" style={{color:"rgba(255,255,255,0.7)"}}>{title}</h3></div>;}
+function SHead({title}:{title:string}){return <div className="flex items-center gap-2 mb-5"><div className="w-1 h-5 rounded" style={{background:"#494fdf"}}/><h3 className="text-sm font-bold uppercase tracking-wide" style={{color:"#f0f0f0"}}>{title}</h3></div>;}
 function Card({children,className=""}:{children:React.ReactNode;className?:string}){return <div className={`rounded-2xl border p-7 ${className}`} style={{background:"#16181a",borderColor:"rgba(255,255,255,0.08)"}}>{children}</div>;}
 function Tbl({headers,rows}:{headers:string[];rows:(string|React.ReactNode)[][]}){
   if(!rows.length)return <p className="text-xs italic" style={{color:"#999"}}>No data</p>;
