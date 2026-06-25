@@ -213,13 +213,13 @@ export default function UploadPage() {
   const overwriteCount = files.filter(f => f.was_overwrite).length;
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--vg-canvas)", color: "var(--vg-ink-strong)" }}>
+    <div style={{ minHeight: "100vh", background: "#0d0d0d", color: "#f0f0f0" }}>
       <RvtNav />
       {/* Header */}
-      <div style={{ background: "var(--vg-canvas-soft)", padding: "16px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--vg-hairline)" }}>
+      <div style={{ background: "#161616", padding: "16px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--vg-hairline)" }}>
         <div className="flex items-center gap-4">
-          <a href="/CAStateIntel/documents" style={{ color: "var(--vg-mute)", textDecoration: "none", fontSize: 14 }}>← Documents</a>
-          <div style={{ width: 1, height: 16, background: "var(--vg-hairline)" }} />
+          <a href="/CAStateIntel/documents" style={{ color: "#aaaaaa", textDecoration: "none", fontSize: 14 }}>← Documents</a>
+          <div style={{ width: 1, height: 16, background: "#2a2a2a" }} />
           <span className="text-sm font-semibold">Bulk PDF Upload</span>
         </div>
         {files.length > 0 && (
@@ -291,7 +291,7 @@ export default function UploadPage() {
             {analyzeStatus !== 'idle' && (
               <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
                 {analyzeStatus === 'running' && (
-                  <span style={{ fontSize: 13, color: "var(--vg-mute)", display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 13, color: "#aaaaaa", display: "flex", alignItems: "center", gap: 6 }}>
                     <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#494fdf", display: "inline-block", animation: "pulse 1s infinite" }} />
                     Extracting {analyzeLog.length} / {files.filter(f => f.status === "done" && f.project_number).length}…
                   </span>
@@ -353,7 +353,7 @@ export default function UploadPage() {
                     {/* Filename row */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-gray-800 truncate max-w-xs">{uf.file.name}</span>
-                      <span style={{ fontSize: 12, color: "var(--vg-mute)" }}>{(uf.file.size / 1024).toFixed(0)} KB</span>
+                      <span style={{ fontSize: 12, color: "#aaaaaa" }}>{(uf.file.size / 1024).toFixed(0)} KB</span>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium
                         ${uf.status === 'done' ? 'bg-green-100 text-green-700' :
                           uf.status === 'error' ? 'bg-red-100 text-red-700' :
@@ -381,7 +381,7 @@ export default function UploadPage() {
                             </span>
                           )}
                           {uf.is_other_doc && (
-                            <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: '#ECFDF5', color: '#065F46' }}>
+                            <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(0,217,146,0.08)', color: '#065F46' }}>
                               📎 Other Doc
                             </span>
                           )}
@@ -393,7 +393,7 @@ export default function UploadPage() {
                         </div>
                         {/* Canonical filename — shown immediately on drop */}
                         {(uf.canonical_filename || uf.status === 'queued') && (
-                          <div style={{ fontSize: 12, color: "var(--vg-mute)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          <div style={{ fontSize: 12, color: "#aaaaaa", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {uf.canonical_filename && uf.canonical_filename !== uf.file.name ? (
                               <span>
                                 <span style={{color:"#d8d8d8",fontSize:11}}>Original: </span>
