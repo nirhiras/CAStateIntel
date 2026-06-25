@@ -5,7 +5,7 @@ import RvtNav from '@/components/castateintel/RvtNav';
 const T = {
   canvas:'#0d0d0d', surface:'#161616', surface2:'#1e1e1e',
   border:'#2a2a2a', accent:'#00d992', accentDim:'rgba(0,217,146,0.12)',
-  accentBdr:'rgba(0,217,146,0.35)', ink:'#f0f0f0', mute:'#888', faint:'#444',
+  accentBdr:'rgba(0,217,146,0.35)', ink:'#f0f0f0', mute:'#bbb', faint:'#777',
   red:'#ef4444', redDim:'rgba(239,68,68,0.1)', amber:'#f59e0b',
   font:'"Inter",system-ui,sans-serif', mono:'"SF Mono","Fira Code",monospace',
 };
