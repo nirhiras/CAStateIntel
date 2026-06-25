@@ -126,7 +126,6 @@ export default function CAStateIntelPage() {
   const [search, setSearch]     = useState('');
   const [stageF, setStageF]     = useState<string[]>([]);
   const [deptF,  setDeptF]      = useState<string[]>([]);
-  const [tagF,   setTagF]       = useState<string[]>([]);
   const [loading, setLoading]   = useState(true);
 
   useEffect(() => {
@@ -135,7 +134,6 @@ export default function CAStateIntelPage() {
   }, []);
 
   const effStage = (p:Project) => p.effective_stage||p.pal_stage;
-  const tags     = (p:Project) => (p.solution_tags||[]).map(t=>t.tag);
 
   const filtered = projects.filter(p =>
     (!search || p.name.toLowerCase().includes(search.toLowerCase()) || p.project_number.includes(search)) &&
@@ -146,17 +144,9 @@ export default function CAStateIntelPage() {
 
   const allStages = ['Stage 1','Stage 2','Stage 3','Stage 4'];
   const allDepts  = [...new Set(projects.map(p=>p.department_name).filter(Boolean))].sort();
-  const allTags   = [...new Set(projects.flatMap(tags))].sort();
 
-  const mkOpts = (vals:string[], getField:(p:Project)=>string|string[], filters:{f:string[];set:(v:string[])=>void}[], allVals:string[]) =>
-    allVals.map(v=>({ value:v, count:projects.filter(p=>{
-      const matches = (sel:string[]) => sel.length===0||sel.some(s=>Array.isArray(getField(p))?getField(p).includes(s):getField(p)===s);
-      return filters.every(({f})=>matches(f)) && (Array.isArray(getField(p))?getField(p).includes(v):getField(p)===v);
-    }).length }));
-
-  const stageOpts = allStages.map(v=>({value:v,count:projects.filter(p=>(!search||p.name.toLowerCase().includes(search.toLowerCase())||p.project_number.includes(search))&&(deptF.length===0||deptF.includes(p.department_name))&&(tagF.length===0||tagF.some(t=>tags(p).includes(t)))&&effStage(p)===v).length}));
-  const deptOpts  = allDepts.map(v=>({value:v,count:projects.filter(p=>(!search||p.name.toLowerCase().includes(search.toLowerCase())||p.project_number.includes(search))&&(stageF.length===0||stageF.includes(effStage(p)))&&(tagF.length===0||tagF.some(t=>tags(p).includes(t)))&&p.department_name===v).length}));
-  const tagOpts   = allTags.map(v=>({value:v,count:projects.filter(p=>(!search||p.name.toLowerCase().includes(search.toLowerCase())||p.project_number.includes(search))&&(stageF.length===0||stageF.includes(effStage(p)))&&(deptF.length===0||deptF.includes(p.department_name))&&tags(p).includes(v)).length}));
+  const stageOpts = allStages.map(v=>({value:v,count:projects.filter(p=>(!search||p.name.toLowerCase().includes(search.toLowerCase())||p.project_number.includes(search))&&(deptF.length===0||deptF.includes(p.department_name))&&effStage(p)===v).length}));
+  const deptOpts  = allDepts.map(v=>({value:v,count:projects.filter(p=>(!search||p.name.toLowerCase().includes(search.toLowerCase())||p.project_number.includes(search))&&(stageF.length===0||stageF.includes(effStage(p)))&&p.department_name===v).length}));
 
   const hasFilters = search||stageF.length>0||deptF.length>0;
   const CRIT_COLOR: Record<string,string> = { High:T.red, Medium:T.amber, Low:T.faint };
@@ -207,7 +197,7 @@ export default function CAStateIntelPage() {
             <Dropdown label="Department" options={deptOpts}  selected={deptF}  onChange={setDeptF}/>
 
             <div style={{ marginLeft:'auto', display:'flex', alignItems:'flex-end', gap:12 }}>
-              {hasFilters && <button onClick={()=>{setSearch('');setStageF([]);setDeptF([]);setTagF([]);}} style={{ height:40, padding:'0 14px', borderRadius:6, border:`1px solid rgba(239,68,68,0.4)`, background:'rgba(239,68,68,0.08)', color:T.red, fontSize:13, fontFamily:T.font, cursor:'pointer' }}>✕ Clear</button>}
+              {hasFilters && <button onClick={()=>{setSearch('');setStageF([]);setDeptF([]);}} style={{ height:40, padding:'0 14px', borderRadius:6, border:`1px solid rgba(239,68,68,0.4)`, background:'rgba(239,68,68,0.08)', color:T.red, fontSize:13, fontFamily:T.font, cursor:'pointer' }}>✕ Clear</button>}
               <div style={{ fontSize:13, color:T.ink, paddingBottom:10 }}><span style={{ color:T.ink, fontWeight:700 }}>{filtered.length}</span> projects</div>
             </div>
           </div>
@@ -240,14 +230,12 @@ export default function CAStateIntelPage() {
                   <tr><td colSpan={6} style={{ padding:48, textAlign:'center', color:T.ink, fontSize:14 }}>No projects match the selected filters</td></tr>
                 ) : filtered.map(p => {
                   const es = effStage(p);
-                  const ts = tags(p);
                   return (
-                    <>
-                      <tr key={p.id} style={{ borderBottom: `1px solid ${T.border}`, cursor:'default' }}
+                    <tr key={p.id} style={{ borderBottom: `1px solid ${T.border}`, cursor:'default' }}
                         onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.background='rgba(0,217,146,0.03)'; }}
                         onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background='transparent'; }}>
                         <td style={{ padding:'14px 16px', fontFamily:T.mono, fontSize:12, whiteSpace:'nowrap' }}><a href={`/CAStateIntel/stage1?project=${p.project_number}&tab=overview`} style={{ color:T.accent, textDecoration:'none', fontWeight:700 }}>{p.project_number}</a></td>
-                        <td style={{ padding:'14px 16px', fontWeight:600, maxWidth:260 }}><a href={`/CAStateIntel/stage1?project=${p.project_number}&tab=overview`} style={{ fontSize:14, lineHeight:1.4, color:T.ink, textDecoration:'none', display:'block' }} onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color=T.accent} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color=T.ink}>{p.name}</a></td>
+                        <td style={{ padding:'14px 16px', fontWeight:600, minWidth:320 }}><a href={`/CAStateIntel/stage1?project=${p.project_number}&tab=overview`} style={{ fontSize:14, lineHeight:1.4, color:T.ink, textDecoration:'none', display:'block' }} onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color=T.accent} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color=T.ink}>{p.name}</a></td>
                         <td style={{ padding:'14px 16px' }}>
                           <span style={{ fontSize:11, fontWeight:700, fontFamily:T.mono, padding:'3px 8px', borderRadius:5, background:T.accentDim, color:T.accent, border:`1px solid ${T.accentBdr}` }}>{STAGE_LABEL[es]||es}</span>
                         </td>
@@ -274,8 +262,6 @@ export default function CAStateIntelPage() {
                         </td>
 
                       </tr>
-
-                    </>
                   );
                 })}
               </tbody>
