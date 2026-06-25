@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PAL Project Tracking — CA State IT Intel",
+  title: "PAL Project Tracking — State of CA — Procurement Intelligence",
   description: "California Department of Technology — Project Approval Lifecycle tracking",
 };
 
