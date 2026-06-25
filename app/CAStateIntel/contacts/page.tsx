@@ -81,7 +81,7 @@ export default function ContactsPage() {
           <h1 style={{fontSize:24,fontWeight:700,letterSpacing:'-0.5px',color:T.ink,margin:0}}>
             {loading?'Loading…':`${sorted.length} of ${contacts.length} contacts`}
           </h1>
-          <p style={{fontSize:13,color:T.mute,marginTop:4}}>Extracted from PAL documents across all stages</p>
+          <p style={{fontSize:13,color:T.ink,marginTop:4}}>Extracted from PAL documents across all stages</p>
         </div>
         <button onClick={exportCSV} style={{padding:'8px 16px',borderRadius:6,fontSize:13,fontWeight:600,border:`1px solid ${T.border}`,background:'transparent',color:T.ink,cursor:'pointer',fontFamily:T.font}}>
           ⬇ Export CSV
@@ -111,7 +111,7 @@ export default function ContactsPage() {
             ✕ Clear
           </button>
         )}
-        <span style={{fontSize:13,color:T.mute,marginLeft:'auto'}}><span style={{color:T.ink,fontWeight:700}}>{sorted.length}</span> contacts</span>
+        <span style={{fontSize:13,color:T.ink,marginLeft:'auto'}}><span style={{color:T.ink,fontWeight:700}}>{sorted.length}</span> contacts</span>
       </div>
       {/* Table */}
       <div style={{padding:'24px 32px 64px'}}>
@@ -133,9 +133,9 @@ export default function ContactsPage() {
               </thead>
               <tbody>
                 {loading?(
-                  <tr><td colSpan={9} style={{padding:48,textAlign:'center',color:T.mute}}>Loading contacts…</td></tr>
+                  <tr><td colSpan={9} style={{padding:48,textAlign:'center',color:T.ink}}>Loading contacts…</td></tr>
                 ):sorted.length===0?(
-                  <tr><td colSpan={9} style={{padding:48,textAlign:'center',color:T.mute}}>No contacts found</td></tr>
+                  <tr><td colSpan={9} style={{padding:48,textAlign:'center',color:T.ink}}>No contacts found</td></tr>
                 ):sorted.map((ct,i)=>(
                   <tr key={`${ct.contact_id}-${i}`} style={{borderBottom:`1px solid ${T.border}`}}
                     onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background='rgba(255,255,255,0.02)'}
@@ -149,10 +149,10 @@ export default function ContactsPage() {
                     <td style={{padding:'12px 14px',fontSize:13,color:T.ink,whiteSpace:'nowrap'}}>{ct.phone||'—'}</td>
                     <td style={{padding:'12px 14px'}}><span style={{fontSize:12,fontWeight:600,color:ROLE_COLOR[ct.role_type]||T.mute}}>{ct.role_type||'—'}</span></td>
                     <td style={{padding:'12px 14px'}}><span style={{fontSize:11,fontWeight:700,fontFamily:T.mono,padding:'2px 7px',borderRadius:4,background:T.accentDim,color:T.accent,border:'1px solid rgba(0,217,146,0.3)'}}>S{ct.stage}</span></td>
-                    <td style={{padding:'12px 14px',fontSize:12,color:T.mute,whiteSpace:'nowrap'}}>{fmtDate(ct.doc_created_date)}</td>
+                    <td style={{padding:'12px 14px',fontSize:12,color:T.ink,whiteSpace:'nowrap'}}>{fmtDate(ct.doc_created_date)}</td>
                     <td style={{padding:'12px 14px',maxWidth:220}}>
                       <a href={`/CAStateIntel/stage${ct.stage}?project=${ct.project_number}&tab=overview`}
-                        style={{fontSize:12,color:T.mute,textDecoration:'none',display:'block',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}
+                        style={{fontSize:12,color:T.ink,textDecoration:'none',display:'block',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}
                         title={`${ct.project_number} - ${ct.project_name}`}
                         onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color=T.accent}
                         onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color=T.mute}>
