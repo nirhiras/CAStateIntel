@@ -69,7 +69,7 @@ export default function ProcurementsPage() {
               {v:allTypes.length,l:'Types'},
               {v:withDates,l:'With Dates'},
             ].map(s=>(
-              <span key={s.l} style={{fontSize:13,color:T.ink}}>
+              <span key={s.l} style={{fontSize:13,color:T.mute}}>
                 <span style={{color:T.ink,fontWeight:700,marginRight:4}}>{s.v}</span>{s.l}
               </span>
             ))}
@@ -150,7 +150,7 @@ export default function ProcurementsPage() {
                 {(p.vendor_or_source||p.justification) && (
                   <div style={{borderTop:`1px solid ${T.border}`,paddingTop:10,marginTop:6,fontSize:12,color:T.faint,lineHeight:1.5}}>
                     {p.vendor_or_source && <div>Vendor: <span style={{color:T.ink}}>{p.vendor_or_source}</span></div>}
-                    {p.justification && <div style={{marginTop:4,color:T.faint,fontStyle:'italic'}}>{p.justification}</div>}
+                    {p.justification && <div style={{marginTop:4,color:T.mute,fontStyle:'italic'}}>{p.justification}</div>}
                   </div>
                 )}
               </div>
@@ -175,11 +175,11 @@ export default function ProcurementsPage() {
                       <td style={{padding:'12px 14px',fontSize:12,whiteSpace:'nowrap'}}>
                         <a href={`/CAStateIntel/stage${p.stage}?project=${p.project_number}&tab=overview`} style={{color:T.accent,textDecoration:'none'}}>{p.project_number}</a>
                       </td>
-                      <td style={{padding:'12px 14px',fontSize:13,fontWeight:600,color:T.ink,maxWidth:260}}>{p.name}</td>
-                      <td style={{padding:'12px 14px',fontSize:12,color:T.ink,whiteSpace:'nowrap'}}>{p.procurement_type||'—'}</td>
+                      <td style={{padding:'12px 14px',fontSize:13,fontWeight:600,color:T.ink,maxWidth:320,lineHeight:1.4}}>{p.name}</td>
+                      <td style={{padding:'12px 14px',fontSize:12,color:T.ink}}>{p.procurement_type||'—'}</td>
                       <td style={{padding:'12px 14px',fontSize:13,fontWeight:600,color:T.amber,whiteSpace:'nowrap'}}>{fmtVal(p.estimated_value)||'—'}</td>
-                      <td style={{padding:'12px 14px',fontSize:12,color:T.ink,whiteSpace:'nowrap'}}>{fmtDate(p.start_date)||p.timeline||'—'}</td>
-                      <td style={{padding:'12px 14px',fontSize:12,color:T.ink,maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.vendor_or_source||'—'}</td>
+                      <td style={{padding:'12px 14px',fontSize:12,color:T.ink,maxWidth:220,lineHeight:1.5}}>{fmtDate(p.start_date)||p.timeline||'—'}</td>
+                      <td style={{padding:'12px 14px',fontSize:12,color:T.ink,maxWidth:180}}>{p.vendor_or_source||'—'}</td>
                     </tr>
                   ))}
                 </tbody>
