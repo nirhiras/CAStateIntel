@@ -89,42 +89,17 @@ export async function getAllDocuments(filters?: { stage?: number; projectNumber?
       doc.id, doc.document_id, doc.stage, doc.label,
       COALESCE(doc.sub_label, '') AS sub_label,
       COALESCE(doc.doc_type, 'stage') AS doc_type,
-      doc.short_description, doc.filename, doc.downloaded_at,
-      length(COALESCE(doc.content_text,'')) AS content_length,
+      COALESCE(doc.short_description, '') AS short_description,
+      COALESCE(doc.filename, '') AS filename,
+      doc.downloaded_at,
+      COALESCE(length(doc.content_text), 0) AS content_length,
       doc.content_text,
       p.project_number, p.name AS project_name,
       COALESCE(dept.name, '') AS department_name,
-      -- contact count for this document
       (SELECT COUNT(*)::int FROM castateintel.pal_contacts ct
        WHERE ct.document_id::text = doc.document_id::text) AS contact_count,
-      -- procurement count for this project+stage  
-      (SELECT COUNT(*)::int FROM castateintel.pal_ancillary_procurements ap
-       WHERE ap.project_id = doc.project_id AND ap.stage = doc.stage) AS procurement_count,
-      -- tags from stage analysis (safe with jsonb_typeof guard)
-      CASE doc.stage
-        WHEN 1 THEN (
-          SELECT COALESCE(jsonb_agg(elem->>'tag'),'[]'::jsonb)
-          FROM castateintel.pal_stage1_analysis sa
-          CROSS JOIN LATERAL jsonb_array_elements(
-            CASE WHEN sa.solution_tags IS NOT NULL AND jsonb_typeof(sa.solution_tags)='array'
-            THEN sa.solution_tags ELSE '[]'::jsonb END) AS elem
-          WHERE sa.project_id = doc.project_id LIMIT 1)
-        WHEN 2 THEN (
-          SELECT COALESCE(jsonb_agg(elem->>'tag'),'[]'::jsonb)
-          FROM castateintel.pal_stage2_analysis sa
-          CROSS JOIN LATERAL jsonb_array_elements(
-            CASE WHEN sa.solution_tags IS NOT NULL AND jsonb_typeof(sa.solution_tags)='array'
-            THEN sa.solution_tags ELSE '[]'::jsonb END) AS elem
-          WHERE sa.project_id = doc.project_id LIMIT 1)
-        WHEN 3 THEN (
-          SELECT COALESCE(jsonb_agg(elem->>'tag'),'[]'::jsonb)
-          FROM castateintel.pal_stage3_analysis sa
-          CROSS JOIN LATERAL jsonb_array_elements(
-            CASE WHEN sa.solution_tags IS NOT NULL AND jsonb_typeof(sa.solution_tags)='array'
-            THEN sa.solution_tags ELSE '[]'::jsonb END) AS elem
-          WHERE sa.project_id = doc.project_id LIMIT 1)
-        ELSE '[]'::jsonb
-      END AS solution_tags
+      0::int AS procurement_count,
+      '[]'::jsonb AS solution_tags
     FROM castateintel.pal_documents doc
     JOIN castateintel.pal_projects p ON p.id = doc.project_id
     LEFT JOIN castateintel.departments dept ON dept.id = p.department_id
