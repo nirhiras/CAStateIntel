@@ -53,7 +53,8 @@ export async function GET(request: Request) {
       FROM castateintel.pal_contacts c
       JOIN castateintel.pal_projects p ON c.project_id = p.id
       LEFT JOIN castateintel.pal_documents d
-        ON d.project_id = p.id AND d.stage = c.stage AND d.document_id = c.document_id::uuid
+        ON d.project_id = p.id AND d.stage = c.stage
+        AND d.document_id::text = c.document_id::text
       LEFT JOIN castateintel.pal_stage1_analysis s1 ON s1.project_id = c.project_id AND c.stage = 1
       LEFT JOIN castateintel.pal_stage2_analysis s2 ON s2.project_id = c.project_id AND c.stage = 2
       LEFT JOIN castateintel.pal_stage3_analysis s3 ON s3.project_id = c.project_id AND c.stage = 3
