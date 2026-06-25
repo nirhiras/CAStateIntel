@@ -11,7 +11,7 @@ const T = {
 
 const NAV = [
   { label: 'Dashboard',          href: '/CAStateIntel' },
-  { label: 'PAL Projects',       href: '/CAStateIntel/procurements' },
+  { label: 'PAL Projects',       href: '/CAStateIntel/pal' },
   { label: 'BCP Documents',      href: '/CAStateIntel/bcp' },
   { label: 'Contract Award Data',href: '/CAStateIntel/contracts' },
 ];
