@@ -38,7 +38,7 @@ function StartDateBadge({ date, timeline }: { date?: string; timeline?: string }
   const formatted = fmt(date);
   if (formatted) {
     return (
-      <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-400" style={{background:"rgba(0,217,146,0.1)",borderColor:"rgba(0,217,146,0.3)"}} rounded-lg px-2.5 py-1.5">
+      <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-400" style={{background:"rgba(0,217,146,0.1)",borderColor:"rgba(0,217,146,0.3)"}}">
         <span>📅</span>
         <span>Starts {formatted}</span>
       </div>
