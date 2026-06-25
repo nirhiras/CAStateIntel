@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const T = { canvas:'#0d0d0d', surface:'#161616', border:'#2a2a2a', accent:'#00d992', accentDim:'rgba(0,217,146,0.12)', mute:'#bbb', ink:'#f0f0f0', font:'"Inter", system-ui, sans-serif' };
+const T = { canvas:'#0d0d0d', surface:'#161616', border:'#2a2a2a', accent:'#00d992', accentDim:'rgba(0,217,146,0.12)', mute:'#d4d4d4', ink:'#f0f0f0', font:'"Inter", system-ui, sans-serif' };
 
 const NAV = [
   { label:'Dashboard',    href:'/CAStateIntel' },
