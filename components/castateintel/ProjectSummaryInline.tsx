@@ -120,7 +120,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
       {/* Header */}
       <div style={{background:"var(--vg-canvas-soft)",borderBottom:"1px solid var(--vg-hairline)",padding:"12px 40px"}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-          <a href="/CAStateIntel" style={{color:"var(--vg-primary)",fontSize:13,textDecoration:"none",fontWeight:500}}>← Dashboard</a>
+          <a href="/CAStateIntel/pal" style={{color:"#00d992",fontSize:13,textDecoration:"none",fontWeight:500}}>← PAL Projects</a>
           <span style={{color:"var(--vg-mute)"}}>·</span>
           <span style={{fontSize:13,color:"var(--vg-mute)"}}>{p?.project_number||"Select a project"}</span>
         </div>
