@@ -10,15 +10,15 @@ export async function GET(req: NextRequest) {
 
     if (search) {
       const results = await searchDocuments(search);
-      return NextResponse.json(results);
+      return NextResponse.json(Array.isArray(results) ? results : []);
     }
     const docs = await getAllDocuments({
       stage: stage ? parseInt(stage) : undefined,
       projectNumber,
     });
-    return NextResponse.json(docs);
-  } catch (err) {
-    console.error('[castateintel/documents] GET error:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(Array.isArray(docs) ? docs : []);
+  } catch (err: any) {
+    console.error('[castateintel/documents] GET error:', err?.message || err);
+    return NextResponse.json([]);
   }
 }
