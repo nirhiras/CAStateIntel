@@ -225,7 +225,7 @@ export default function CAStateIntelPage() {
       {/* ── Table ── */}
       <div style={{ padding:'24px 32px 64px' }}>
         <div style={{ maxWidth:1200, margin:'0 auto' }}>
-          <div style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:10, overflow:'hidden' }}>
+          <div style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:10, overflow:'hidden', boxShadow:'0 0 0 1px rgba(255,255,255,0.03)' }}>
             <table style={{ width:'100%', borderCollapse:'collapse' }}>
               <thead>
                 <tr>
@@ -247,10 +247,8 @@ export default function CAStateIntelPage() {
                       <tr key={p.id} style={{ borderBottom: ts.length>0 ? 'none' : `1px solid ${T.border}`, cursor:'default' }}
                         onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.background='rgba(0,217,146,0.03)'; }}
                         onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background='transparent'; }}>
-                        <td style={{ padding:'14px 16px', fontFamily:T.mono, fontSize:12, color:T.mute, whiteSpace:'nowrap' }}>{p.project_number}</td>
-                        <td style={{ padding:'14px 16px', fontWeight:500, color:T.ink, maxWidth:260 }}>
-                          <div style={{ fontSize:14, lineHeight:1.4 }}>{p.name}</div>
-                        </td>
+                        <td style={{ padding:'14px 16px', fontFamily:T.mono, fontSize:12, whiteSpace:'nowrap' }}><a href={`/CAStateIntel/stage1?project=${p.project_number}`} style={{ color:T.accent, textDecoration:'none', fontWeight:700 }}>{p.project_number}</a></td>
+                        <td style={{ padding:'14px 16px', fontWeight:600, maxWidth:260 }}><a href={`/CAStateIntel/stage1?project=${p.project_number}`} style={{ fontSize:14, lineHeight:1.4, color:T.ink, textDecoration:'none', display:'block' }} onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color=T.accent} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color=T.ink}>{p.name}</a></td>
                         <td style={{ padding:'14px 16px' }}>
                           <span style={{ fontSize:11, fontWeight:700, fontFamily:T.mono, padding:'3px 8px', borderRadius:5, background:T.accentDim, color:T.accent, border:`1px solid ${T.accentBdr}` }}>{STAGE_LABEL[es]||es}</span>
                         </td>
