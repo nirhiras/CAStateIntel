@@ -141,7 +141,7 @@ export default function CAStateIntelPage() {
     (!search || p.name.toLowerCase().includes(search.toLowerCase()) || p.project_number.includes(search)) &&
     (stageF.length===0 || stageF.includes(effStage(p))) &&
     (deptF.length===0  || deptF.includes(p.department_name)) &&
-    (tagF.length===0   || tagF.some(t=>tags(p).includes(t)))
+
   );
 
   const allStages = ['Stage 1','Stage 2','Stage 3','Stage 4'];
@@ -158,7 +158,7 @@ export default function CAStateIntelPage() {
   const deptOpts  = allDepts.map(v=>({value:v,count:projects.filter(p=>(!search||p.name.toLowerCase().includes(search.toLowerCase())||p.project_number.includes(search))&&(stageF.length===0||stageF.includes(effStage(p)))&&(tagF.length===0||tagF.some(t=>tags(p).includes(t)))&&p.department_name===v).length}));
   const tagOpts   = allTags.map(v=>({value:v,count:projects.filter(p=>(!search||p.name.toLowerCase().includes(search.toLowerCase())||p.project_number.includes(search))&&(stageF.length===0||stageF.includes(effStage(p)))&&(deptF.length===0||deptF.includes(p.department_name))&&tags(p).includes(v)).length}));
 
-  const hasFilters = search||stageF.length>0||deptF.length>0||tagF.length>0;
+  const hasFilters = search||stageF.length>0||deptF.length>0;
   const CRIT_COLOR: Record<string,string> = { High:T.red, Medium:T.amber, Low:T.faint };
 
   return (
@@ -205,7 +205,7 @@ export default function CAStateIntelPage() {
             </div>
             <Dropdown label="Stage"      options={stageOpts} selected={stageF} onChange={setStageF}/>
             <Dropdown label="Department" options={deptOpts}  selected={deptF}  onChange={setDeptF}/>
-            <Dropdown label="Tag"        options={tagOpts}   selected={tagF}   onChange={setTagF}/>
+
             <div style={{ marginLeft:'auto', display:'flex', alignItems:'flex-end', gap:12 }}>
               {hasFilters && <button onClick={()=>{setSearch('');setStageF([]);setDeptF([]);setTagF([]);}} style={{ height:40, padding:'0 14px', borderRadius:6, border:`1px solid rgba(239,68,68,0.4)`, background:'rgba(239,68,68,0.08)', color:T.red, fontSize:13, fontFamily:T.font, cursor:'pointer' }}>✕ Clear</button>}
               <div style={{ fontSize:13, color:T.ink, paddingBottom:10 }}><span style={{ color:T.ink, fontWeight:700 }}>{filtered.length}</span> projects</div>
@@ -215,7 +215,7 @@ export default function CAStateIntelPage() {
             <div style={{ display:'flex', flexWrap:'wrap', gap:6, marginTop:10 }}>
               {stageF.map(s=><span key={s} style={{ display:'inline-flex', alignItems:'center', gap:4, padding:'3px 10px', borderRadius:9999, background:T.accentDim, border:`1px solid ${T.accentBdr}`, color:T.accent, fontSize:12, fontWeight:600 }}>{STAGE_LABEL[s]||s}<button onClick={()=>setStageF(stageF.filter(x=>x!==s))} style={{ background:'none', border:'none', color:T.accent, cursor:'pointer', fontSize:11, padding:0 }}>✕</button></span>)}
               {deptF.map(d=><span key={d} style={{ display:'inline-flex', alignItems:'center', gap:4, padding:'3px 10px', borderRadius:9999, background:'rgba(99,102,241,0.1)', border:'1px solid rgba(99,102,241,0.3)', color:'#818cf8', fontSize:12 }}>{d}<button onClick={()=>setDeptF(deptF.filter(x=>x!==d))} style={{ background:'none', border:'none', color:'#818cf8', cursor:'pointer', fontSize:11, padding:0 }}>✕</button></span>)}
-              {tagF.map(t=><span key={t} style={{ display:'inline-flex', alignItems:'center', gap:4, padding:'3px 10px', borderRadius:9999, background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.3)', color:T.amber, fontSize:12 }}>{t}<button onClick={()=>setTagF(tagF.filter(x=>x!==t))} style={{ background:'none', border:'none', color:T.amber, cursor:'pointer', fontSize:11, padding:0 }}>✕</button></span>)}
+
             </div>
           )}
         </div>
@@ -243,7 +243,7 @@ export default function CAStateIntelPage() {
                   const ts = tags(p);
                   return (
                     <>
-                      <tr key={p.id} style={{ borderBottom: ts.length>0 ? 'none' : `1px solid ${T.border}`, cursor:'default' }}
+                      <tr key={p.id} style={{ borderBottom: `1px solid ${T.border}`, cursor:'default' }}
                         onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.background='rgba(0,217,146,0.03)'; }}
                         onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background='transparent'; }}>
                         <td style={{ padding:'14px 16px', fontFamily:T.mono, fontSize:12, whiteSpace:'nowrap' }}><a href={`/CAStateIntel/stage1?project=${p.project_number}&tab=overview`} style={{ color:T.accent, textDecoration:'none', fontWeight:700 }}>{p.project_number}</a></td>
@@ -274,20 +274,7 @@ export default function CAStateIntelPage() {
                         </td>
 
                       </tr>
-                      {ts.length > 0 && (
-                        <tr key={`${p.id}-t`} style={{ borderBottom:`1px solid ${T.border}` }}>
-                          <td colSpan={6} style={{ padding:'2px 16px 10px', paddingTop:0 }}>
-                            <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
-                              {ts.map((tag,i)=>(
-                                <button key={i} onClick={()=>setTagF(tagF.includes(tag)?tagF.filter(x=>x!==tag):[...tagF,tag])}
-                                  style={{ padding:'3px 10px', borderRadius:9999, fontSize:12, cursor:'pointer', border:`1px solid ${tagF.includes(tag)?T.accentBdr:T.border}`, background:tagF.includes(tag)?T.accentDim:'transparent', color:tagF.includes(tag)?T.accent:T.ink, fontFamily:T.font, transition:'all 0.1s' }}>
-                                  {tag}
-                                </button>
-                              ))}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
+
                     </>
                   );
                 })}
