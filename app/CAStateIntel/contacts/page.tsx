@@ -5,7 +5,7 @@ import RvtNav from '@/components/castateintel/RvtNav';
 const T = {
   canvas:'#0d0d0d', surface:'#161616', border:'#2a2a2a',
   accent:'#00d992', accentDim:'rgba(0,217,146,0.12)', accentBdr:'rgba(0,217,146,0.35)',
-  ink:'#f0f0f0', mute:'#999', faint:'#444', red:'#ef4444',
+  ink:'#f0f0f0', mute:'#bbb', faint:'#777', red:'#ef4444',
   font:'"Inter",system-ui,sans-serif', mono:'"SF Mono","Fira Code",monospace',
 };
 const ROLE_COLOR: Record<string,string> = {
