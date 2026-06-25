@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import RvtNav from "@/components/castateintel/RvtNav";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-interface Contact { name:string;title:string;email:string;phone:string;organization:string;role_type:string;stage:number;source:string; }
+interface Contact { name:string;title:string;email:string;phone:string;organization:string;role_type:string;stage:number;source:string;doc_created_date?:string; }
 interface AncillaryProc { name:string;procurement_type:string;estimated_value:string;timeline:string;vendor_or_source:string;description:string;justification:string; }
 interface Tag { tag:string;category:string;confidence:string; }
 interface StageDoc { document_id:string;filename:string;label:string; }
@@ -302,12 +302,13 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
                 <table className="w-full text-sm border-collapse">
                   <thead>
                     <tr style={{borderBottom:"2px solid #2a2a2a",background:"#111",textAlign:"left"}}>
-                      <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#bbb",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Name</th>
-                      <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#bbb",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Title</th>
-                      <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#bbb",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Organization</th>
-                      <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#bbb",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Email</th>
-                      <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#bbb",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Phone</th>
+                      <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#d4d4d4",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Name</th>
+                      <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#d4d4d4",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Title</th>
+                      <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#d4d4d4",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Organization</th>
+                      <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#d4d4d4",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Email</th>
+                      <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#d4d4d4",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Phone</th>
                       <th className="px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wide">Stage</th>
+                      <th style={{padding:"10px 16px",fontSize:11,fontWeight:700,color:"#d4d4d4",textTransform:"uppercase",letterSpacing:"0.1em",whiteSpace:"nowrap"}}>Form Received</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -323,11 +324,12 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
                         <td className="px-4 py-3">
                           <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${STAGE_COLORS[c.stage]||"bg-white/8 text-white/70"}`}>S{c.stage}</span>
                         </td>
+                        <td className="px-4 py-3 text-xs whitespace-nowrap" style={{color:"#d8d8d8"}}>{fmt(c.doc_created_date)||"—"}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                <div className="px-4 py-2 border-t border-gray-100 text-xs text-white/40 bg-white/5">{contacts.length} contact{contacts.length!==1?"s":""} total</div>
+                <div className="px-4 py-2 border-t border-white/10 text-xs text-white/40 bg-white/5">{contacts.length} contact{contacts.length!==1?"s":""} total</div>
               </div>}
           </div>)}
         </>)}
