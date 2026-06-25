@@ -85,7 +85,7 @@ function Dropdown({ label, options, selected, onChange }: { label:string; option
   const display = selected.length === 0 ? `All ${label}` : selected.length === 1 ? selected[0] : `${selected.length} selected`;
   return (
     <div ref={ref} style={{ position:'relative' }}>
-      <div style={{ fontSize:11, color:T.mute, fontFamily:T.font, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:4 }}>{label}</div>
+      <div style={{ fontSize:11, color:T.ink, fontFamily:T.font, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:4 }}>{label}</div>
       <button onClick={() => setOpen(o=>!o)} style={{ display:'flex', alignItems:'center', gap:8, height:40, padding:'0 12px', borderRadius:6, border:`1px solid ${selected.length>0?T.accentBdr:T.border}`, background: selected.length>0?T.accentDim:T.surface, color: selected.length>0?T.accent:T.ink, fontSize:13, fontFamily:T.font, cursor:'pointer', minWidth:130, fontWeight: selected.length>0?600:400 }}>
         <span style={{ flex:1, textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{display}</span>
         <svg width="10" height="6" viewBox="0 0 10 6" fill="none" style={{ transform: open?'rotate(180deg)':'none', transition:'transform 0.15s', flexShrink:0 }}><path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -108,7 +108,7 @@ function Dropdown({ label, options, selected, onChange }: { label:string; option
                     </div>
                     <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{opt.value}</span>
                   </div>
-                  <span style={{ fontSize:11, fontFamily:T.mono, color:T.mute, flexShrink:0, marginLeft:8 }}>{opt.count}</span>
+                  <span style={{ fontSize:11, fontFamily:T.mono, color:T.ink, flexShrink:0, marginLeft:8 }}>{opt.count}</span>
                 </button>
               );
             })}
@@ -171,7 +171,7 @@ export default function CAStateIntelPage() {
           <div>
             <div style={{ fontSize:11, letterSpacing:'0.18em', textTransform:'uppercase', color:T.accent, fontWeight:600, marginBottom:12 }}>California Department of Technology</div>
             <h1 style={{ fontSize:52, fontWeight:700, lineHeight:1.0, letterSpacing:'-1.5px', color:T.ink, margin:0 }}>PAL Project<br/>Tracking</h1>
-            <p style={{ fontSize:16, color:T.mute, marginTop:12, lineHeight:1.6 }}>Project Approval Lifecycle — IT proposals &amp; analysis<br/>across California state agencies.</p>
+            <p style={{ fontSize:16, color:T.ink, marginTop:12, lineHeight:1.6 }}>Project Approval Lifecycle — IT proposals &amp; analysis<br/>across California state agencies.</p>
           </div>
           {stats && (
             <div style={{ display:'flex', gap:8 }}>
@@ -184,7 +184,7 @@ export default function CAStateIntelPage() {
               ].map(s=>(
                 <div key={s.l} style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:8, padding:'16px 20px', textAlign:'center', minWidth:90 }}>
                   <div style={{ fontSize:30, fontWeight:700, letterSpacing:'-1px', color:T.ink }}>{s.v}</div>
-                  <div style={{ fontSize:12, color:T.mute, marginTop:2 }}>{s.l}</div>
+                  <div style={{ fontSize:12, color:T.ink, marginTop:2 }}>{s.l}</div>
                   {'sub' in s && <div style={{ fontSize:10, color:T.accent, fontWeight:600, fontFamily:T.mono, marginTop:2 }}>{s.sub}</div>}
                 </div>
               ))}
@@ -198,7 +198,7 @@ export default function CAStateIntelPage() {
         <div style={{ maxWidth:1200, margin:'0 auto' }}>
           <div style={{ display:'flex', gap:12, flexWrap:'wrap', alignItems:'flex-end' }}>
             <div>
-              <div style={{ fontSize:11, color:T.mute, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:4 }}>Search</div>
+              <div style={{ fontSize:11, color:T.ink, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:4 }}>Search</div>
               <div style={{ position:'relative' }}>
                 <svg style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.mute} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                 <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Project name or number…" style={{ height:40, padding:'0 12px 0 32px', borderRadius:6, border:`1px solid ${T.border}`, background:T.canvas, color:T.ink, fontSize:13, fontFamily:T.font, outline:'none', width:220 }}/>
@@ -209,7 +209,7 @@ export default function CAStateIntelPage() {
             <Dropdown label="Tag"        options={tagOpts}   selected={tagF}   onChange={setTagF}/>
             <div style={{ marginLeft:'auto', display:'flex', alignItems:'flex-end', gap:12 }}>
               {hasFilters && <button onClick={()=>{setSearch('');setStageF([]);setDeptF([]);setTagF([]);}} style={{ height:40, padding:'0 14px', borderRadius:6, border:`1px solid rgba(239,68,68,0.4)`, background:'rgba(239,68,68,0.08)', color:T.red, fontSize:13, fontFamily:T.font, cursor:'pointer' }}>✕ Clear</button>}
-              <div style={{ fontSize:13, color:T.mute, paddingBottom:10 }}><span style={{ color:T.ink, fontWeight:700 }}>{filtered.length}</span> projects</div>
+              <div style={{ fontSize:13, color:T.ink, paddingBottom:10 }}><span style={{ color:T.ink, fontWeight:700 }}>{filtered.length}</span> projects</div>
             </div>
           </div>
           {hasFilters && (
@@ -230,15 +230,15 @@ export default function CAStateIntelPage() {
               <thead>
                 <tr>
                   {['#','Project Name','Stage','Crit.','Department','Docs','Tags'].map(h=>(
-                    <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:11, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', color:T.mute, background:'#111', borderBottom:`2px solid ${T.border}` }}>{h}</th>
+                    <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:11, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', color:T.ink, background:'#111', borderBottom:`2px solid ${T.border}` }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={7} style={{ padding:48, textAlign:'center', color:T.mute, fontSize:14 }}>Loading projects…</td></tr>
+                  <tr><td colSpan={7} style={{ padding:48, textAlign:'center', color:T.ink, fontSize:14 }}>Loading projects…</td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={7} style={{ padding:48, textAlign:'center', color:T.mute, fontSize:14 }}>No projects match the selected filters</td></tr>
+                  <tr><td colSpan={7} style={{ padding:48, textAlign:'center', color:T.ink, fontSize:14 }}>No projects match the selected filters</td></tr>
                 ) : filtered.map(p => {
                   const es = effStage(p);
                   const ts = tags(p);
@@ -273,7 +273,7 @@ export default function CAStateIntelPage() {
                             })}
                           </div>
                         </td>
-                        <td style={{ padding:'14px 16px', color:T.mute, fontSize:12 }}>
+                        <td style={{ padding:'14px 16px', color:T.ink, fontSize:12 }}>
                           {ts.length === 0 && <span>—</span>}
                         </td>
                       </tr>
