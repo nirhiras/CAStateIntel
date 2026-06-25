@@ -24,14 +24,23 @@ type Doc = {
   project_number: string; project_name: string; department_name: string;
   content_text: string; downloaded_at: string;
   contact_count: number; procurement_count: number;
-  solution_tags: string[] | string;
+  solution_tags: string[] | string | any[];
 };
 
-function parseTags(raw: string[] | string | null): string[] {
+function parseTags(raw: string[] | string | null | any[]): string[] {
   if (!raw) return [];
-  if (Array.isArray(raw)) return raw.filter(Boolean);
-  try { const p = JSON.parse(raw); return Array.isArray(p) ? p.filter(Boolean) : []; }
-  catch { return []; }
+  let arr: any[];
+  if (Array.isArray(raw)) {
+    arr = raw;
+  } else if (typeof raw === 'string') {
+    try { arr = JSON.parse(raw); } catch { return []; }
+  } else {
+    return [];
+  }
+  // Handle both plain strings and {tag, category, confidence} objects
+  return arr
+    .map((item: any) => typeof item === 'string' ? item : (item?.tag || item?.name || ''))
+    .filter(Boolean);
 }
 
 function fmtDate(s: string) {
@@ -313,7 +322,7 @@ export default function DocumentsPage() {
                       <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
                         {tags.map((tag,i) => (
                           <button key={i} onClick={() => setTagF(tagF === tag ? '' : tag)}
-                            style={{ padding:'2px 8px', borderRadius:9999, fontSize:11, cursor:'pointer', border:`1px solid ${tagF===tag ? T.accentBdr : T.border}`, background: tagF===tag ? T.accentDim : 'transparent', color: tagF===tag ? T.accent : T.mute, fontFamily:T.font }}>
+                            style={{ padding:'2px 8px', borderRadius:9999, fontSize:11, cursor:'pointer', border:`1px solid ${tagF===tag ? T.accentBdr : T.border}`, background: tagF===tag ? T.accentDim : 'rgba(255,255,255,0.06)', color: tagF===tag ? T.accent : T.ink, fontFamily:T.font }}>
                             {tag}
                           </button>
                         ))}
