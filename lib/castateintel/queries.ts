@@ -96,10 +96,15 @@ export async function getAllDocuments(filters?: { stage?: number; projectNumber?
       doc.content_text,
       p.project_number, p.name AS project_name,
       COALESCE(dept.name, '') AS department_name,
-      (SELECT COUNT(*)::int FROM castateintel.pal_contacts ct
-       WHERE ct.document_id::text = doc.document_id::text) AS contact_count,
+      COALESCE((SELECT COUNT(*)::int FROM castateintel.pal_contacts ct
+       WHERE ct.document_id::text = doc.document_id::text), 0) AS contact_count,
       0::int AS procurement_count,
-      '[]'::jsonb AS solution_tags
+      COALESCE(
+        (SELECT s3.solution_tags FROM castateintel.pal_stage3_analysis s3 WHERE s3.project_id = p.id LIMIT 1),
+        (SELECT s2.solution_tags FROM castateintel.pal_stage2_analysis s2 WHERE s2.project_id = p.id LIMIT 1),
+        (SELECT s1.solution_tags FROM castateintel.pal_stage1_analysis s1 WHERE s1.project_id = p.id LIMIT 1),
+        '[]'::jsonb
+      ) AS solution_tags
     FROM castateintel.pal_documents doc
     JOIN castateintel.pal_projects p ON p.id = doc.project_id
     LEFT JOIN castateintel.departments dept ON dept.id = p.department_id
