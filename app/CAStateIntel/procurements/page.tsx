@@ -5,7 +5,7 @@ import RvtNav from '@/components/castateintel/RvtNav';
 const T = {
   canvas:'#0d0d0d', surface:'#161616', surface2:'#1e1e1e', border:'#2a2a2a',
   accent:'#00d992', accentDim:'rgba(0,217,146,0.12)', accentBdr:'rgba(0,217,146,0.35)',
-  ink:'#f0f0f0', mute:'#999', faint:'#444', red:'#ef4444', amber:'#f59e0b',
+  ink:'#f0f0f0', mute:'#bbb', faint:'#777', red:'#ef4444', amber:'#f59e0b',
   font:'"Inter",system-ui,sans-serif', mono:'"SF Mono","Fira Code",monospace',
 };
 
@@ -136,7 +136,7 @@ export default function ProcurementsPage() {
                 <div style={{fontSize:15,fontWeight:600,color:T.ink,marginBottom:6,lineHeight:1.4}}>{p.name}</div>
                 {(p.start_date||p.timeline) && (
                   <div style={{display:'inline-flex',alignItems:'center',gap:6,fontSize:12,fontWeight:600,color:T.accent,background:T.accentDim,border:`1px solid ${T.accentBdr}`,padding:'3px 10px',borderRadius:9999,marginBottom:10}}>
-                    📅 {fmtDate(p.start_date) || p.timeline}
+                    📅 {fmtDate(p.start_date) || (p.timeline?.length > 30 ? p.timeline.slice(0,30)+'…' : p.timeline)}
                   </div>
                 )}
                 {p.estimated_value && (
