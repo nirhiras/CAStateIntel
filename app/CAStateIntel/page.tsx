@@ -169,7 +169,6 @@ export default function CAStateIntelPage() {
       <div style={{ padding:'64px 32px 48px', borderBottom:`1px solid ${T.border}` }}>
         <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', alignItems:'flex-end', justifyContent:'space-between', gap:32, flexWrap:'wrap' }}>
           <div>
-            <div style={{ fontSize:11, letterSpacing:'0.18em', textTransform:'uppercase', color:T.accent, fontWeight:600, marginBottom:12 }}>California Department of Technology</div>
             <h1 style={{ fontSize:52, fontWeight:700, lineHeight:1.0, letterSpacing:'-1.5px', color:T.ink, margin:0 }}>PAL Project<br/>Tracking</h1>
             <p style={{ fontSize:16, color:T.ink, marginTop:12, lineHeight:1.6 }}>Project Approval Lifecycle — IT proposals &amp; analysis<br/>across California state agencies.</p>
           </div>
