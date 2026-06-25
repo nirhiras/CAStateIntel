@@ -114,8 +114,7 @@ export default function ContactsPage() {
           {['2019','2020','2021','2022','2023','2024','2025','2026'].map(y=><option key={y} value={y}>{y}</option>)}
         </select>
         {(search||stageF||roleF||orgF||dateF)&&(
-          <button onClick={()=>{setSearch('');setStageF('');setRoleF('');setOrgF('');setDateF('');}}>
-            style={{height:36,padding:'0 10px',borderRadius:6,border:'1px solid rgba(239,68,68,0.3)',background:'rgba(239,68,68,0.08)',color:T.red,fontSize:13,cursor:'pointer',fontFamily:T.font}}>
+          <button onClick={()=>{setSearch('');setStageF('');setRoleF('');setOrgF('');setDateF('');}} style={{height:36,padding:'0 10px',borderRadius:6,border:'1px solid rgba(239,68,68,0.3)',background:'rgba(239,68,68,0.08)',color:T.red,fontSize:13,cursor:'pointer',fontFamily:T.font}}>
             ✕ Clear
           </button>
         )}
