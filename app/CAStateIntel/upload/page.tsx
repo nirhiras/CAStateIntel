@@ -70,10 +70,10 @@ const STAGE_LABELS: Record<number, string> = {
   4: 'Stage 4 Project Readiness & Approval',
 };
 const STAGE_COLOR: Record<number, string> = {
-  1: '#1D4ED8', 2: '#4F46E5', 3: '#7C3AED', 4: '#B45309'
+  1: '#818cf8', 2: '#a78bfa', 3: '#c084fc', 4: '#f59e0b'
 };
 const STAGE_BG: Record<number, string> = {
-  1: '#EFF6FF', 2: '#EEF2FF', 3: '#F5F3FF', 4: '#FFFBEB'
+  1: 'rgba(99,102,241,0.12)', 2: 'rgba(139,92,246,0.12)', 3: 'rgba(124,58,237,0.12)', 4: 'rgba(180,83,9,0.12)'
 };
 
 let idCounter = 0;
