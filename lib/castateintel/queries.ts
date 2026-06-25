@@ -21,13 +21,22 @@ export type PalDocument = {
   project_id: number;
   project_number: string;
   project_name: string;
+  department_name: string;
   stage: number;
   label: string;
+  sub_label: string;
+  doc_type: string;
+  short_description: string;
+  filename: string;
   document_id: string;
   download_url: string;
   file_size_kb: number | null;
   downloaded_at: string | null;
   content_text: string | null;
+  content_length: number;
+  contact_count: number;
+  procurement_count: number;
+  solution_tags: string[];
 };
 
 export async function getAllProjects(filters?: {
