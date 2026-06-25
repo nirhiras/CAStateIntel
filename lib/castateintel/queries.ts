@@ -84,7 +84,7 @@ export async function getAllDocuments(filters?: { stage?: number; projectNumber?
       length(COALESCE(doc.content_text,'')) AS content_length,
       doc.content_text,
       p.project_number, p.name AS project_name,
-      COALESCE(p.department_name, p.agency_name, '') AS department_name,
+      COALESCE(dept.name, '') AS department_name,
       -- contact count for this document
       (SELECT COUNT(*)::int FROM castateintel.pal_contacts ct
        WHERE ct.document_id::text = doc.document_id::text) AS contact_count,
@@ -118,6 +118,7 @@ export async function getAllDocuments(filters?: { stage?: number; projectNumber?
       END AS solution_tags
     FROM castateintel.pal_documents doc
     JOIN castateintel.pal_projects p ON p.id = doc.project_id
+    LEFT JOIN castateintel.departments dept ON dept.id = p.department_id
     WHERE 1=1
   `;
   const params: (string | number)[] = [];
