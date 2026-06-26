@@ -9,26 +9,38 @@ const T = {
   font: '"Inter", system-ui, sans-serif',
 };
 
-const NAV = [
-  { label: 'Dashboard',          href: '/CAStateIntel' },
-  { label: 'Stage 1',            href: '/CAStateIntel/stage1' },
-  { label: 'Stage 2',            href: '/CAStateIntel/stage2' },
-  { label: 'Stage 3',            href: '/CAStateIntel/stage3' },
-  { label: 'Stage 4',            href: '/CAStateIntel/stage4' },
-  { label: 'Contacts',           href: '/CAStateIntel/contacts' },
-  { label: 'Documents',          href: '/CAStateIntel/documents' },
-  { label: 'Procurements',       href: '/CAStateIntel/procurements' },
-  { label: 'PAL Docs',           href: '/CAStateIntel/pal' },
-  { label: 'BCP Docs',           href: '/CAStateIntel/bcp' },
-  { label: 'Contract Award Data',href: '/CAStateIntel/contracts' },
-  { label: 'Upload',             href: '/CAStateIntel/upload' },
+const ROW1 = [
+  { label: 'PAL Docs',            href: '/CAStateIntel/pal' },
+  { label: 'BCP Docs',            href: '/CAStateIntel/bcp' },
+  { label: 'Contract Award Data', href: '/CAStateIntel/contracts' },
+];
+
+const ROW2 = [
+  { label: 'Dashboard',                  href: '/CAStateIntel' },
+  { label: 'All Contacts',              href: '/CAStateIntel/contacts' },
+  { label: 'All PAL Docs',              href: '/CAStateIntel/documents' },
+  { label: 'All Ancillary Procurements',href: '/CAStateIntel/procurements' },
+  { label: 'Upload',                     href: '/CAStateIntel/upload' },
 ];
 
 export default function RvtNav() {
   const path = usePathname();
+
+  function linkStyle(href: string, exact = false) {
+    const active = exact ? path === href : (path === href || (href !== '/CAStateIntel' && path.startsWith(href)));
+    return {
+      padding: '7px 14px', fontSize: 13, fontWeight: active ? 600 : 400,
+      color: active ? T.accent : T.mute,
+      background: active ? T.accentDim : 'transparent',
+      textDecoration: 'none', whiteSpace: 'nowrap' as const,
+      borderBottom: active ? `2px solid ${T.accent}` : '2px solid transparent',
+      display: 'inline-block',
+    };
+  }
+
   return (
-    <div style={{ background: T.bg, borderBottom: `1px solid ${T.border}`, fontFamily: T.font, position: 'sticky', top: 0, zIndex: 100 }}>
-      {/* Row 1 — bold title */}
+    <div style={{ background: T.bg, fontFamily: T.font, position: 'sticky', top: 0, zIndex: 100 }}>
+      {/* Title row */}
       <div style={{ padding: '10px 40px 0', display: 'flex', alignItems: 'center' }}>
         <Link href="/CAStateIntel" style={{ textDecoration: 'none' }}>
           <span style={{ fontSize: 16, fontWeight: 800, color: T.ink, letterSpacing: '-0.2px' }}>
@@ -38,23 +50,21 @@ export default function RvtNav() {
           </span>
         </Link>
       </div>
-      {/* Row 2 — nav links */}
-      <div style={{ padding: '0 40px', display: 'flex', alignItems: 'center', gap: 2 }}>
-        {NAV.map(l => {
-          const active = path === l.href || (l.href !== '/CAStateIntel' && path.startsWith(l.href));
-          return (
-            <Link key={l.href} href={l.href} style={{
-              padding: '8px 14px', fontSize: 13, fontWeight: active ? 600 : 400,
-              color: active ? T.accent : T.mute,
-              background: active ? T.accentDim : 'transparent',
-              textDecoration: 'none', whiteSpace: 'nowrap',
-              borderBottom: active ? `2px solid ${T.accent}` : '2px solid transparent',
-              display: 'inline-block',
-            }}>
-              {l.label}
-            </Link>
-          );
-        })}
+      {/* Row 1 — PAL Docs | BCP Docs | Contract Award Data */}
+      <div style={{ padding: '0 40px', display: 'flex', alignItems: 'center', gap: 2, borderBottom: `1px solid ${T.border}` }}>
+        {ROW1.map(l => (
+          <Link key={l.href} href={l.href} style={linkStyle(l.href)}>
+            {l.label}
+          </Link>
+        ))}
+      </div>
+      {/* Row 2 — Dashboard | All Contacts | All PAL Docs | All Ancillary Procurements | Upload */}
+      <div style={{ padding: '0 40px', display: 'flex', alignItems: 'center', gap: 2, borderBottom: `1px solid ${T.border}` }}>
+        {ROW2.map(l => (
+          <Link key={l.href} href={l.href} style={linkStyle(l.href, l.href === '/CAStateIntel')}>
+            {l.label}
+          </Link>
+        ))}
       </div>
     </div>
   );

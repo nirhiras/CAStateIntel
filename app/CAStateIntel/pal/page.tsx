@@ -28,7 +28,7 @@ const STAGE_DOC_COLOR: Record<number,{bg:string;color:string}> = {
   3:{bg:'rgba(0,217,146,0.15)',color:'#00d992'},
 };
 
-const TABS = ['Overview','Contacts','Documents','Procurements'] as const;
+const TABS = ['Overview','All Contacts','All PAL Docs','All Ancillary Procurements'] as const;
 type Tab = typeof TABS[number];
 
 
@@ -252,9 +252,9 @@ function PALInner() {
             </>
           )}
 
-          {tab==='Contacts' && <ContactsTab/>}
-          {tab==='Documents' && <DocumentsTab/>}
-          {tab==='Procurements' && <ProcurementsTab deptF={deptF}/>}
+          {tab==='All Contacts' && <ContactsTab/>}
+          {tab==='All PAL Docs' && <DocumentsTab/>}
+          {tab==='All Ancillary Procurements' && <ProcurementsTab deptF={deptF}/>}
 
         </div>
       </div>

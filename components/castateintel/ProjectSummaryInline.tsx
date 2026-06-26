@@ -40,12 +40,12 @@ function PdfBtn({doc,stage,onView}:{doc:StageDoc|null|undefined;stage:number;onV
 
 const TABS = [
   {id:"overview",label:"Overview"},
-  {id:"s1",label:"Stage 1"},
-  {id:"s2",label:"Stage 2"},
-  {id:"s3",label:"Stage 3"},
-  {id:"s4",label:"Stage 4"},
-  {id:"procurements",label:"Procurements"},
+  {id:"s1",label:"S1BA"},
+  {id:"s2",label:"S2AA"},
+  {id:"s3",label:"S3SA"},
+  {id:"s4",label:"S4 PRA"},
   {id:"contacts",label:"Contacts"},
+  {id:"procurements",label:"Ancillary Procurements"},
 ];
 
 interface Props { defaultTab?: string; defaultProject?: string; }
