@@ -253,6 +253,14 @@ export default function ProcurementsPage() {
 
   return (
     <div style={{minHeight:'100vh',background:T.canvas,color:T.ink,fontFamily:T.font}}>
+      {/* Breadcrumb */}
+      <div style={{padding:'12px 32px',borderBottom:`1px solid ${T.border}`,display:'flex',alignItems:'center',gap:8}}>
+        <a href="/CAStateIntel" style={{color:'#94a3b8',fontSize:12,textDecoration:'none'}}>Dashboard</a>
+        <span style={{color:'#444',fontSize:12}}>›</span>
+        <a href="/CAStateIntel/pal" style={{color:'#94a3b8',fontSize:12,textDecoration:'none'}}>PAL Docs</a>
+        <span style={{color:'#444',fontSize:12}}>›</span>
+        <span style={{color:'#00d992',fontSize:12,fontWeight:600}}>All Ancillary Procurements</span>
+      </div>
       {/* Header */}
       <div style={{borderBottom:`1px solid ${T.border}`,padding:'24px 32px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
         <div>

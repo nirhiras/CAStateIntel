@@ -75,6 +75,14 @@ export default function ContactsPage() {
   return (
     <div style={{minHeight:'100vh',background:T.canvas,color:T.ink,fontFamily:T.font}}>
       {/* Header */}
+      {/* Breadcrumb */}
+      <div style={{padding:'12px 32px',borderBottom:`1px solid ${T.border}`,display:'flex',alignItems:'center',gap:8}}>
+        <a href="/CAStateIntel" style={{color:T.mute,fontSize:12,textDecoration:'none'}}>Dashboard</a>
+        <span style={{color:'#444',fontSize:12}}>›</span>
+        <a href="/CAStateIntel/pal" style={{color:T.mute,fontSize:12,textDecoration:'none'}}>PAL Docs</a>
+        <span style={{color:'#444',fontSize:12}}>›</span>
+        <span style={{color:T.accent,fontSize:12,fontWeight:600}}>All Contacts</span>
+      </div>
       <div style={{borderBottom:`1px solid ${T.border}`,padding:'24px 32px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
         <div>
           <div style={{fontSize:11,letterSpacing:'0.15em',textTransform:'uppercase',color:T.accent,fontWeight:600,marginBottom:4}}>Contacts</div>

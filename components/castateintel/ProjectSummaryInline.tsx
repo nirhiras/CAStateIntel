@@ -121,10 +121,12 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
 
       {/* Header */}
       <div style={{background:"var(--vg-canvas-soft)",borderBottom:"1px solid var(--vg-hairline)",padding:"12px 40px"}}>
-        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-          <a href="/CAStateIntel/pal" style={{color:"#00d992",fontSize:13,textDecoration:"none",fontWeight:500}}>← PAL Projects</a>
-          <span style={{color:"var(--vg-mute)"}}>·</span>
-          <span style={{fontSize:13,color:"var(--vg-mute)"}}>{p?.project_number||"Select a project"}</span>
+        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>
+          <a href="/CAStateIntel" style={{color:"#94a3b8",fontSize:12,textDecoration:"none"}}>Dashboard</a>
+          <span style={{color:"#444",fontSize:12}}>›</span>
+          <a href="/CAStateIntel/pal" style={{color:"#94a3b8",fontSize:12,textDecoration:"none"}}>PAL Docs</a>
+          <span style={{color:"#444",fontSize:12}}>›</span>
+          <span style={{fontSize:12,color:"#00d992",fontWeight:600}}>{p?.project_number||"Select a project"}</span>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
           <h1 style={{fontSize:17,fontWeight:600,color:"var(--vg-ink-strong)",letterSpacing:"-0.3px",flex:1,minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
