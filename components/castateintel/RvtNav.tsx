@@ -26,8 +26,17 @@ const ROW2 = [
 export default function RvtNav() {
   const path = usePathname();
 
+  const palPaths = ['/CAStateIntel/pal', '/CAStateIntel/stage1', '/CAStateIntel/stage2', '/CAStateIntel/stage3', '/CAStateIntel/stage4', '/CAStateIntel/contacts', '/CAStateIntel/documents', '/CAStateIntel/procurements', '/CAStateIntel/upload', '/CAStateIntel/project', '/CAStateIntel'];
+
   function linkStyle(href: string, exact = false) {
-    const active = exact ? path === href : (path === href || (href !== '/CAStateIntel' && path.startsWith(href)));
+    let active: boolean;
+    if (href === '/CAStateIntel/pal') {
+      active = palPaths.some(p => path === p || path.startsWith(p + '/'));
+    } else if (exact) {
+      active = path === href;
+    } else {
+      active = path === href || (href !== '/CAStateIntel' && path.startsWith(href));
+    }
     return {
       padding: '7px 14px', fontSize: 13, fontWeight: active ? 600 : 400,
       color: active ? T.accent : T.mute,
