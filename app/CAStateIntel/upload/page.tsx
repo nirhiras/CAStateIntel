@@ -61,6 +61,9 @@ type UploadFile = {
   manualStage?: number;
   manualSubLabel?: string;
   showOverride?: boolean;
+  // null = preview-pdf API responded but found no pattern
+  // undefined = API call still in flight
+  previewResolved?: boolean;
 };
 
 const STAGE_LABELS: Record<number, string> = {
@@ -97,24 +100,30 @@ export default function UploadPage() {
       file: f,
       status: 'queued' as FileStatus,
       canonical_filename: previewCanonical(f.name) || undefined,
+      previewResolved: !!previewCanonical(f.name), // client-side hit = already resolved
     }));
     setFiles(prev => [...prev, ...newEntries]);
-    // Immediately call preview-pdf for each file to get canonical name from PDF content
+    // Call preview-pdf for each file to confirm/improve canonical name from PDF content
     newEntries.forEach(async (entry) => {
       try {
         const fd = new FormData();
         fd.append('pdf', entry.file);
         const res = await fetch('/api/castateintel/preview-pdf', { method: 'POST', body: fd });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.canonical_filename) {
-          setFiles(prev => prev.map(f => f.id === entry.id ? {
-            ...f,
-            canonical_filename: data.canonical_filename,
-            stage: data.stage || f.stage,
-          } : f));
+        if (!res.ok) {
+          // Mark resolved even on error so we stop showing spinner
+          setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, previewResolved: true } : f));
+          return;
         }
-      } catch (e) { /* preview failed — silent, user can still upload */ }
+        const data = await res.json();
+        setFiles(prev => prev.map(f => f.id === entry.id ? {
+          ...f,
+          canonical_filename: data.canonical_filename || f.canonical_filename,
+          stage: data.stage || f.stage,
+          previewResolved: true,
+        } : f));
+      } catch {
+        setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, previewResolved: true } : f));
+      }
     });
   }, []);
 
@@ -385,6 +394,26 @@ export default function UploadPage() {
                       )}
                     </div>
 
+                    {/* Canonical filename preview — visible for queued/uploading files so user can
+                        decide whether to proceed before committing to the upload */}
+                    {(uf.status === 'queued' || uf.status === 'uploading') && (
+                      <div style={{ fontSize: 12, fontFamily: 'monospace', marginTop: 5 }}>
+                        {!uf.previewResolved && !uf.canonical_filename ? (
+                          // API call still in flight and client-side parse also missed
+                          <span style={{ color: '#666', fontSize: 11 }}>Detecting S1–S4 pattern…</span>
+                        ) : uf.canonical_filename && uf.canonical_filename !== uf.file.name ? (
+                          // Pattern found — show what it will be saved as
+                          <span>
+                            <span style={{ color: 'rgba(0,217,146,0.7)', fontSize: 11 }}>Will import as: </span>
+                            <span style={{ color: '#00d992', fontWeight: 600 }}>{uf.canonical_filename}</span>
+                          </span>
+                        ) : uf.previewResolved ? (
+                          // API responded but no S1–S4 pattern found
+                          <span style={{ color: '#888', fontSize: 11 }}>⚠ No S1–S4 pattern detected — filename will be used as-is</span>
+                        ) : null}
+                      </div>
+                    )}
+
                     {/* Success details */}
                     {uf.status === 'done' && uf.project_number && (
                       <div className="mt-1.5 space-y-1">
@@ -409,21 +438,16 @@ export default function UploadPage() {
                               className="text-xs text-blue-600 hover:underline">View Analysis →</a>
                           )}
                         </div>
-                        {/* Canonical filename — shown immediately on drop */}
-                        {(uf.canonical_filename || uf.status === 'queued') && (
+                        {/* Confirmed canonical filename after upload */}
+                        {uf.canonical_filename && (
                           <div style={{ fontSize: 12, color: "#aaaaaa", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {uf.canonical_filename && uf.canonical_filename !== uf.file.name ? (
+                            {uf.canonical_filename !== uf.file.name ? (
                               <span>
                                 <span style={{color:"#888",fontSize:11}}>Original: </span>
                                 <span style={{color:"#ccc",fontSize:12}}>{uf.file.name}</span>
                                 <br/>
-                                <span style={{color:"rgba(0,217,146,0.7)",fontSize:11}}>{uf.status==='done'?'Imported as:':'Detected as:'} </span>
+                                <span style={{color:"rgba(0,217,146,0.7)",fontSize:11}}>Imported as: </span>
                                 <span style={{color:"#00d992",fontWeight:600}}>{uf.canonical_filename}</span>
-                              </span>
-                            ) : uf.canonical_filename === undefined && uf.status === 'queued' ? (
-                              <span style={{color:"#888",fontSize:12}}>
-                                📄 {uf.file.name}
-                                <span style={{marginLeft:8,color:"#555",fontSize:11}}>Analyzing…</span>
                               </span>
                             ) : (
                               <span>📄 {uf.file.name}</span>
