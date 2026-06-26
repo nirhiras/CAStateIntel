@@ -119,8 +119,9 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
       {/* PDF Modal */}
       {pdfModal&&(<div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"><div className="rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col"><div className="flex items-center justify-between px-4 py-3 border-b"><span className="text-sm font-semibold">{pdfModal.title}</span><button onClick={()=>setPdfModal(null)} className="text-xl text-white/40 hover:text-white/85 px-2">✕</button></div><iframe src={pdfModal.url} className="flex-1 w-full"/></div></div>)}
 
-      {/* Header */}
-      <div style={{background:"var(--vg-canvas-soft)",borderBottom:"1px solid var(--vg-hairline)",padding:"12px 40px"}}>
+      {/* Header — sticky below the 2-row RvtNav (~83px) */}
+      <div style={{position:"sticky",top:83,zIndex:90,background:"#0f172a"}}>
+      <div style={{borderBottom:"1px solid rgba(255,255,255,0.08)",padding:"12px 40px"}}>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>
           <a href="/CAStateIntel" style={{color:"#94a3b8",fontSize:12,textDecoration:"none"}}>Dashboard</a>
           <span style={{color:"#444",fontSize:12}}>›</span>
@@ -142,7 +143,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
       </div>
 
       {/* Tab bar */}
-      <div className="border-b border-white/10 sticky top-[76px] z-10" style={{background:"#16181a"}}>
+      <div className="border-b border-white/10" style={{background:"#16181a"}}>
         <div className="flex overflow-x-auto" style={{paddingLeft:"40px"}}>
           {TABS.map(t=>{
             const count=t.id==="contacts"?contacts.length:t.id==="procurements"?ancillary.length:0;
@@ -154,6 +155,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
           })}
         </div>
       </div>
+      </div>{/* end sticky wrapper */}
 
       <div className="max-w-screen-xl mx-auto px-10 py-10">
         {loading&&<div className="flex items-center justify-center h-64 text-white/40">Loading...</div>}
