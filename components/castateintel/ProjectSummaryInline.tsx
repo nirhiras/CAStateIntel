@@ -148,9 +148,14 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
           {TABS.map(t=>{
             const count=t.id==="contacts"?contacts.length:t.id==="procurements"?ancillary.length:0;
             return(<button key={t.id} onClick={()=>setTab(t.id)}
-              className={`px-4 py-3 text-xs font-medium whitespace-nowrap border-b-2 transition-colors
-                ${tab===t.id?"border-indigo-500/50 text-white":"border-transparent"}`} style={tab===t.id?{color:"#ffffff"}:{color:"#ccc"}}>
-              {t.label}{count>0&&<span className="ml-1 text-xs px-1.5 py-0.5 rounded-full" style={{background:"rgba(73,79,223,0.2)",color:"#9da2fb"}}>{count}</span>}
+              className="px-4 py-3 text-xs font-medium whitespace-nowrap border-b-2 transition-colors"
+              style={{
+                borderBottomColor: tab===t.id?"#00d992":"transparent",
+                color: tab===t.id?"#00d992":"#ccc",
+                background: tab===t.id?"rgba(0,217,146,0.12)":"transparent",
+                cursor:"pointer", border:"none", borderBottom: tab===t.id?"2px solid #00d992":"2px solid transparent",
+              }}>
+              {t.label}{count>0&&<span className="ml-1 text-xs px-1.5 py-0.5 rounded-full" style={{background:"rgba(0,217,146,0.15)",color:"#00d992"}}>{count}</span>}
             </button>);
           })}
         </div>
