@@ -40,23 +40,22 @@ export default function RvtNav() {
 
   return (
     <div style={{ background: T.bg, fontFamily: T.font, position: 'sticky', top: 0, zIndex: 100 }}>
-      {/* Title row */}
-      <div style={{ padding: '10px 40px 0', display: 'flex', alignItems: 'center' }}>
-        <Link href="/CAStateIntel" style={{ textDecoration: 'none' }}>
-          <span style={{ fontSize: 16, fontWeight: 800, color: T.ink, letterSpacing: '-0.2px' }}>
+      {/* Title + doc-type tabs on one line */}
+      <div style={{ padding: '0 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${T.border}` }}>
+        <Link href="/CAStateIntel" style={{ textDecoration: 'none', padding: '12px 0' }}>
+          <span style={{ fontSize: 15, fontWeight: 800, color: T.ink, letterSpacing: '-0.2px', whiteSpace: 'nowrap' }}>
             State of CA{' '}
             <span style={{ color: '#64748b', fontWeight: 300 }}>—</span>{' '}
             <span style={{ color: T.accent }}>Procurement Intelligence</span>
           </span>
         </Link>
-      </div>
-      {/* Row 1 — PAL Docs | BCP Docs | Contract Award Data */}
-      <div style={{ padding: '0 40px', display: 'flex', alignItems: 'center', gap: 2, borderBottom: `1px solid ${T.border}` }}>
-        {ROW1.map(l => (
-          <Link key={l.href} href={l.href} style={linkStyle(l.href)}>
-            {l.label}
-          </Link>
-        ))}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {ROW1.map(l => (
+            <Link key={l.href} href={l.href} style={linkStyle(l.href)}>
+              {l.label}
+            </Link>
+          ))}
+        </div>
       </div>
       {/* Row 2 — Dashboard | All Contacts | All PAL Docs | All Ancillary Procurements | Upload */}
       <div style={{ padding: '0 40px', display: 'flex', alignItems: 'center', gap: 2, borderBottom: `1px solid ${T.border}` }}>
