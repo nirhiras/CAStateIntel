@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import RvtNav from '@/components/castateintel/RvtNav';
 
 const T = {
   canvas:'#0d0d0d', surface:'#161616', border:'#2a2a2a',
@@ -75,7 +74,7 @@ export default function DashboardPage() {
 
   return (
     <div style={{minHeight:'100vh',background:T.canvas,color:T.ink,fontFamily:T.font}}>
-      <RvtNav/>
+      
 
       {/* Hero */}
       <div style={{padding:'40px 40px 28px',borderBottom:`1px solid ${T.border}`}}>

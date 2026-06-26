@@ -1,10 +1,9 @@
 'use client';
-import RvtNav from '@/components/castateintel/RvtNav';
 
 export default function Page() {
   return (
     <div style={{minHeight:'100vh',background:'#0d0d0d',color:'#f0f0f0',fontFamily:'"Inter",system-ui,sans-serif',display:'flex',flexDirection:'column'}}>
-      <RvtNav/>
+      
       <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:24,padding:'60px 32px'}}>
         <div style={{fontSize:72,lineHeight:1}}>📋</div>
         <div style={{textAlign:'center'}}>

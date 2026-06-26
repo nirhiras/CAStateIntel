@@ -48,7 +48,7 @@ export default function RvtNav() {
   }
 
   return (
-    <div style={{ background: T.bg, fontFamily: T.font, position: 'sticky', top: 0, zIndex: 100 }}>
+    <div style={{ background: T.bg, fontFamily: T.font, position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100 }}>
       {/* Title + doc-type tabs on one line */}
       <div style={{ padding: '0 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${T.border}` }}>
         <Link href="/CAStateIntel" style={{ textDecoration: 'none', padding: '12px 0' }}>

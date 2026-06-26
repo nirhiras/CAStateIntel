@@ -1,6 +1,5 @@
 'use client';
 
-import RvtNav from "@/components/castateintel/RvtNav";
 import { useState, useRef, useCallback } from 'react';
 
 
@@ -241,7 +240,7 @@ export default function UploadPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#0d0d0d", color: "#f0f0f0" }}>
-      <RvtNav />
+      
       {/* Header */}
       <div style={{ background: "#161616", padding: "16px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--vg-hairline)" }}>
         <div className="flex items-center gap-4">

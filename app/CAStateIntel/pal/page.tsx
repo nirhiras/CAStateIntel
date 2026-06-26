@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import Link from 'next/link';
-import RvtNav from '@/components/castateintel/RvtNav';
 
 const T = {
   canvas:'#0d0d0d', surface:'#161616', border:'#2a2a2a',
@@ -111,7 +110,7 @@ function PALInner() {
 
   return (
     <div style={{minHeight:'100vh',background:T.canvas,color:T.ink,fontFamily:T.font}}>
-      <RvtNav/>
+      
 
       {/* Header */}
       <div style={{padding:'32px 40px 0',borderBottom:`1px solid ${T.border}`}}>
