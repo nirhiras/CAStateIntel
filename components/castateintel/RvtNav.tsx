@@ -10,15 +10,18 @@ const T = {
 };
 
 const NAV = [
-  { label: 'Dashboard',    href: '/CAStateIntel' },
-  { label: 'Stage 1',      href: '/CAStateIntel/stage1' },
-  { label: 'Stage 2',      href: '/CAStateIntel/stage2' },
-  { label: 'Stage 3',      href: '/CAStateIntel/stage3' },
-  { label: 'Stage 4',      href: '/CAStateIntel/stage4' },
-  { label: 'Contacts',     href: '/CAStateIntel/contacts' },
-  { label: 'Documents',    href: '/CAStateIntel/documents' },
-  { label: 'Procurements', href: '/CAStateIntel/procurements' },
-  { label: 'Upload',       href: '/CAStateIntel/upload' },
+  { label: 'Dashboard',          href: '/CAStateIntel' },
+  { label: 'Stage 1',            href: '/CAStateIntel/stage1' },
+  { label: 'Stage 2',            href: '/CAStateIntel/stage2' },
+  { label: 'Stage 3',            href: '/CAStateIntel/stage3' },
+  { label: 'Stage 4',            href: '/CAStateIntel/stage4' },
+  { label: 'Contacts',           href: '/CAStateIntel/contacts' },
+  { label: 'Documents',          href: '/CAStateIntel/documents' },
+  { label: 'Procurements',       href: '/CAStateIntel/procurements' },
+  { label: 'PAL Docs',           href: '/CAStateIntel/pal' },
+  { label: 'BCP Docs',           href: '/CAStateIntel/bcp' },
+  { label: 'Contract Award Data',href: '/CAStateIntel/contracts' },
+  { label: 'Upload',             href: '/CAStateIntel/upload' },
 ];
 
 export default function RvtNav() {
