@@ -147,7 +147,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
             return(<button key={t.id} onClick={()=>setTab(t.id)}
               className={`px-4 py-3 text-xs font-medium whitespace-nowrap border-b-2 transition-colors
                 ${tab===t.id?"border-indigo-500/50 text-white":"border-transparent"}`} style={tab===t.id?{color:"#ffffff"}:{color:"#ccc"}}>
-              {t.label}{count>0&&<span className="ml-1 text-xs px-1.5 py-0.5 rounded-full" style={{background:"rgba(0,217,146,0.15)",color:"#00d992"}} style={{background:"rgba(73,79,223,0.2)",color:"#9da2fb"}}>{count}</span>}
+              {t.label}{count>0&&<span className="ml-1 text-xs px-1.5 py-0.5 rounded-full" style={{background:"rgba(73,79,223,0.2)",color:"#9da2fb"}}>{count}</span>}
             </button>);
           })}
         </div>
