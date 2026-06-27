@@ -28,9 +28,9 @@ export async function GET(
     const projectId = project.id; // integer
 
     const contactsRes = await db.query(
-      `SELECT contact_id, name, title, email, phone, organization, context, role_type
+      `SELECT contact_id, name, title, email, phone, organization, context, role_type, document_id
        FROM castateintel.pal_contacts
-       WHERE project_id = $1 AND stage = $2 ORDER BY role_type, name`,
+       WHERE project_id = $1 AND stage = $2 ORDER BY document_id, role_type, name`,
       [projectId, stageNum]
     );
 
@@ -44,7 +44,7 @@ export async function GET(
       1: "pal_stage1_analysis", 2: "pal_stage2_analysis", 3: "pal_stage3_analysis"
     };
     const analysisRes = await db.query(
-      `SELECT * FROM castateintel.${tableMap[stageNum]} WHERE project_id = $1`,
+      `SELECT *, document_id FROM castateintel.${tableMap[stageNum]} WHERE project_id = $1`,
       [projectId]
     );
 
@@ -55,10 +55,17 @@ export async function GET(
       [projectId, stageNum]
     );
 
+    // Enrich documents with analysis status
+    const documentsWithStatus = docRes.rows.map((doc: any) => ({
+      ...doc,
+      extracted: analysisRes.rows.some((a: any) => a.document_id?.toString() === doc.document_id?.toString() || analysisRes.rows.length > 0),
+      displayLabel: doc.sub_label ? `${doc.label} - Part ${doc.sub_label}` : doc.label,
+    }));
+
     return NextResponse.json({
       project,
-      documents: docRes.rows,
-      document: docRes.rows[0] || null,
+      documents: documentsWithStatus,
+      document: documentsWithStatus[0] || null,
       contacts: contactsRes.rows,
       urls: urlsRes.rows,
       analyses: analysisRes.rows,

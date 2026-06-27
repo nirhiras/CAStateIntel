@@ -37,6 +37,16 @@ function PdfBtn({doc,stage,onView}:{doc:StageDoc|null|undefined;stage:number;onV
   return <button onClick={()=>onView(`/api/castateintel/pdf/${doc.document_id}`,doc.filename)} className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded border font-medium ${cls[stage]||cls[1]}`}>📄 View PDF</button>;
 }
 
+function DocumentTabs({documents,selectedId,onSelect,stage}:{documents:any[];selectedId:string;onSelect:(id:string)=>void;stage:number}){
+  if(!documents||documents.length<=1)return null;
+  const colors=["","border-green-500 text-green-400","border-indigo-400 text-indigo-300","border-violet-400 text-violet-300","border-amber-400 text-amber-300"];
+  return(<div className="flex gap-2 mb-4" style={{borderBottom:"1px solid rgba(255,255,255,0.08)",paddingBottom:8}}>
+    {documents.map(doc=>(
+      <button key={doc.document_id} onClick={()=>onSelect(doc.document_id)} style={{padding:"4px 10px",fontSize:12,fontWeight:600,borderRadius:4,border:`1px solid ${selectedId===doc.document_id?colors[stage]:"rgba(255,255,255,0.2)"}`,background:selectedId===doc.document_id?"rgba(255,255,255,0.08)":"transparent",color:selectedId===doc.document_id?colors[stage]:"#aaa",cursor:"pointer",whiteSpace:"nowrap"}}>{doc.displayLabel||doc.label}{doc.extracted?" ✓":" —"}</button>
+    ))}
+  </div>);
+}
+
 const TABS = [
   {id:"overview",label:"Overview"},
   {id:"s1",label:"S1BA"},
@@ -55,7 +65,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState(defaultTab);
-  const [s3Part, setS3Part] = useState<string>("A");
+  const [selectedDocuments, setSelectedDocuments] = useState<Record<number, string>>({1: "", 2: "", 3: "", 4: ""});
   const [pdfModal, setPdfModal] = useState<{url:string;title:string}|null>(null);
   const [extracting, setExtracting] = useState(false);
 
@@ -69,7 +79,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
 
   const loadProject = useCallback(async(pn:string)=>{
     if(!pn)return;
-    setLoading(true);setData(null);setS3Part("A");
+    setLoading(true);setData(null);
     try{
       const [r1,r2,r3,r4,rc]=await Promise.all([
         fetch(`/api/castateintel/analysis/${pn}/1`).then(r=>r.json()),
@@ -78,19 +88,24 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
         fetch(`/api/castateintel/analysis/${pn}/4`).then(r=>r.json()),
         fetch(`/api/castateintel/contacts?project=${pn}`).then(r=>r.json()),
       ]);
-      const s3Analyses = r3.analyses || [];
-      const s3PartA = s3Analyses.find((a:any)=>!a.sub_part) || s3Analyses.find((a:any)=>a.sub_part?.toUpperCase()==="A");
-      const s3PartB = s3Analyses.find((a:any)=>a.sub_part?.toUpperCase()==="B");
-      const s3Docs = r3.documents || [];
-      const s3DocA = s3Docs.find((d:any)=>!d.sub_label) || s3Docs.find((d:any)=>d.sub_label?.toUpperCase()==="A");
-      const s3DocB = s3Docs.find((d:any)=>d.sub_label?.toUpperCase()==="B");
+
+      // Initialize selectedDocuments with first document for each stage
+      const newSelected: Record<number, string> = {};
+      [1, 2, 3, 4].forEach(stageNum => {
+        const response = [r1, r2, r3, r4][stageNum - 1];
+        const docs = response.documents || [];
+        newSelected[stageNum] = docs.length > 0 ? docs[0].document_id : "";
+      });
+      setSelectedDocuments(newSelected);
+
       setData({
         project:r1.project||r2.project||r3.project||r4.project,
-        s1:r1.extracted?{...r1.analysis,document:r1.document}:null,
-        s2:r2.extracted?{...r2.analysis,document:r2.document}:null,
-        s3a:s3PartA?{...s3PartA,document:s3DocA}:null,
-        s3b:s3PartB?{...s3PartB,document:s3DocB}:null,
-        s4:r4.extracted?{...r4.analysis,document:r4.document}:null,
+        stages: {
+          1: { documents: r1.documents || [], analyses: r1.analyses || [], extracted: r1.extracted },
+          2: { documents: r2.documents || [], analyses: r2.analyses || [], extracted: r2.extracted },
+          3: { documents: r3.documents || [], analyses: r3.analyses || [], extracted: r3.extracted },
+          4: { documents: r4.documents || [], analyses: r4.analyses || [], extracted: r4.extracted },
+        },
         contacts:rc.contacts||[],
       });
     }catch{}
@@ -105,20 +120,36 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
     try{
       await fetch("/api/castateintel/analysis/extract",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({project_number:projectNumber,stage:stageNum})});
       await loadProject(projectNumber);
-    }catch{}
+    }catch(e){console.error(e);}
     setExtracting(false);
   };
 
-  const p=data?.project; const s1=data?.s1; const s2=data?.s2; const s3a=data?.s3a; const s3b=data?.s3b; const s3=s3Part==="B"?s3b:s3a; const s4=data?.s4; const contacts=data?.contacts||[];
+  const p=data?.project;
+  const getStageData = (stageNum: number) => {
+    const stageData = data?.stages?.[stageNum];
+    if (!stageData) return null;
+    const selectedDocId = selectedDocuments[stageNum];
+    const analysis = stageData.analyses?.find((a: any) => !selectedDocId || a.document_id?.toString() === selectedDocId?.toString()) || stageData.analyses?.[0];
+    const doc = stageData.documents?.find((d: any) => d.document_id === selectedDocId) || stageData.documents?.[0];
+    return analysis ? { ...analysis, document: doc } : null;
+  };
+  const s1=getStageData(1); const s2=getStageData(2); const s3=getStageData(3); const s4=getStageData(4);
+  const contacts=data?.contacts||[];
   const tags=s2?.solution_tags||[]; const ancillary=s3?.ancillary_procurements||[];
   const recommended=s2?.viable_solutions?.find((v:any)=>v.recommended)||s2?.viable_solutions?.[0];
   const totalVal=s1?.funding_raw?.total_estimate||s4?.solicitation_results?.total_contract_cost||"—";
   const oneTime=s2?.financial_analysis?.cost_table?.find((r:any)=>r.category?.toLowerCase().includes("one"))?.total||"—";
   const ongoing=s2?.financial_analysis?.cost_table?.find((r:any)=>r.category?.toLowerCase().includes("continu")||r.category?.toLowerCase().includes("ongoing"))?.total||"—";
   const duration=s3?.procurements_roadmap?.total_duration||"—";
-  const stageInfo=[{num:1,has:!!s1,doc:s1?.document},{num:2,has:!!s2,doc:s2?.document},{num:3,has:!!s3a||!!s3b,doc:s3?.document,hasA:!!s3a,hasB:!!s3b},{num:4,has:!!s4,doc:s4?.document}];
+  const stageInfo=[
+    {num:1,has:!!s1,docs:data?.stages?.[1]?.documents||[]},
+    {num:2,has:!!s2,docs:data?.stages?.[2]?.documents||[]},
+    {num:3,has:!!s3,docs:data?.stages?.[3]?.documents||[]},
+    {num:4,has:!!s4,docs:data?.stages?.[4]?.documents||[]},
+  ];
   const currentStageNum=tab==="s1"?1:tab==="s2"?2:tab==="s3"?3:tab==="s4"?4:null;
   const currentStageExtracted=currentStageNum?stageInfo[currentStageNum-1]?.has:false;
+  const currentStageDocs=currentStageNum?stageInfo[currentStageNum-1]?.docs||[]:[];
 
   return(
     <div className="psi-dark" style={{minHeight:"100vh",background:"#000000",color:"#ffffff"}}>
@@ -188,8 +219,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
                   <div key={s.num} className="flex items-center justify-between">
                     <div className="flex items-center gap-2"><span className={`w-2 h-2 rounded-full ${s.has?"bg-green-900/200":"bg-white/12"}`}/><span className="text-sm text-white/85">Stage {s.num} — {["","Business Analysis","Alternative Analysis","Solution Analysis","Project Readiness"][s.num]}</span></div>
                     <div className="flex items-center gap-2">
-                      {s.has?<><button onClick={()=>setTab(`s${s.num}`)} className={`text-xs px-2 py-0.5 rounded border font-medium ${STAGE_COLORS[s.num]}`}>View</button>{s.doc&&<button onClick={()=>s.doc&&setPdfModal({url:`/api/castateintel/pdf/${s.doc.document_id}`,title:s.doc.filename})} className="text-xs text-white/40 hover:text-white/70">📄</button>}</>
-                      :<span className="text-xs text-white/40">Not extracted</span>}
+                      {s.docs.length>0?<><button onClick={()=>setTab(`s${s.num}`)} className={`text-xs px-2 py-0.5 rounded border font-medium ${STAGE_COLORS[s.num]}`}>{s.has?"Analyzed":"Upload"}</button>{s.docs[0]?.document_id&&<button onClick={()=>s.docs[0]&&setPdfModal({url:`/api/castateintel/pdf/${s.docs[0].document_id}`,title:s.docs[0].filename})} className="text-xs text-white/40 hover:text-white/70">📄</button>}</> :<span className="text-xs text-white/40">No documents</span>}
                     </div>
                   </div>
                 ))}</div>
@@ -225,7 +255,8 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
 
           {/* ── STAGE 1 ── */}
           {tab==="s1"&&(<div className="space-y-7">
-            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 1 — Business Analysis" color="bg-green-900/30 text-green-400"/>{s1?.doc_created_date&&<span className="text-xs text-white/40">Created {fmt(s1.doc_created_date)}</span>}</div><div className="flex items-center gap-2">{!s1&&<button onClick={handleExtract} disabled={extracting} style={{padding:"6px 12px",fontSize:12,fontWeight:600,borderRadius:6,border:"1px solid #00d992",background:extracting?"rgba(0,217,146,0.15)":"rgba(0,217,146,0.12)",color:"#00d992",cursor:extracting?"not-allowed":"pointer",opacity:extracting?0.6:1}}>{extracting?"Analyzing...":"Analyze with AI"}</button>}<PdfBtn doc={s1?.document} stage={1} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div></div>
+            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 1 — Business Analysis" color="bg-green-900/30 text-green-400"/>{s1?.doc_created_date&&<span className="text-xs text-white/40">Created {fmt(s1.doc_created_date)}</span>}</div><div className="flex items-center gap-2">{currentStageDocs.length>0&&!s1&&<button onClick={handleExtract} disabled={extracting} style={{padding:"6px 12px",fontSize:12,fontWeight:600,borderRadius:6,border:"1px solid #00d992",background:extracting?"rgba(0,217,146,0.15)":"rgba(0,217,146,0.12)",color:"#00d992",cursor:extracting?"not-allowed":"pointer",opacity:extracting?0.6:1}}>{extracting?"Analyzing...":"Analyze with AI"}</button>}{currentStageDocs.length===0&&<span className="text-xs text-white/40">No documents uploaded</span>}<PdfBtn doc={s1?.document} stage={1} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div></div>
+            <DocumentTabs documents={currentStageDocs} selectedId={selectedDocuments[1]} onSelect={(id)=>setSelectedDocuments({...selectedDocuments,1:id})} stage={1}/>
             {!s1?<Card><p className="text-white/40">Not yet extracted.</p></Card>:(<>
               <div className="grid grid-cols-2 gap-6"><Card><SHead title="General Summary"/><p className="text-sm text-white/85 leading-relaxed">{s1.general_info_summary||"—"}</p></Card><Card><SHead title="Business Program"/><p className="text-sm text-white/85 leading-relaxed">{s1.business_program_summary||"—"}</p></Card></div>
               <div className="grid grid-cols-2 gap-6"><Card><SHead title="Project Justification"/><p className="text-sm text-white/85 leading-relaxed">{s1.justification_summary||"—"}</p></Card><Card><SHead title="Business Outcomes"/>{s1.outcomes_raw?.length>0?<Tbl headers={["Outcome","Metric","Target"]} rows={s1.outcomes_raw.map((o:any)=>[o.outcome,o.metric,o.target])}/>:<p className="text-sm text-white/85">{s1.outcomes_summary||"—"}</p>}</Card></div>
@@ -240,7 +271,8 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
 
           {/* ── STAGE 2 ── */}
           {tab==="s2"&&(<div className="space-y-7">
-            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 2 — Alternative Analysis" color="bg-indigo-900/30 text-indigo-300"/>{s2?.doc_created_date&&<span className="text-xs text-white/40">Created {fmt(s2.doc_created_date)}</span>}</div><div className="flex items-center gap-2">{!s2&&<button onClick={handleExtract} disabled={extracting} style={{padding:"6px 12px",fontSize:12,fontWeight:600,borderRadius:6,border:"1px solid #9da2fb",background:extracting?"rgba(157,162,251,0.15)":"rgba(157,162,251,0.12)",color:"#9da2fb",cursor:extracting?"not-allowed":"pointer",opacity:extracting?0.6:1}}>{extracting?"Analyzing...":"Analyze with AI"}</button>}<PdfBtn doc={s2?.document} stage={2} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div></div>
+            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 2 — Alternative Analysis" color="bg-indigo-900/30 text-indigo-300"/>{s2?.doc_created_date&&<span className="text-xs text-white/40">Created {fmt(s2.doc_created_date)}</span>}</div><div className="flex items-center gap-2">{currentStageDocs.length>0&&!s2&&<button onClick={handleExtract} disabled={extracting} style={{padding:"6px 12px",fontSize:12,fontWeight:600,borderRadius:6,border:"1px solid #9da2fb",background:extracting?"rgba(157,162,251,0.15)":"rgba(157,162,251,0.12)",color:"#9da2fb",cursor:extracting?"not-allowed":"pointer",opacity:extracting?0.6:1}}>{extracting?"Analyzing...":"Analyze with AI"}</button>}{currentStageDocs.length===0&&<span className="text-xs text-white/40">No documents uploaded</span>}<PdfBtn doc={s2?.document} stage={2} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div></div>
+            <DocumentTabs documents={currentStageDocs} selectedId={selectedDocuments[2]} onSelect={(id)=>setSelectedDocuments({...selectedDocuments,2:id})} stage={2}/>
             {!s2?<Card><p className="text-white/40">Not yet extracted.</p></Card>:(<>
               <div className="grid grid-cols-2 gap-6"><Card><SHead title="Baseline / Current State"/><p className="text-sm text-white/85 leading-relaxed">{s2.baseline_summary||"—"}</p></Card><Card><SHead title="Requirements"/><p className="text-sm text-white/85 leading-relaxed">{s2.requirements_summary||"—"}</p></Card></div>
               <Card><SHead title="Market Research"/><p className="text-sm text-white/85 leading-relaxed">{s2.market_research_summary||"—"}</p></Card>
@@ -260,7 +292,8 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
 
           {/* ── STAGE 3 ── */}
           {tab==="s3"&&(<div className="space-y-7">
-            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 3 — Solution Analysis" color="bg-violet-900/30 text-violet-300"/>{s3?.doc_created_date&&<span className="text-xs text-white/40">Created {fmt(s3.doc_created_date)}</span>}</div><div className="flex items-center gap-2">{(s3a||s3b)&&(s3a&&s3b)&&<div style={{display:"flex",gap:4,marginRight:8}}>{["A","B"].map(part=><button key={part} onClick={()=>setS3Part(part)} style={{padding:"4px 10px",fontSize:11,fontWeight:600,borderRadius:4,border:`1px solid ${s3Part===part?"#c084fc":"rgba(192,132,252,0.3)"}`,background:s3Part===part?"rgba(192,132,252,0.2)":"transparent",color:s3Part===part?"#c084fc":"#aaa",cursor:"pointer"}}>Part {part}</button>)}</div>}{!s3&&<button onClick={handleExtract} disabled={extracting} style={{padding:"6px 12px",fontSize:12,fontWeight:600,borderRadius:6,border:"1px solid #c084fc",background:extracting?"rgba(192,132,252,0.15)":"rgba(192,132,252,0.12)",color:"#c084fc",cursor:extracting?"not-allowed":"pointer",opacity:extracting?0.6:1}}>{extracting?"Analyzing...":"Analyze with AI"}</button>}<PdfBtn doc={s3?.document} stage={3} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div></div>
+            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 3 — Solution Analysis" color="bg-violet-900/30 text-violet-300"/>{s3?.doc_created_date&&<span className="text-xs text-white/40">Created {fmt(s3.doc_created_date)}</span>}</div><div className="flex items-center gap-2">{currentStageDocs.length>0&&!s3&&<button onClick={handleExtract} disabled={extracting} style={{padding:"6px 12px",fontSize:12,fontWeight:600,borderRadius:6,border:"1px solid #c084fc",background:extracting?"rgba(192,132,252,0.15)":"rgba(192,132,252,0.12)",color:"#c084fc",cursor:extracting?"not-allowed":"pointer",opacity:extracting?0.6:1}}>{extracting?"Analyzing...":"Analyze with AI"}</button>}{currentStageDocs.length===0&&<span className="text-xs text-white/40">No documents uploaded</span>}<PdfBtn doc={s3?.document} stage={3} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div></div>
+            <DocumentTabs documents={currentStageDocs} selectedId={selectedDocuments[3]} onSelect={(id)=>setSelectedDocuments({...selectedDocuments,3:id})} stage={3}/>
             {!s3?<Card><p className="text-white/40">Not yet extracted.</p></Card>:(<>
               <Card><SHead title="Solution Requirements"/><p className="text-sm text-white/85 leading-relaxed">{s3.solution_requirements_summary||"—"}</p></Card>
               <div className="grid grid-cols-2 gap-6">
@@ -274,7 +307,8 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
 
           {/* ── STAGE 4 ── */}
           {tab==="s4"&&(<div className="space-y-7">
-            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 4 — Project Readiness" color="bg-amber-900/30 text-amber-300"/>{s4?.doc_created_date&&<span className="text-xs text-white/40">Created {fmt(s4.doc_created_date)}</span>}</div><div className="flex items-center gap-2">{!s4&&<button onClick={handleExtract} disabled={extracting} style={{padding:"6px 12px",fontSize:12,fontWeight:600,borderRadius:6,border:"1px solid #fbbf24",background:extracting?"rgba(251,191,36,0.15)":"rgba(251,191,36,0.12)",color:"#fbbf24",cursor:extracting?"not-allowed":"pointer",opacity:extracting?0.6:1}}>{extracting?"Analyzing...":"Analyze with AI"}</button>}<PdfBtn doc={s4?.document} stage={4} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div></div>
+            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 4 — Project Readiness" color="bg-amber-900/30 text-amber-300"/>{s4?.doc_created_date&&<span className="text-xs text-white/40">Created {fmt(s4.doc_created_date)}</span>}</div><div className="flex items-center gap-2">{currentStageDocs.length>0&&!s4&&<button onClick={handleExtract} disabled={extracting} style={{padding:"6px 12px",fontSize:12,fontWeight:600,borderRadius:6,border:"1px solid #fbbf24",background:extracting?"rgba(251,191,36,0.15)":"rgba(251,191,36,0.12)",color:"#fbbf24",cursor:extracting?"not-allowed":"pointer",opacity:extracting?0.6:1}}>{extracting?"Analyzing...":"Analyze with AI"}</button>}{currentStageDocs.length===0&&<span className="text-xs text-white/40">No documents uploaded</span>}<PdfBtn doc={s4?.document} stage={4} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div></div>
+            <DocumentTabs documents={currentStageDocs} selectedId={selectedDocuments[4]} onSelect={(id)=>setSelectedDocuments({...selectedDocuments,4:id})} stage={4}/>
             {!s4?<Card><p className="text-white/40">Not yet extracted.</p></Card>:(<>
               <div className="grid grid-cols-3 gap-6"><Card><KV label="Selected Vendor" value={s4.solicitation_results?.selected_vendor} accent/></Card><Card><KV label="Total Contract Cost" value={s4.solicitation_results?.total_contract_cost} accent/></Card><Card><KV label="Contract Period" value={`${fmt(s4.solicitation_results?.contract_start_date)||"—"} → ${fmt(s4.solicitation_results?.contract_end_date)||"—"}`}/></Card></div>
               <div className="grid grid-cols-2 gap-6">
