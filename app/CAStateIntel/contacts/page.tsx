@@ -14,6 +14,9 @@ type Contact = {
   contact_id:string; project_number:string; project_name:string;
   stage:number; name:string; title:string; email:string; phone:string;
   organization:string; role_type:string; doc_created_date:string;
+  ai_email?:string; ai_phone?:string; ai_background?:string;
+  ai_technical_skills?:string; ai_prior_roles?:string; ai_education?:string;
+  ai_enriched_at?:string;
 };
 function fmtDate(s:string) {
   if (!s||s==='null') return '—';
@@ -59,8 +62,8 @@ export default function ContactsPage() {
   };
 
   const exportCSV = () => {
-    const hdr = ['Name','Title','Org','Email','Phone','Role','Stage','Date','Project'].join(',');
-    const rows = sorted.map(c=>[c.name,c.title,c.organization,c.email,c.phone,c.role_type,'Stage '+c.stage,c.doc_created_date,c.project_number+' - '+c.project_name].map(esc).join(','));
+    const hdr = ['Name','Title','Org','Email','Phone','AI Email','AI Phone','Background','Technical Skills','Role','Stage','Date','Project'].join(',');
+    const rows = sorted.map(c=>[c.name,c.title,c.organization,c.email,c.phone,c.ai_email||'',c.ai_phone||'',c.ai_background||'',c.ai_technical_skills||'',c.role_type,'Stage '+c.stage,c.doc_created_date,c.project_number+' - '+c.project_name].map(esc).join(','));
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([[hdr,...rows].join(NEWLINE)],{type:'text/csv'}));
     a.download = 'pal_contacts.csv'; a.click();
@@ -138,6 +141,10 @@ export default function ContactsPage() {
                   <Th k="organization"     label="Organization"/>
                   <Th k="email"            label="Email"/>
                   <Th k="phone"            label="Phone"/>
+                  <th style={{padding:'10px 14px',textAlign:'left',fontSize:11,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',color:T.accent,background:'#111',borderBottom:`2px solid ${T.border}`,whiteSpace:'nowrap'}}>AI Email</th>
+                  <th style={{padding:'10px 14px',textAlign:'left',fontSize:11,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',color:T.accent,background:'#111',borderBottom:`2px solid ${T.border}`,whiteSpace:'nowrap'}}>AI Phone</th>
+                  <th style={{padding:'10px 14px',textAlign:'left',fontSize:11,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',color:T.accent,background:'#111',borderBottom:`2px solid ${T.border}`,whiteSpace:'nowrap'}}>Background</th>
+                  <th style={{padding:'10px 14px',textAlign:'left',fontSize:11,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',color:T.accent,background:'#111',borderBottom:`2px solid ${T.border}`,whiteSpace:'nowrap'}}>Technical Skills</th>
                   <Th k="role_type"        label="Role"/>
                   <Th k="stage"            label="Stage"/>
                   <Th k="doc_created_date" label="Form Received"/>
@@ -149,7 +156,11 @@ export default function ContactsPage() {
                   <tr><td colSpan={9} style={{padding:48,textAlign:'center',color:T.ink}}>Loading contacts…</td></tr>
                 ):sorted.length===0?(
                   <tr><td colSpan={9} style={{padding:48,textAlign:'center',color:T.ink}}>No contacts found</td></tr>
-                ):sorted.map((ct,i)=>(
+                ):sorted.map((ct,i)=>{
+                  const AiBadge = ({children}:{children:React.ReactNode}) => (
+                    <span style={{fontSize:9,fontWeight:700,padding:'2px 5px',borderRadius:3,background:'rgba(74,222,128,0.15)',color:'#22c55e',border:'1px solid rgba(74,222,128,0.3)',marginLeft:4,whiteSpace:'nowrap'}}>AI</span>
+                  );
+                  return (
                   <tr key={`${ct.contact_id}-${i}`} style={{borderBottom:`1px solid ${T.border}`}}
                     onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background='rgba(255,255,255,0.02)'}
                     onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background='transparent'}>
@@ -160,6 +171,26 @@ export default function ContactsPage() {
                       {ct.email?<a href={`mailto:${ct.email}`} style={{color:T.accent,textDecoration:'none'}}>{ct.email}</a>:<span style={{color:T.faint}}>—</span>}
                     </td>
                     <td style={{padding:'12px 14px',fontSize:13,color:T.ink,whiteSpace:'nowrap'}}>{ct.phone||'—'}</td>
+                    <td style={{padding:'12px 14px',fontSize:13,whiteSpace:'nowrap'}}>
+                      <div style={{display:'flex',alignItems:'center',gap:0}}>
+                        {ct.ai_email?<><a href={`mailto:${ct.ai_email}`} style={{color:'#22c55e',textDecoration:'none'}}>{ct.ai_email}</a><AiBadge>{null}</AiBadge></>:<span style={{color:T.faint}}>—</span>}
+                      </div>
+                    </td>
+                    <td style={{padding:'12px 14px',fontSize:13,whiteSpace:'nowrap'}}>
+                      <div style={{display:'flex',alignItems:'center',gap:0}}>
+                        {ct.ai_phone?<><span style={{color:'#22c55e'}}>{ct.ai_phone}</span><AiBadge>{null}</AiBadge></>:<span style={{color:T.faint}}>—</span>}
+                      </div>
+                    </td>
+                    <td style={{padding:'12px 14px',fontSize:12,color:T.ink,maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={ct.ai_background}>
+                      <div style={{display:'flex',alignItems:'center',gap:0}}>
+                        {ct.ai_background?<><span style={{color:'#22c55e'}}>{ct.ai_background.substring(0,40)}</span><AiBadge>{null}</AiBadge></>:<span style={{color:T.faint}}>—</span>}
+                      </div>
+                    </td>
+                    <td style={{padding:'12px 14px',fontSize:12,color:T.ink,maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={ct.ai_technical_skills}>
+                      <div style={{display:'flex',alignItems:'center',gap:0}}>
+                        {ct.ai_technical_skills?<><span style={{color:'#22c55e'}}>{ct.ai_technical_skills.substring(0,40)}</span><AiBadge>{null}</AiBadge></>:<span style={{color:T.faint}}>—</span>}
+                      </div>
+                    </td>
                     <td style={{padding:'12px 14px'}}><span style={{fontSize:12,fontWeight:600,color:ROLE_COLOR[ct.role_type]||T.mute}}>{ct.role_type||'—'}</span></td>
                     <td style={{padding:'12px 14px'}}><span style={{fontSize:11,fontWeight:700,fontFamily:T.mono,padding:'2px 7px',borderRadius:4,background:T.accentDim,color:T.accent,border:'1px solid rgba(0,217,146,0.3)'}}>S{ct.stage}</span></td>
                     <td style={{padding:'12px 14px',fontSize:12,whiteSpace:'nowrap'}}><span style={{color: ct.doc_created_date && ct.doc_created_date!=='null' ? T.ink : T.faint, fontWeight: ct.doc_created_date && ct.doc_created_date!=='null' ? 600 : 400}}>{fmtDate(ct.doc_created_date)}</span></td>
@@ -173,7 +204,8 @@ export default function ContactsPage() {
                       </a>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

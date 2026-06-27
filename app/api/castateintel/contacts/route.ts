@@ -30,6 +30,13 @@ export async function GET(request: Request) {
         c.context,
         c.source,
         c.role_type,
+        c.ai_email,
+        c.ai_phone,
+        c.ai_background,
+        c.ai_technical_skills,
+        c.ai_prior_roles,
+        c.ai_education,
+        c.ai_enriched_at,
         -- Use AI-extracted date first, fall back to document downloaded_at
         COALESCE(
           -- 1st: Form Received Date from stage analysis dot_dates array
