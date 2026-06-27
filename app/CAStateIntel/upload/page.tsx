@@ -175,7 +175,12 @@ export default function UploadPage() {
           was_overwrite: data.was_overwrite,
         });
       } else {
-        update(uf.id, { status: 'error', error: data.error ?? 'Upload failed' });
+        const isProjectDetectionError = data.error?.includes('Could not detect project number');
+        update(uf.id, {
+          status: 'error',
+          error: data.error ?? 'Upload failed',
+          showOverride: isProjectDetectionError,
+        });
       }
     } catch {
       update(uf.id, { status: 'error', error: 'Network error' });
@@ -465,8 +470,8 @@ export default function UploadPage() {
           {uf.showOverride && (
                     <div style={{ marginTop: 8, padding: '10px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 8, border: '1px solid var(--vg-hairline)' }}>
                       <div style={{ fontSize: 11, fontWeight: 600, color: '#e8e8e8', marginBottom: 6 }}>Manual Override</div>
-                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                        <input type="text" placeholder="Project # (e.g. 4265-081)"
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                        <input type="text" placeholder="Project # (e.g. 4440-127)"
                           value={uf.manualProject || ''}
                           onChange={e => update(uf.id, { manualProject: e.target.value })}
                           style={{ border: '1px solid var(--vg-hairline)', borderRadius: 6, padding: '4px 8px', fontSize: 12, width: 160 }} />
@@ -489,6 +494,21 @@ export default function UploadPage() {
                           <option value="B">Part B</option>
                           <option value="C">Part C</option>
                         </select>
+                        <button
+                          onClick={() => uploadOne(uf)}
+                          style={{
+                            padding: '4px 12px',
+                            fontSize: 12,
+                            fontWeight: 600,
+                            background: '#00d992',
+                            color: '#000',
+                            border: 'none',
+                            borderRadius: 6,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Retry Upload
+                        </button>
                       </div>
                     </div>
                   )}
