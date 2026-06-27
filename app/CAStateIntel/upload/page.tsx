@@ -474,10 +474,10 @@ export default function UploadPage() {
                         <input type="text" placeholder="Project # (e.g. 4440-127)"
                           value={uf.manualProject || ''}
                           onChange={e => update(uf.id, { manualProject: e.target.value })}
-                          style={{ border: '1px solid var(--vg-hairline)', borderRadius: 6, padding: '4px 8px', fontSize: 12, width: 160 }} />
+                          style={{ border: '1px solid #ccc', borderRadius: 6, padding: '6px 10px', fontSize: 12, width: 160, background: '#fff', color: '#000' }} />
                         <select value={uf.manualStage || ''}
                           onChange={e => update(uf.id, { manualStage: parseInt(e.target.value) || undefined })}
-                          style={{ border: '1px solid var(--vg-hairline)', borderRadius: 6, padding: '4px 8px', fontSize: 12 }}>
+                          style={{ border: '1px solid #ccc', borderRadius: 6, padding: '6px 10px', fontSize: 12, background: '#fff', color: '#000' }}>
                           <option value="">Auto-detect stage</option>
                           <option value="1">Stage 1 — Business Analysis</option>
                           <option value="2">Stage 2 — Alternative Analysis</option>
@@ -487,7 +487,7 @@ export default function UploadPage() {
                         </select>
                         <select value={uf.manualSubLabel || ''}
                           onChange={e => update(uf.id, { manualSubLabel: e.target.value || undefined })}
-                          style={{ border: '1px solid var(--vg-hairline)', borderRadius: 6, padding: '4px 8px', fontSize: 12 }}
+                          style={{ border: '1px solid #ccc', borderRadius: 6, padding: '6px 10px', fontSize: 12, background: '#fff', color: '#000' }}
                           title="Use A or B if this is one of multiple docs for the same stage">
                           <option value="">No sub-label (single doc)</option>
                           <option value="A">Part A</option>
