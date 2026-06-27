@@ -164,7 +164,14 @@ export default function ContactsPage() {
                   <tr key={`${ct.contact_id}-${i}`} style={{borderBottom:`1px solid ${T.border}`}}
                     onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background='rgba(255,255,255,0.02)'}
                     onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background='transparent'}>
-                    <td style={{padding:'12px 14px',fontSize:14,fontWeight:600,color:T.ink,whiteSpace:'nowrap'}}>{ct.name||'—'}</td>
+                    <td style={{padding:'12px 14px',fontSize:14,fontWeight:600,color:T.ink,whiteSpace:'nowrap'}}>
+                      <a href={`/CAStateIntel/contacts/${encodeURIComponent(ct.name)}?org=${encodeURIComponent(ct.organization)}`}
+                        style={{color:T.accent,textDecoration:'none',cursor:'pointer'}}
+                        onMouseEnter={e=>(e.currentTarget as HTMLElement).style.opacity='0.8'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>
+                        {ct.name||'—'}
+                      </a>
+                    </td>
                     <td style={{padding:'12px 14px',fontSize:13,color:T.ink,maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={ct.title}>{ct.title||'—'}</td>
                     <td style={{padding:'12px 14px',fontSize:13,color:T.ink,maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={ct.organization}>{ct.organization||'—'}</td>
                     <td style={{padding:'12px 14px',fontSize:13,whiteSpace:'nowrap'}}>
