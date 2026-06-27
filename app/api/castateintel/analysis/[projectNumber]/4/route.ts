@@ -39,16 +39,19 @@ export async function GET(
     );
 
     const docRes = await db.query(
-      `SELECT id, document_id, filename, label, stage, created_at
-       FROM castateintel.pal_documents WHERE project_id = $1 AND stage = 4 LIMIT 1`,
+      `SELECT id, document_id, filename, label, stage, sub_label, created_at
+       FROM castateintel.pal_documents WHERE project_id = $1 AND stage = 4
+       ORDER BY sub_label ASC, created_at DESC`,
       [projectId]
     );
 
     return NextResponse.json({
       project,
+      documents: docRes.rows,
       document: docRes.rows[0] || null,
       contacts: contactsRes.rows,
       urls: urlsRes.rows,
+      analyses: analysisRes.rows,
       analysis: analysisRes.rows[0] || null,
       extracted: analysisRes.rows.length > 0,
     });
