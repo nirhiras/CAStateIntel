@@ -922,7 +922,7 @@ def save_urls(conn, project_id, document_id, stage, urls):
 
 def save_stage1(conn, project_id, document_id, data):
     cur = conn.cursor()
-    cur.execute("DELETE FROM castateintel.pal_stage1_analysis WHERE project_id = %s", (project_id,))
+    cur.execute("DELETE FROM castateintel.pal_stage1_analysis WHERE project_id = %s AND document_id = %s", (project_id, str(document_id)))
     cur.execute("""
         INSERT INTO castateintel.pal_stage1_analysis (
           project_id, document_id, doc_created_date, s1ba_version_number,
@@ -971,7 +971,7 @@ def save_stage1(conn, project_id, document_id, data):
 
 def save_stage2(conn, project_id, document_id, data):
     cur = conn.cursor()
-    cur.execute("DELETE FROM castateintel.pal_stage2_analysis WHERE project_id = %s", (project_id,))
+    cur.execute("DELETE FROM castateintel.pal_stage2_analysis WHERE project_id = %s AND document_id = %s", (project_id, str(document_id)))
     cur.execute("""
         INSERT INTO castateintel.pal_stage2_analysis (
           project_id, document_id, doc_created_date,
@@ -1020,7 +1020,7 @@ def save_stage2(conn, project_id, document_id, data):
 
 def save_stage3(conn, project_id, document_id, data):
     cur = conn.cursor()
-    cur.execute("DELETE FROM castateintel.pal_stage3_analysis WHERE project_id = %s", (project_id,))
+    cur.execute("DELETE FROM castateintel.pal_stage3_analysis WHERE project_id = %s AND document_id = %s", (project_id, str(document_id)))
     cur.execute("""
         INSERT INTO castateintel.pal_stage3_analysis (
           project_id, document_id, doc_created_date,
@@ -1048,7 +1048,7 @@ def save_stage3(conn, project_id, document_id, data):
 
 def save_stage4(conn, project_id, document_id, data):
     cur = conn.cursor()
-    cur.execute("DELETE FROM castateintel.pal_stage4_analysis WHERE project_id = %s", (project_id,))
+    cur.execute("DELETE FROM castateintel.pal_stage4_analysis WHERE project_id = %s AND document_id = %s", (project_id, str(document_id)))
 
     schedule = data.get("schedule_baseline", {})
     cost = data.get("cost_baseline", {})
