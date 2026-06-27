@@ -55,6 +55,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState(defaultTab);
+  const [s3Part, setS3Part] = useState<string>("A");
   const [pdfModal, setPdfModal] = useState<{url:string;title:string}|null>(null);
   const [extracting, setExtracting] = useState(false);
 
@@ -68,7 +69,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
 
   const loadProject = useCallback(async(pn:string)=>{
     if(!pn)return;
-    setLoading(true);setData(null);
+    setLoading(true);setData(null);setS3Part("A");
     try{
       const [r1,r2,r3,r4,rc]=await Promise.all([
         fetch(`/api/castateintel/analysis/${pn}/1`).then(r=>r.json()),
@@ -77,11 +78,18 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
         fetch(`/api/castateintel/analysis/${pn}/4`).then(r=>r.json()),
         fetch(`/api/castateintel/contacts?project=${pn}`).then(r=>r.json()),
       ]);
+      const s3Analyses = r3.analyses || [];
+      const s3PartA = s3Analyses.find((a:any)=>!a.sub_part) || s3Analyses.find((a:any)=>a.sub_part?.toUpperCase()==="A");
+      const s3PartB = s3Analyses.find((a:any)=>a.sub_part?.toUpperCase()==="B");
+      const s3Docs = r3.documents || [];
+      const s3DocA = s3Docs.find((d:any)=>!d.sub_label) || s3Docs.find((d:any)=>d.sub_label?.toUpperCase()==="A");
+      const s3DocB = s3Docs.find((d:any)=>d.sub_label?.toUpperCase()==="B");
       setData({
         project:r1.project||r2.project||r3.project||r4.project,
         s1:r1.extracted?{...r1.analysis,document:r1.document}:null,
         s2:r2.extracted?{...r2.analysis,document:r2.document}:null,
-        s3:r3.extracted?{...r3.analysis,document:r3.document}:null,
+        s3a:s3PartA?{...s3PartA,document:s3DocA}:null,
+        s3b:s3PartB?{...s3PartB,document:s3DocB}:null,
         s4:r4.extracted?{...r4.analysis,document:r4.document}:null,
         contacts:rc.contacts||[],
       });
@@ -101,14 +109,14 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
     setExtracting(false);
   };
 
-  const p=data?.project; const s1=data?.s1; const s2=data?.s2; const s3=data?.s3; const s4=data?.s4; const contacts=data?.contacts||[];
+  const p=data?.project; const s1=data?.s1; const s2=data?.s2; const s3a=data?.s3a; const s3b=data?.s3b; const s3=s3Part==="B"?s3b:s3a; const s4=data?.s4; const contacts=data?.contacts||[];
   const tags=s2?.solution_tags||[]; const ancillary=s3?.ancillary_procurements||[];
   const recommended=s2?.viable_solutions?.find((v:any)=>v.recommended)||s2?.viable_solutions?.[0];
   const totalVal=s1?.funding_raw?.total_estimate||s4?.solicitation_results?.total_contract_cost||"—";
   const oneTime=s2?.financial_analysis?.cost_table?.find((r:any)=>r.category?.toLowerCase().includes("one"))?.total||"—";
   const ongoing=s2?.financial_analysis?.cost_table?.find((r:any)=>r.category?.toLowerCase().includes("continu")||r.category?.toLowerCase().includes("ongoing"))?.total||"—";
   const duration=s3?.procurements_roadmap?.total_duration||"—";
-  const stageInfo=[{num:1,has:!!s1,doc:s1?.document},{num:2,has:!!s2,doc:s2?.document},{num:3,has:!!s3,doc:s3?.document},{num:4,has:!!s4,doc:s4?.document}];
+  const stageInfo=[{num:1,has:!!s1,doc:s1?.document},{num:2,has:!!s2,doc:s2?.document},{num:3,has:!!s3a||!!s3b,doc:s3?.document,hasA:!!s3a,hasB:!!s3b},{num:4,has:!!s4,doc:s4?.document}];
   const currentStageNum=tab==="s1"?1:tab==="s2"?2:tab==="s3"?3:tab==="s4"?4:null;
   const currentStageExtracted=currentStageNum?stageInfo[currentStageNum-1]?.has:false;
 
@@ -252,7 +260,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
 
           {/* ── STAGE 3 ── */}
           {tab==="s3"&&(<div className="space-y-7">
-            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 3 — Solution Analysis" color="bg-violet-900/30 text-violet-300"/>{s3?.doc_created_date&&<span className="text-xs text-white/40">Created {fmt(s3.doc_created_date)}</span>}</div><div className="flex items-center gap-2">{!s3&&<button onClick={handleExtract} disabled={extracting} style={{padding:"6px 12px",fontSize:12,fontWeight:600,borderRadius:6,border:"1px solid #c084fc",background:extracting?"rgba(192,132,252,0.15)":"rgba(192,132,252,0.12)",color:"#c084fc",cursor:extracting?"not-allowed":"pointer",opacity:extracting?0.6:1}}>{extracting?"Analyzing...":"Analyze with AI"}</button>}<PdfBtn doc={s3?.document} stage={3} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div></div>
+            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 3 — Solution Analysis" color="bg-violet-900/30 text-violet-300"/>{s3?.doc_created_date&&<span className="text-xs text-white/40">Created {fmt(s3.doc_created_date)}</span>}</div><div className="flex items-center gap-2">{(s3a||s3b)&&(s3a&&s3b)&&<div style={{display:"flex",gap:4,marginRight:8}}>{["A","B"].map(part=><button key={part} onClick={()=>setS3Part(part)} style={{padding:"4px 10px",fontSize:11,fontWeight:600,borderRadius:4,border:`1px solid ${s3Part===part?"#c084fc":"rgba(192,132,252,0.3)"}`,background:s3Part===part?"rgba(192,132,252,0.2)":"transparent",color:s3Part===part?"#c084fc":"#aaa",cursor:"pointer"}}>Part {part}</button>)}</div>}{!s3&&<button onClick={handleExtract} disabled={extracting} style={{padding:"6px 12px",fontSize:12,fontWeight:600,borderRadius:6,border:"1px solid #c084fc",background:extracting?"rgba(192,132,252,0.15)":"rgba(192,132,252,0.12)",color:"#c084fc",cursor:extracting?"not-allowed":"pointer",opacity:extracting?0.6:1}}>{extracting?"Analyzing...":"Analyze with AI"}</button>}<PdfBtn doc={s3?.document} stage={3} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div></div>
             {!s3?<Card><p className="text-white/40">Not yet extracted.</p></Card>:(<>
               <Card><SHead title="Solution Requirements"/><p className="text-sm text-white/85 leading-relaxed">{s3.solution_requirements_summary||"—"}</p></Card>
               <div className="grid grid-cols-2 gap-6">
