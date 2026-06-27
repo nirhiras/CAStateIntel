@@ -51,11 +51,13 @@ STAGE_LABEL_MAP = {
     1: "Stage 1 Business Analysis",
     2: "Stage 2 Alternative Analysis",
     3: "Stage 3 Solutions Analysis",
+    4: "Stage 4 Project Readiness and Approval",
 }
 STAGE_FILENAME_MAP = {
     1: "Stage_1_Business_Analysis.pdf",
     2: "Stage_2_Alternative_Analysis.pdf",
     3: "Stage_3_Solutions_Analysis.pdf",
+    4: "Stage_4_Project_Readiness_and_Approval.pdf",
 }
 
 
@@ -112,7 +114,7 @@ def get_all_projects_with_docs(conn):
 
 
 def already_extracted(conn, project_id, stage):
-    table = {1: "pal_stage1_analysis", 2: "pal_stage2_analysis", 3: "pal_stage3_analysis"}[stage]
+    table = {1: "pal_stage1_analysis", 2: "pal_stage2_analysis", 3: "pal_stage3_analysis", 4: "pal_stage4_analysis"}[stage]
     cur = conn.cursor()
     cur.execute(f"SELECT 1 FROM castateintel.{table} WHERE project_id = %s", (project_id,))
     return cur.fetchone() is not None
@@ -760,7 +762,117 @@ Extract ALL of the following. Return ONLY valid JSON, no preamble, no markdown f
   }}
 }}"""
 
-PROMPT_MAP = {1: STAGE1_PROMPT, 2: STAGE2_PROMPT, 3: STAGE3_PROMPT}
+STAGE4_PROMPT = """You are extracting structured data from a California IT project Stage 4 Project Readiness and Approval PDF.
+
+<document>
+{content_text}
+</document>
+
+Extract ALL of the following. Return ONLY valid JSON, no preamble, no markdown fences.
+
+{{
+  "doc_created_date": "YYYY-MM-DD or null",
+
+  "contacts": [
+    {{
+      "name": "full legal name — REQUIRED, skip entry if unknown",
+      "title": "job title or null",
+      "email": "email address or null",
+      "phone": "phone number with area code or null",
+      "organization": "department or agency name or null",
+      "context": "brief description of their role and involvement in this project",
+      "source": "exact section name where this person appears",
+      "doc_created_date": "date of this document in YYYY-MM-DD format or null",
+      "role_type": "sponsor|stakeholder|approver|author|reviewer|contact|other"
+    }}
+  ],
+
+  "urls": [
+    {{"url": "https://...", "context": "where/why it appeared"}}
+  ],
+
+  "general_info": {{
+    "project_name": "...",
+    "project_number": "...",
+    "department": "...",
+    "agency": "...",
+    "key_values": {{}}
+  }},
+
+  "submittal_info": {{
+    "contacts": [],
+    "key_values": {{}}
+  }},
+
+  "contract_management": [
+    {{"question": "...", "answer": "...", "notes": "..."}}
+  ],
+
+  "org_readiness": [
+    {{"question": "...", "answer": "...", "notes": "..."}}
+  ],
+
+  "project_readiness": {{
+    "methodology": "...",
+    "otech": "...",
+    "resource_info": "...",
+    "key_values": {{}}
+  }},
+
+  "objectives": [
+    {{
+      "id": "...",
+      "objective": "...",
+      "metric": "...",
+      "baseline": "...",
+      "target": "...",
+      "valuation_pct": "...",
+      "change": "..."
+    }}
+  ],
+
+  "schedule_baseline": {{
+    "proposed_start": "YYYY-MM-DD or null",
+    "proposed_end": "YYYY-MM-DD or null",
+    "baseline_start": "YYYY-MM-DD or null",
+    "baseline_end": "YYYY-MM-DD or null",
+    "variances": "...",
+    "milestones": [
+      {{"milestone": "...", "date": "...", "type": "..."}}
+    ]
+  }},
+
+  "cost_baseline": {{
+    "proposed_total": "dollar amount or null",
+    "baseline_total": "dollar amount or null",
+    "annual_mo_cost": "dollar amount or null",
+    "cost_rows": [
+      {{"category": "...", "amount": "...", "notes": "..."}}
+    ]
+  }},
+
+  "solicitation_results": {{
+    "selected_vendor": "...",
+    "contract_number": "...",
+    "contract_start_date": "YYYY-MM-DD or null",
+    "contract_end_date": "YYYY-MM-DD or null",
+    "total_contract_cost": "...",
+    "key_values": {{}}
+  }},
+
+  "risk_register": [
+    {{"risk": "...", "probability": "...", "impact": "...", "mitigation": "..."}}
+  ],
+
+  "dot_use_only": {{
+    "dates": [
+      {{"label": "...", "date": "YYYY-MM-DD or string"}}
+    ],
+    "other_fields": {{}}
+  }}
+}}"""
+
+PROMPT_MAP = {1: STAGE1_PROMPT, 2: STAGE2_PROMPT, 3: STAGE3_PROMPT, 4: STAGE4_PROMPT}
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -934,7 +1046,59 @@ def save_stage3(conn, project_id, document_id, data):
     print(f"  Saved Stage 3 analysis ({len(data.get('ancillary_procurements', []))} procurements)")
 
 
-SAVE_MAP = {1: save_stage1, 2: save_stage2, 3: save_stage3}
+def save_stage4(conn, project_id, document_id, data):
+    cur = conn.cursor()
+    cur.execute("DELETE FROM castateintel.pal_stage4_analysis WHERE project_id = %s", (project_id,))
+
+    schedule = data.get("schedule_baseline", {})
+    cost = data.get("cost_baseline", {})
+    solicitation = data.get("solicitation_results", {})
+
+    cur.execute("""
+        INSERT INTO castateintel.pal_stage4_analysis (
+          project_id, document_id, doc_created_date,
+          general_info_raw, submittal_contacts, submittal_info,
+          contract_management, org_readiness, project_readiness,
+          objectives, schedule_baseline,
+          proposed_project_start, proposed_project_end,
+          baseline_project_start, baseline_project_end,
+          cost_baseline, total_cost_proposed, total_cost_baseline, annual_mo_cost,
+          solicitation_results, selected_vendor, contract_number,
+          contract_start_date, contract_end_date, total_contract_cost,
+          risk_register, dot_dates, dot_raw
+        ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+    """, (
+        project_id, str(document_id), data.get("doc_created_date") or None,
+        json.dumps(data.get("general_info", {})),
+        json.dumps(data.get("submittal_info", {}).get("contacts", [])),
+        json.dumps(data.get("submittal_info", {})),
+        json.dumps(data.get("contract_management", [])),
+        json.dumps(data.get("org_readiness", [])),
+        json.dumps(data.get("project_readiness", {})),
+        json.dumps(data.get("objectives", [])),
+        json.dumps(schedule),
+        schedule.get("proposed_start"),
+        schedule.get("proposed_end"),
+        schedule.get("baseline_start"),
+        schedule.get("baseline_end"),
+        json.dumps(cost),
+        cost.get("proposed_total"),
+        cost.get("baseline_total"),
+        cost.get("annual_mo_cost"),
+        json.dumps(solicitation),
+        solicitation.get("selected_vendor"),
+        solicitation.get("contract_number"),
+        solicitation.get("contract_start_date"),
+        solicitation.get("contract_end_date"),
+        solicitation.get("total_contract_cost"),
+        json.dumps(data.get("risk_register", [])),
+        json.dumps(data.get("dot_use_only", {}).get("dates", [])),
+        json.dumps(data.get("dot_use_only", {})),
+    ))
+    print(f"  Saved Stage 4 analysis")
+
+
+SAVE_MAP = {1: save_stage1, 2: save_stage2, 3: save_stage3, 4: save_stage4}
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1003,7 +1167,7 @@ Examples:
         """
     )
     parser.add_argument("--project", help="Project number (e.g. 4265-081)")
-    parser.add_argument("--stage", type=int, choices=[1, 2, 3], help="Stage to process")
+    parser.add_argument("--stage", type=int, choices=[1, 2, 3, 4], help="Stage to process")
     parser.add_argument("--all", action="store_true", help="Process all projects with documents")
     parser.add_argument("--force", action="store_true", help="Re-extract even if already done")
     args = parser.parse_args()
@@ -1013,7 +1177,7 @@ Examples:
     if not ANTHROPIC_API_KEY:
         print("ERROR: Set ANTHROPIC_API_KEY environment variable"); sys.exit(1)
 
-    stages = [args.stage] if args.stage else [1, 2, 3]
+    stages = [args.stage] if args.stage else [1, 2, 3, 4]
     ok, failed, skipped = 0, 0, 0
 
     def fresh_conn():
