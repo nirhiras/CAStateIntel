@@ -10,7 +10,7 @@ A Next.js intelligence tool for State of California government departments to up
 |-------|-----------|
 | Framework | Next.js 15 (App Router, TypeScript) |
 | Auth | Clerk |
-| Database / Storage | Supabase (Postgres + Storage) |
+| Database | PostgreSQL on Railway |
 | Payments | Stripe |
 | Email | Resend |
 | Deployment | Railway |
@@ -38,7 +38,7 @@ A Next.js intelligence tool for State of California government departments to up
 - **Middleware:** `middleware.ts` — protects all routes except `/`, `/sign-in`, `/sign-up`, `/api/stripe/webhook`
 - **Sign-in page:** `/sign-in` → `app/sign-in/[[...sign-in]]/page.tsx`
 - **Sign-up page:** `/sign-up` → `app/sign-up/[[...sign-up]]/page.tsx`
-- **User ID:** Clerk `userId` is used as the foreign key in Supabase `documents` and `subscriptions` tables
+- **User ID:** Clerk `userId` is used as the foreign key in PostgreSQL `documents` and `subscriptions` tables
 - **Setup steps:**
   1. Create app in Clerk dashboard
   2. Copy publishable key + secret key to env vars
@@ -74,12 +74,17 @@ A Next.js intelligence tool for State of California government departments to up
   2. Create API key
   3. Set `RESEND_FROM_EMAIL` to a verified address (e.g. `noreply@yourdomain.com`)
 
-### 🗄️ Supabase (Database + Storage)
-- **Project Name:** CAGovNews
-- **Project ID:** `tfguawwqmfzpiulqdatk`
-- **Storage Bucket:** `gov-intelligence-docs`
-- **MCP Server URL:** `https://mcp.supabase.com/mcp`
-- **Keys needed:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+### 🗄️ PostgreSQL (Database)
+- **Hosting:** Railway
+- **Dashboard:** https://railway.app/dashboard
+- **Connection:** PostgreSQL database on Railway with public endpoint
+- **Key needed:** `DATABASE_URL` (connection string)
+- **Schema:** `castateintel` for this project
+- **Setup steps:**
+  1. Create PostgreSQL database in Railway dashboard
+  2. Get connection string from Railway
+  3. Set `DATABASE_URL` env var with the PostgreSQL connection string
+  4. Run migrations via `npm run migrate` or direct SQL execution
 
 ---
 
@@ -153,13 +158,13 @@ ca-gov-intel/
 │           ├── checkout/route.ts     # Create Stripe checkout session
 │           └── webhook/route.ts      # Stripe webhook handler
 ├── lib/
-│   ├── supabase.ts                   # Supabase browser + admin clients
+│   ├── db.ts                         # PostgreSQL connection pool
 │   ├── stripe.ts                     # Stripe client + plan config
 │   └── resend.ts                     # Email templates
 ├── middleware.ts                     # Clerk route protection
 ├── railway.toml                      # Railway deployment config
-├── supabase/migrations/
-│   └── 001_subscriptions.sql
+├── migrations/
+│   └── migration_contact_enrichment.sql  # Database schema migrations
 ├── .env.local.example                # All required env vars
 ├── tailwind.config.js
 └── next.config.js
@@ -191,6 +196,9 @@ Border: #DDE1E9
 ## Environment Variables
 
 ```env
+# Database
+DATABASE_URL=postgresql://postgres:password@shuttle.proxy.rlwy.net:port/railway
+
 # Clerk
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 CLERK_SECRET_KEY=
@@ -198,11 +206,6 @@ NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
 NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
-
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://tfguawwqmfzpiulqdatk.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
 
 # Stripe
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
@@ -242,11 +245,12 @@ npm run dev
 
 ## Roadmap
 
+- [x] Contact enrichment (AI research from free public sources)
+- [x] Excel export of enriched contacts
 - [ ] Document AI summarization (Anthropic API)
 - [ ] Full-text search across document content
 - [ ] Auto-categorization on upload
-- [ ] Department-level access controls (Supabase RLS)
-- [ ] Analytics dashboard (spend by department, contracts by fiscal year)
-- [ ] Export to Excel/PDF
+- [ ] Department-level access controls (PostgreSQL RLS)
+- [ ] Analytics dashboard (spend by department, contacts by organization)
 - [ ] User management (invite team members)
 - [ ] Audit log

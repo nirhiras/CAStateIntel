@@ -112,42 +112,92 @@ export async function POST(request: Request) {
   }
 }
 
-// GET endpoint to view enrichment status
+// GET endpoint to view enrichment status or fetch unenriched contacts
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const limit = parseInt(searchParams.get("limit") || "10");
+  const fetchUnenriched = searchParams.get("unenriched") === "true";
+  const offset = parseInt(searchParams.get("offset") || "0");
 
   try {
-    const result = await db.query(
-      `SELECT
-        contact_id,
-        name,
-        organization,
-        email,
-        phone,
-        ai_email,
-        ai_phone,
-        ai_background,
-        ai_prior_roles,
-        ai_technical_skills,
-        ai_enriched_at,
-        ai_enrichment_source
-      FROM castateintel.pal_contacts
-      WHERE ai_enriched_at IS NOT NULL
-      ORDER BY ai_enriched_at DESC
-      LIMIT $1`,
-      [limit]
-    );
+    if (fetchUnenriched) {
+      // Fetch unenriched contacts for research
+      const result = await db.query(
+        `SELECT
+          contact_id,
+          name,
+          title,
+          organization,
+          role_type,
+          email,
+          phone,
+          CASE
+            WHEN role_type IN ('Director', 'Sponsor', 'Executive', 'Chief', 'Deputy Director', 'Secretary', 'Administrator')
+            THEN 'PRIORITY'
+            ELSE 'STANDARD'
+          END as priority_level
+        FROM castateintel.pal_contacts
+        WHERE name IS NOT NULL AND name != ''
+        AND ai_enriched_at IS NULL
+        ORDER BY priority_level, organization, name
+        LIMIT $1 OFFSET $2`,
+        [limit, offset]
+      );
 
-    const enrichedCount = await db.query(
-      `SELECT COUNT(*) as count FROM castateintel.pal_contacts WHERE ai_enriched_at IS NOT NULL`
-    );
+      const countResult = await db.query(
+        `SELECT
+          COUNT(*) as total,
+          COUNT(CASE WHEN role_type IN ('Director', 'Sponsor', 'Executive', 'Chief', 'Deputy Director', 'Secretary', 'Administrator')
+                THEN 1 END) as priority_count,
+          COUNT(CASE WHEN role_type NOT IN ('Director', 'Sponsor', 'Executive', 'Chief', 'Deputy Director', 'Secretary', 'Administrator')
+                THEN 1 END) as standard_count
+        FROM castateintel.pal_contacts
+        WHERE name IS NOT NULL AND name != ''
+        AND ai_enriched_at IS NULL`
+      );
 
-    return NextResponse.json({
-      enrichedContacts: result.rows,
-      totalEnriched: enrichedCount.rows[0].count,
-      message: "View enriched contacts with AI-researched data",
-    });
+      return NextResponse.json({
+        unenrichedContacts: result.rows,
+        totalUnenriched: countResult.rows[0].total,
+        priorityCount: countResult.rows[0].priority_count,
+        standardCount: countResult.rows[0].standard_count,
+        limit,
+        offset,
+        message: "Unenriched contacts for research (sorted by priority)",
+      });
+    } else {
+      // Fetch enriched contacts (existing behavior)
+      const result = await db.query(
+        `SELECT
+          contact_id,
+          name,
+          organization,
+          email,
+          phone,
+          ai_email,
+          ai_phone,
+          ai_background,
+          ai_prior_roles,
+          ai_technical_skills,
+          ai_enriched_at,
+          ai_enrichment_source
+        FROM castateintel.pal_contacts
+        WHERE ai_enriched_at IS NOT NULL
+        ORDER BY ai_enriched_at DESC
+        LIMIT $1`,
+        [limit]
+      );
+
+      const enrichedCount = await db.query(
+        `SELECT COUNT(*) as count FROM castateintel.pal_contacts WHERE ai_enriched_at IS NOT NULL`
+      );
+
+      return NextResponse.json({
+        enrichedContacts: result.rows,
+        totalEnriched: enrichedCount.rows[0].count,
+        message: "View enriched contacts with AI-researched data",
+      });
+    }
   } catch (error) {
     console.error("Enrichment status error:", error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
