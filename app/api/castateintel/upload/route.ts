@@ -63,19 +63,22 @@ export async function POST(req: Request) {
     try {
       const pyScript = [
         'import sys,re,json',
-        'import pdfplumber',
-        'with pdfplumber.open(sys.argv[1]) as pdf:',
-        '    text="\\n".join(p.extract_text() or "" for p in pdf.pages)',
-        // Supplement with AcroForm field values (fillable PDF forms store data in fields, not page text)
+        // PyMuPDF extracts both regular text and AcroForm field values in one pass
         'try:',
-        '    from pypdf import PdfReader',
-        '    reader=PdfReader(sys.argv[1])',
-        '    fields=reader.get_fields() or {}',
-        '    field_text="\\n".join(f"{k}: {v.get(\'/V\',\'\')}" for k,v in fields.items() if v.get(\'/V\'))',
-        '    if field_text: text=text+"\\n"+field_text if text.strip() else field_text',
+        '    import fitz',
+        '    doc=fitz.open(sys.argv[1])',
+        '    parts=[]',
+        '    for page in doc:',
+        '        parts.append(page.get_text())',
+        '        for w in (page.widgets() or []):',
+        '            if w.field_value: parts.append(f"{w.field_name}: {w.field_value}")',
+        '    text="\\n".join(parts)',
+        '    doc.close()',
         'except Exception:',
-        '    pass',
-        // OCR fallback for scanned/image-based PDFs (still < 100 chars after form field extraction)
+        '    import pdfplumber',
+        '    with pdfplumber.open(sys.argv[1]) as pdf:',
+        '        text="\\n".join(p.extract_text() or "" for p in pdf.pages)',
+        // OCR fallback for scanned/image-based PDFs (no text layer and no form fields)
         'if len(text.strip())<100:',
         '    try:',
         '        from pdf2image import convert_from_path',
