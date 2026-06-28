@@ -78,6 +78,9 @@ export default function ContactDetailPage({ params }: { params: { name: string }
 
     if (organization) {
       fetchContactDetail();
+    } else {
+      setLoading(false);
+      setError('Organization parameter missing. Go back to All Contacts and click a contact name.');
     }
   }, [decodedName, organization]);
 
