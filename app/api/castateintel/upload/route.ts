@@ -66,6 +66,15 @@ export async function POST(req: Request) {
         'import pdfplumber',
         'with pdfplumber.open(sys.argv[1]) as pdf:',
         '    text="\\n".join(p.extract_text() or "" for p in pdf.pages)',
+        // OCR fallback for scanned/image-based PDFs
+        'if len(text.strip())<100:',
+        '    try:',
+        '        from pdf2image import convert_from_path',
+        '        import pytesseract',
+        '        pages=convert_from_path(sys.argv[1],dpi=200)',
+        '        text="\\n".join(pytesseract.image_to_string(p) for p in pages)',
+        '    except Exception as ocr_err:',
+        '        pass',
         'pm=re.search(r"Project Number[^:]*:\\s*(\\d{4}-\\d{3,4})",text,re.I)',
         'proj=pm.group(1) if pm and pm.group(1)!="0000-000" else None',
         'if not proj:',
@@ -98,7 +107,7 @@ export async function POST(req: Request) {
       ].join('\n');
 
       const result = execSync(`python3 -c '${pyScript.replace(/'/g, "'\\''")}' "${tmpFile}"`, {
-        timeout: 30000,
+        timeout: 120000,
         maxBuffer: 10 * 1024 * 1024,
       });
       const parsed = JSON.parse(result.toString());
