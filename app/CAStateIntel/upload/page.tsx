@@ -443,12 +443,19 @@ export default function UploadPage() {
                               📎 Other Doc
                             </span>
                           )}
-                          <span className="text-xs text-white">{uf.chars_extracted?.toLocaleString()} chars</span>
+                          <span className={`text-xs ${!uf.chars_extracted || uf.chars_extracted < 100 ? 'text-red-400 font-semibold' : 'text-white'}`}>
+                            {uf.chars_extracted?.toLocaleString() || '0'} chars
+                          </span>
                           {uf.stage && uf.stage > 0 && (
                             <a href={`/CAStateIntel/stage${uf.stage}?project=${uf.project_number}`}
                               className="text-xs text-blue-600 hover:underline">View Analysis →</a>
                           )}
                         </div>
+                        {uf.chars_extracted && uf.chars_extracted < 100 && (
+                          <div style={{ fontSize: 12, color: '#fca5a5', marginTop: 6, padding: '6px 8px', background: 'rgba(220,38,38,0.1)', borderRadius: 4, border: '1px solid rgba(220,38,38,0.3)' }}>
+                            ⚠️ <strong>Low text content:</strong> This PDF may be image-only or corrupted. Analysis requires extractable text.
+                          </div>
+                        )}
                         {/* Confirmed canonical filename after upload */}
                         {uf.canonical_filename && (
                           <div style={{ fontSize: 12, color: "#aaaaaa", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
