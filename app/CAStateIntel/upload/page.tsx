@@ -292,8 +292,8 @@ export default function UploadPage() {
         {files.length > 0 && (
           <div className="flex items-center gap-3 mb-4 flex-wrap">
             <button onClick={runAll} disabled={running || (queued === 0 && errors === 0)}
-              className={`px-5 py-2 rounded-lg text-sm font-semibold text-white transition-colors
-                ${(running || (queued === 0 && errors === 0)) ? 'bg-gray-500 cursor-not-allowed' : 'bg-gray-600 hover:bg-gray-500'}`}>
+              className={`px-5 py-2 rounded-lg text-sm font-semibold text-black transition-colors
+                ${(running || (queued === 0 && errors === 0)) ? 'bg-gray-400 cursor-not-allowed' : 'bg-gray-300 hover:bg-gray-200'}`}>
               {running
                 ? `Uploading ${active} file${active !== 1 ? 's' : ''}...`
                 : `⬆ Upload ${queued + errors} PDF${(queued + errors) !== 1 ? 's' : ''}`}
