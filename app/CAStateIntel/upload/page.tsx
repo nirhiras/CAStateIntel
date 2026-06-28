@@ -219,7 +219,7 @@ export default function UploadPage() {
     if (!projectNums.length) return;
     setAnalyzeStatus('running');
     setAnalyzeLog([]);
-    const log: {pn: string; ok: boolean}[] = [];
+    const log: {pn: string; ok: boolean; error?: string}[] = [];
     for (const pn of projectNums) {
       try {
         const res = await fetch('/api/castateintel/analysis/extract', {
@@ -227,9 +227,11 @@ export default function UploadPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ project_number: pn }),
         });
-        log.push({ pn, ok: res.ok });
-      } catch {
-        log.push({ pn, ok: false });
+        const data = await res.json();
+        log.push({ pn, ok: res.ok, error: !res.ok ? data.error : undefined });
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : 'Unknown error';
+        log.push({ pn, ok: false, error: errMsg });
       }
       setAnalyzeLog([...log]);
     }
@@ -333,9 +335,14 @@ export default function UploadPage() {
                   </span>
                 )}
                 {analyzeStatus === 'error' && (
-                  <span style={{ fontSize: 13, color: "#f87171" }}>
-                    ⚠ {analyzeLog.filter(l => !l.ok).length} failed
-                  </span>
+                  <div style={{ fontSize: 13, color: "#f87171" }}>
+                    <div>⚠ {analyzeLog.filter(l => !l.ok).length} analysis failed</div>
+                    {analyzeLog.filter(l => !l.ok).map(l => (
+                      <div key={l.pn} style={{ fontSize: 12, marginTop: 4, color: "#f87171", maxWidth: 400 }}>
+                        {l.pn}: {l.error || 'Unknown error'}
+                      </div>
+                    ))}
+                  </div>
                 )}
                 {analyzeLog.map(l => (
                   <span key={l.pn} style={{ fontSize: 12, padding: "2px 8px", borderRadius: 6, background: l.ok ? "rgba(0,168,126,0.15)" : "rgba(226,59,74,0.15)", color: l.ok ? "#3dd6a8" : "#f87171" }}>
@@ -485,15 +492,26 @@ export default function UploadPage() {
                           <option value="4">Stage 4 — Project Readiness</option>
                           <option value="0">Other document (non-stage)</option>
                         </select>
-                        <select value={uf.manualSubLabel || ''}
-                          onChange={e => update(uf.id, { manualSubLabel: e.target.value || undefined })}
-                          style={{ border: '1px solid #ccc', borderRadius: 6, padding: '6px 10px', fontSize: 12, background: '#fff', color: '#000' }}
-                          title="Use A or B if this is one of multiple docs for the same stage">
-                          <option value="">No sub-label (single doc)</option>
-                          <option value="A">Part A</option>
-                          <option value="B">Part B</option>
-                          <option value="C">Part C</option>
-                        </select>
+                        {uf.manualStage === 3 ? (
+                          <select value={uf.manualSubLabel || ''}
+                            onChange={e => update(uf.id, { manualSubLabel: e.target.value || undefined })}
+                            style={{ border: '1px solid #4f46e5', borderRadius: 6, padding: '6px 10px', fontSize: 12, background: '#fff', color: '#000', fontWeight: 600 }}
+                            title="Select Part A or Part B for Stage 3">
+                            <option value="">— Select Part A or B —</option>
+                            <option value="A">Part A</option>
+                            <option value="B">Part B</option>
+                          </select>
+                        ) : (
+                          <select value={uf.manualSubLabel || ''}
+                            onChange={e => update(uf.id, { manualSubLabel: e.target.value || undefined })}
+                            style={{ border: '1px solid #ccc', borderRadius: 6, padding: '6px 10px', fontSize: 12, background: '#fff', color: '#000' }}
+                            title="Use A or B if this is one of multiple docs for the same stage">
+                            <option value="">No sub-label (single doc)</option>
+                            <option value="A">Part A</option>
+                            <option value="B">Part B</option>
+                            <option value="C">Part C</option>
+                          </select>
+                        )}
                         <button
                           onClick={() => uploadOne(uf)}
                           style={{
