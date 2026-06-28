@@ -339,7 +339,7 @@ export default function UploadPage() {
                     <div>⚠ {analyzeLog.filter(l => !l.ok).length} analysis failed</div>
                     {analyzeLog.filter(l => !l.ok).map(l => (
                       <div key={l.pn} style={{ fontSize: 12, marginTop: 4, color: "#f87171", maxWidth: 400 }}>
-                        {l.pn}: {l.error || 'Unknown error'}
+                        {l.pn}: Analysis failed
                       </div>
                     ))}
                   </div>
