@@ -2,7 +2,7 @@
 nixPkgs = ["nodejs_20", "python312", "tesseract", "poppler_utils"]
 
 [phases.install]
-cmds = ["npm ci", "python3 -m pip install pdfplumber pdf2image pytesseract --quiet --break-system-packages"]
+cmds = ["npm ci", "python3 -m pip install pdfplumber pdf2image pytesseract pypdf --quiet --break-system-packages"]
 
 [phases.build]
 cmds = ["npm run build"]
