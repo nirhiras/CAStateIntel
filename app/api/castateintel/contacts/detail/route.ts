@@ -19,6 +19,7 @@ export async function GET(request: Request) {
 
   try {
     // Get primary contact data (enriched fields)
+    // Use ILIKE for fuzzy matching on organization (handles whitespace/abbreviation differences)
     const primaryQuery = `
       SELECT
         c.contact_id,
@@ -39,8 +40,9 @@ export async function GET(request: Request) {
         c.ai_enrichment_source,
         c.ai_enriched_at
       FROM castateintel.pal_contacts c
-      WHERE LOWER(c.name) = LOWER($1)
-      AND LOWER(c.organization) = LOWER($2)
+      WHERE LOWER(TRIM(c.name)) = LOWER(TRIM($1))
+      AND LOWER(TRIM(c.organization)) ILIKE LOWER(TRIM($2))
+      ORDER BY c.contact_id DESC
       LIMIT 1
     `;
 
@@ -52,6 +54,7 @@ export async function GET(request: Request) {
     }
 
     // Get all instances of this contact across all projects
+    // Use same fuzzy matching as primary query
     const instancesQuery = `
       SELECT
         c.contact_id,
@@ -88,8 +91,8 @@ export async function GET(request: Request) {
       LEFT JOIN castateintel.pal_stage1_analysis s1 ON s1.project_id = c.project_id AND c.stage = 1
       LEFT JOIN castateintel.pal_stage2_analysis s2 ON s2.project_id = c.project_id AND c.stage = 2
       LEFT JOIN castateintel.pal_stage3_analysis s3 ON s3.project_id = c.project_id AND c.stage = 3
-      WHERE LOWER(c.name) = LOWER($1)
-      AND LOWER(c.organization) = LOWER($2)
+      WHERE LOWER(TRIM(c.name)) = LOWER(TRIM($1))
+      AND LOWER(TRIM(c.organization)) ILIKE LOWER(TRIM($2))
       ORDER BY p.project_number, c.stage, c.doc_created_date DESC
     `;
 
