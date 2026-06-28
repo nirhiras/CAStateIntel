@@ -1,6 +1,5 @@
 'use client';
 
-import RvtNav from "@/components/castateintel/RvtNav";
 import { useState, useRef, useCallback } from 'react';
 
 
@@ -61,6 +60,9 @@ type UploadFile = {
   manualStage?: number;
   manualSubLabel?: string;
   showOverride?: boolean;
+  // null = preview-pdf API responded but found no pattern
+  // undefined = API call still in flight
+  previewResolved?: boolean;
 };
 
 const STAGE_LABELS: Record<number, string> = {
@@ -97,24 +99,30 @@ export default function UploadPage() {
       file: f,
       status: 'queued' as FileStatus,
       canonical_filename: previewCanonical(f.name) || undefined,
+      previewResolved: !!previewCanonical(f.name), // client-side hit = already resolved
     }));
     setFiles(prev => [...prev, ...newEntries]);
-    // Immediately call preview-pdf for each file to get canonical name from PDF content
+    // Call preview-pdf for each file to confirm/improve canonical name from PDF content
     newEntries.forEach(async (entry) => {
       try {
         const fd = new FormData();
         fd.append('pdf', entry.file);
         const res = await fetch('/api/castateintel/preview-pdf', { method: 'POST', body: fd });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.canonical_filename) {
-          setFiles(prev => prev.map(f => f.id === entry.id ? {
-            ...f,
-            canonical_filename: data.canonical_filename,
-            stage: data.stage || f.stage,
-          } : f));
+        if (!res.ok) {
+          // Mark resolved even on error so we stop showing spinner
+          setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, previewResolved: true } : f));
+          return;
         }
-      } catch (e) { /* preview failed — silent, user can still upload */ }
+        const data = await res.json();
+        setFiles(prev => prev.map(f => f.id === entry.id ? {
+          ...f,
+          canonical_filename: data.canonical_filename || f.canonical_filename,
+          stage: data.stage || f.stage,
+          previewResolved: true,
+        } : f));
+      } catch {
+        setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, previewResolved: true } : f));
+      }
     });
   }, []);
 
@@ -167,7 +175,12 @@ export default function UploadPage() {
           was_overwrite: data.was_overwrite,
         });
       } else {
-        update(uf.id, { status: 'error', error: data.error ?? 'Upload failed' });
+        const isProjectDetectionError = data.error?.includes('Could not detect project number');
+        update(uf.id, {
+          status: 'error',
+          error: data.error ?? 'Upload failed',
+          showOverride: isProjectDetectionError,
+        });
       }
     } catch {
       update(uf.id, { status: 'error', error: 'Network error' });
@@ -206,7 +219,7 @@ export default function UploadPage() {
     if (!projectNums.length) return;
     setAnalyzeStatus('running');
     setAnalyzeLog([]);
-    const log: {pn: string; ok: boolean}[] = [];
+    const log: {pn: string; ok: boolean; error?: string}[] = [];
     for (const pn of projectNums) {
       try {
         const res = await fetch('/api/castateintel/analysis/extract', {
@@ -214,9 +227,11 @@ export default function UploadPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ project_number: pn }),
         });
-        log.push({ pn, ok: res.ok });
-      } catch {
-        log.push({ pn, ok: false });
+        const data = await res.json();
+        log.push({ pn, ok: res.ok, error: !res.ok ? data.error : undefined });
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : 'Unknown error';
+        log.push({ pn, ok: false, error: errMsg });
       }
       setAnalyzeLog([...log]);
     }
@@ -232,7 +247,7 @@ export default function UploadPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#0d0d0d", color: "#f0f0f0" }}>
-      <RvtNav />
+      
       {/* Header */}
       <div style={{ background: "#161616", padding: "16px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--vg-hairline)" }}>
         <div className="flex items-center gap-4">
@@ -279,8 +294,8 @@ export default function UploadPage() {
         {files.length > 0 && (
           <div className="flex items-center gap-3 mb-4 flex-wrap">
             <button onClick={runAll} disabled={running || (queued === 0 && errors === 0)}
-              className={`px-5 py-2 rounded-lg text-sm font-semibold text-white transition-colors
-                ${(running || (queued === 0 && errors === 0)) ? 'bg-gray-400 cursor-not-allowed' : 'bg-gray-900 hover:bg-gray-700'}`}>
+              className={`px-5 py-2 rounded-lg text-sm font-semibold text-black transition-colors
+                ${(running || (queued === 0 && errors === 0)) ? 'bg-gray-400 cursor-not-allowed' : 'bg-gray-300 hover:bg-gray-200'}`}>
               {running
                 ? `Uploading ${active} file${active !== 1 ? 's' : ''}...`
                 : `⬆ Upload ${queued + errors} PDF${(queued + errors) !== 1 ? 's' : ''}`}
@@ -320,9 +335,14 @@ export default function UploadPage() {
                   </span>
                 )}
                 {analyzeStatus === 'error' && (
-                  <span style={{ fontSize: 13, color: "#f87171" }}>
-                    ⚠ {analyzeLog.filter(l => !l.ok).length} failed
-                  </span>
+                  <div style={{ fontSize: 13, color: "#f87171" }}>
+                    <div>⚠ {analyzeLog.filter(l => !l.ok).length} analysis failed</div>
+                    {analyzeLog.filter(l => !l.ok).map(l => (
+                      <div key={l.pn} style={{ fontSize: 12, marginTop: 4, color: "#f87171", maxWidth: 400 }}>
+                        {l.pn}: Analysis failed
+                      </div>
+                    ))}
+                  </div>
                 )}
                 {analyzeLog.map(l => (
                   <span key={l.pn} style={{ fontSize: 12, padding: "2px 8px", borderRadius: 6, background: l.ok ? "rgba(0,168,126,0.15)" : "rgba(226,59,74,0.15)", color: l.ok ? "#3dd6a8" : "#f87171" }}>
@@ -385,6 +405,26 @@ export default function UploadPage() {
                       )}
                     </div>
 
+                    {/* Canonical filename preview — visible for queued/uploading files so user can
+                        decide whether to proceed before committing to the upload */}
+                    {(uf.status === 'queued' || uf.status === 'uploading') && (
+                      <div style={{ fontSize: 12, fontFamily: 'monospace', marginTop: 5 }}>
+                        {!uf.previewResolved && !uf.canonical_filename ? (
+                          // API call still in flight and client-side parse also missed
+                          <span style={{ color: '#666', fontSize: 11 }}>Detecting S1–S4 pattern…</span>
+                        ) : uf.canonical_filename && uf.canonical_filename !== uf.file.name ? (
+                          // Pattern found — show what it will be saved as
+                          <span>
+                            <span style={{ color: 'rgba(0,217,146,0.7)', fontSize: 11 }}>Will import as: </span>
+                            <span style={{ color: '#00d992', fontWeight: 600 }}>{uf.canonical_filename}</span>
+                          </span>
+                        ) : uf.previewResolved ? (
+                          // API responded but no S1–S4 pattern found
+                          <span style={{ color: '#888', fontSize: 11 }}>⚠ No S1–S4 pattern detected — filename will be used as-is</span>
+                        ) : null}
+                      </div>
+                    )}
+
                     {/* Success details */}
                     {uf.status === 'done' && uf.project_number && (
                       <div className="mt-1.5 space-y-1">
@@ -403,27 +443,29 @@ export default function UploadPage() {
                               📎 Other Doc
                             </span>
                           )}
-                          <span className="text-xs text-white">{uf.chars_extracted?.toLocaleString()} chars</span>
+                          <span className={`text-xs ${!uf.chars_extracted || uf.chars_extracted < 100 ? 'text-red-400 font-semibold' : 'text-white'}`}>
+                            {uf.chars_extracted?.toLocaleString() || '0'} chars
+                          </span>
                           {uf.stage && uf.stage > 0 && (
                             <a href={`/CAStateIntel/stage${uf.stage}?project=${uf.project_number}`}
                               className="text-xs text-blue-600 hover:underline">View Analysis →</a>
                           )}
                         </div>
-                        {/* Canonical filename — shown immediately on drop */}
-                        {(uf.canonical_filename || uf.status === 'queued') && (
+                        {uf.chars_extracted && uf.chars_extracted < 100 && (
+                          <div style={{ fontSize: 12, color: '#fca5a5', marginTop: 6, padding: '6px 8px', background: 'rgba(220,38,38,0.1)', borderRadius: 4, border: '1px solid rgba(220,38,38,0.3)' }}>
+                            ⚠️ <strong>Low text content:</strong> This PDF may be image-only or corrupted. Analysis requires extractable text.
+                          </div>
+                        )}
+                        {/* Confirmed canonical filename after upload */}
+                        {uf.canonical_filename && (
                           <div style={{ fontSize: 12, color: "#aaaaaa", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {uf.canonical_filename && uf.canonical_filename !== uf.file.name ? (
+                            {uf.canonical_filename !== uf.file.name ? (
                               <span>
                                 <span style={{color:"#888",fontSize:11}}>Original: </span>
                                 <span style={{color:"#ccc",fontSize:12}}>{uf.file.name}</span>
                                 <br/>
-                                <span style={{color:"rgba(0,217,146,0.7)",fontSize:11}}>{uf.status==='done'?'Imported as:':'Detected as:'} </span>
+                                <span style={{color:"rgba(0,217,146,0.7)",fontSize:11}}>Imported as: </span>
                                 <span style={{color:"#00d992",fontWeight:600}}>{uf.canonical_filename}</span>
-                              </span>
-                            ) : uf.canonical_filename === undefined && uf.status === 'queued' ? (
-                              <span style={{color:"#888",fontSize:12}}>
-                                📄 {uf.file.name}
-                                <span style={{marginLeft:8,color:"#555",fontSize:11}}>Analyzing…</span>
                               </span>
                             ) : (
                               <span>📄 {uf.file.name}</span>
@@ -442,14 +484,14 @@ export default function UploadPage() {
           {uf.showOverride && (
                     <div style={{ marginTop: 8, padding: '10px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 8, border: '1px solid var(--vg-hairline)' }}>
                       <div style={{ fontSize: 11, fontWeight: 600, color: '#e8e8e8', marginBottom: 6 }}>Manual Override</div>
-                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                        <input type="text" placeholder="Project # (e.g. 4265-081)"
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                        <input type="text" placeholder="Project # (e.g. 4440-127)"
                           value={uf.manualProject || ''}
                           onChange={e => update(uf.id, { manualProject: e.target.value })}
-                          style={{ border: '1px solid var(--vg-hairline)', borderRadius: 6, padding: '4px 8px', fontSize: 12, width: 160 }} />
+                          style={{ border: '1px solid #ccc', borderRadius: 6, padding: '6px 10px', fontSize: 12, width: 160, background: '#fff', color: '#000' }} />
                         <select value={uf.manualStage || ''}
                           onChange={e => update(uf.id, { manualStage: parseInt(e.target.value) || undefined })}
-                          style={{ border: '1px solid var(--vg-hairline)', borderRadius: 6, padding: '4px 8px', fontSize: 12 }}>
+                          style={{ border: '1px solid #ccc', borderRadius: 6, padding: '6px 10px', fontSize: 12, background: '#fff', color: '#000' }}>
                           <option value="">Auto-detect stage</option>
                           <option value="1">Stage 1 — Business Analysis</option>
                           <option value="2">Stage 2 — Alternative Analysis</option>
@@ -457,15 +499,41 @@ export default function UploadPage() {
                           <option value="4">Stage 4 — Project Readiness</option>
                           <option value="0">Other document (non-stage)</option>
                         </select>
-                        <select value={uf.manualSubLabel || ''}
-                          onChange={e => update(uf.id, { manualSubLabel: e.target.value || undefined })}
-                          style={{ border: '1px solid var(--vg-hairline)', borderRadius: 6, padding: '4px 8px', fontSize: 12 }}
-                          title="Use A or B if this is one of multiple docs for the same stage">
-                          <option value="">No sub-label (single doc)</option>
-                          <option value="A">Part A</option>
-                          <option value="B">Part B</option>
-                          <option value="C">Part C</option>
-                        </select>
+                        {uf.manualStage === 3 ? (
+                          <select value={uf.manualSubLabel || ''}
+                            onChange={e => update(uf.id, { manualSubLabel: e.target.value || undefined })}
+                            style={{ border: '1px solid #4f46e5', borderRadius: 6, padding: '6px 10px', fontSize: 12, background: '#fff', color: '#000', fontWeight: 600 }}
+                            title="Select Part A or Part B for Stage 3">
+                            <option value="">— Select Part A or B —</option>
+                            <option value="A">Part A</option>
+                            <option value="B">Part B</option>
+                          </select>
+                        ) : (
+                          <select value={uf.manualSubLabel || ''}
+                            onChange={e => update(uf.id, { manualSubLabel: e.target.value || undefined })}
+                            style={{ border: '1px solid #ccc', borderRadius: 6, padding: '6px 10px', fontSize: 12, background: '#fff', color: '#000' }}
+                            title="Use A or B if this is one of multiple docs for the same stage">
+                            <option value="">No sub-label (single doc)</option>
+                            <option value="A">Part A</option>
+                            <option value="B">Part B</option>
+                            <option value="C">Part C</option>
+                          </select>
+                        )}
+                        <button
+                          onClick={() => uploadOne(uf)}
+                          style={{
+                            padding: '4px 12px',
+                            fontSize: 12,
+                            fontWeight: 600,
+                            background: '#00d992',
+                            color: '#000',
+                            border: 'none',
+                            borderRadius: 6,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Retry Upload
+                        </button>
                       </div>
                     </div>
                   )}
