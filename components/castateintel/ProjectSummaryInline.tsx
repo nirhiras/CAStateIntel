@@ -68,6 +68,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
   const [selectedDocuments, setSelectedDocuments] = useState<Record<number, string>>({1: "", 2: "", 3: "", 4: ""});
   const [pdfModal, setPdfModal] = useState<{url:string;title:string}|null>(null);
   const [extracting, setExtracting] = useState(false);
+  const [extractError, setExtractError] = useState<string|null>(null);
 
   useEffect(()=>{
     fetch("/api/castateintel/projects").then(r=>r.json()).then(d=>{
@@ -116,11 +117,21 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
 
   const handleExtract = async()=>{
     setExtracting(true);
+    setExtractError(null);
     const stageNum = tab==="s1"?1:tab==="s2"?2:tab==="s3"?3:tab==="s4"?4:null;
     try{
-      await fetch("/api/castateintel/analysis/extract",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({project_number:projectNumber,stage:stageNum})});
+      const res = await fetch("/api/castateintel/analysis/extract",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({project_number:projectNumber,stage:stageNum})});
+      const data = await res.json();
+      if(!res.ok){
+        setExtractError(data.error||`Analysis failed (${res.status})`);
+        setExtracting(false);
+        return;
+      }
       await loadProject(projectNumber);
-    }catch(e){console.error(e);}
+    }catch(e){
+      setExtractError(e instanceof Error?e.message:"Unknown error");
+      console.error(e);
+    }
     setExtracting(false);
   };
 
@@ -308,6 +319,7 @@ export default function ProjectSummaryInline({ defaultTab="overview", defaultPro
           {/* ── STAGE 4 ── */}
           {tab==="s4"&&(<div className="space-y-7">
             <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge label="Stage 4 — Project Readiness" color="bg-amber-900/30 text-amber-300"/>{s4?.doc_created_date&&<span className="text-xs text-white/40">Created {fmt(s4.doc_created_date)}</span>}</div><div className="flex items-center gap-2">{currentStageDocs.length>0&&!s4&&<button onClick={handleExtract} disabled={extracting} style={{padding:"6px 12px",fontSize:12,fontWeight:600,borderRadius:6,border:"1px solid #fbbf24",background:extracting?"rgba(251,191,36,0.15)":"rgba(251,191,36,0.12)",color:"#fbbf24",cursor:extracting?"not-allowed":"pointer",opacity:extracting?0.6:1}}>{extracting?"Analyzing...":"Analyze with AI"}</button>}{currentStageDocs.length===0&&<span className="text-xs text-white/40">No documents uploaded</span>}<PdfBtn doc={s4?.document} stage={4} onView={(u,t)=>setPdfModal({url:u,title:t})}/></div></div>
+            {extractError&&<div style={{padding:"12px 16px",borderRadius:8,background:"rgba(239,68,68,0.15)",border:"1px solid rgba(239,68,68,0.3)",color:"#ef4444",fontSize:12}}><span style={{fontWeight:600}}>Analysis Error: </span>{extractError} <button onClick={()=>setExtractError(null)} style={{marginLeft:8,background:"none",border:"none",color:"#ef4444",cursor:"pointer"}}>✕</button></div>}
             <DocumentTabs documents={currentStageDocs} selectedId={selectedDocuments[4]} onSelect={(id)=>setSelectedDocuments({...selectedDocuments,4:id})} stage={4}/>
             {!s4?<Card><p className="text-white/40">Not yet extracted.</p></Card>:(<>
               <div className="grid grid-cols-3 gap-6"><Card><KV label="Selected Vendor" value={s4.solicitation_results?.selected_vendor} accent/></Card><Card><KV label="Total Contract Cost" value={s4.solicitation_results?.total_contract_cost} accent/></Card><Card><KV label="Contract Period" value={`${fmt(s4.solicitation_results?.contract_start_date)||"—"} → ${fmt(s4.solicitation_results?.contract_end_date)||"—"}`}/></Card></div>
