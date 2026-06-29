@@ -1,8 +1,9 @@
 [phases.setup]
-nixPkgs = ["nodejs_20", "python312", "tesseract", "poppler_utils"]
+nixPkgs = ["nodejs_20"]
+aptPkgs = ["python3", "python3-pip", "python3-dev", "tesseract-ocr", "poppler-utils"]
 
 [phases.install]
-cmds = ["npm ci", "python3 -m pip install pymupdf pdfplumber pdf2image pytesseract --quiet --break-system-packages"]
+cmds = ["npm ci", "pip3 install pymupdf pdfplumber --quiet"]
 
 [phases.build]
 cmds = ["npm run build"]
